@@ -1,0 +1,38 @@
+# Ignore node_modules (for dependencies if you're using Node.js or npm/yarn)
+node_modules/
+
+# Ignore build artifacts (e.g., for bundlers like Webpack)
+dist/
+build/
+
+# Ignore system files
+.DS_Store          # macOS specific
+Thumbs.db          # Windows specific
+
+# Ignore log files
+*.log
+
+# Ignore environment variables (if you have any secrets or credentials)
+.env
+
+# Ignore IDE-specific files
+.vscode/           # Visual Studio Code settings
+.idea/             # JetBrains IDE settings
+
+# Ignore temporary or backup files
+*.bak
+*.swp
+*.swo
+
+# Ignore any compiled or generated files
+*.min.js
+*.map
+
+# Ignore any test or coverage reports
+coverage/
+
+# Ignore configuration files for models (if generated during runtime)
+models/            # Ignore models folder if not needed in git
+
+# Ignore assets and media that are not required
+assets/            # Ignore assets folder if not required for version control
