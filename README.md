@@ -1,6 +1,7 @@
 # AccessFlow: Eye-Tracking Browser Extension for Accessibility
 AccessFlow is a browser extension that enables hands-free web navigation using eye movements. By tracking the user’s gaze, it allows individuals with mobility impairments to interact with websites more easily. The extension converts eye gestures into actions such as scrolling and clicking, enhancing accessibility and providing an alternative navigation method.
 
+This project explores the use of eye-tracking technology to enhance accessibility and social inclusion. The system leverages low-cost innovations to assist individuals with disabilities in interacting with digital interfaces more effectively.
 # Features
 - Eye Gesture Recognition: Navigate websites using eye movements.
 
