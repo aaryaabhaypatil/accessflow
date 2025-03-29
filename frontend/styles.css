@@ -1,0 +1,30 @@
+
+
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 34px;
+    background-color: #ccc;
+    border-radius: 34px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth background color transition */
+  }
+  
+  .toggle-switch .slider {
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: transform 0.3s ease; /* Smooth slider movement */
+    border-radius: 50%;
+  }
+  
+  .toggle-switch.on {
+    background-color: #2196F3;
+  }
+  
+  .toggle-switch.on .slider {
+    transform: translateX(26px);
+  }
