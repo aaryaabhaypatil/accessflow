@@ -1,5 +1,5 @@
 
-
+/* Toggle switch */
 .toggle-switch {
     position: relative;
     width: 60px;
@@ -7,7 +7,7 @@
     background-color: #ccc;
     border-radius: 34px;
     cursor: pointer;
-    transition: background-color 0.3s ease; /* Smooth background color transition */
+    transition: background-color 0.3s ease;
   }
   
   .toggle-switch .slider {
@@ -17,14 +17,34 @@
     left: 4px;
     bottom: 4px;
     background-color: white;
-    transition: transform 0.3s ease; /* Smooth slider movement */
+    transition: transform 0.3s ease; 
     border-radius: 50%;
   }
   
   .toggle-switch.on {
-    background-color: #2196F3;
+    background-color: #10940c;
   }
   
   .toggle-switch.on .slider {
     transform: translateX(26px);
+  }
+
+  /* Title bar */
+  .title-bar {
+    display: flex;
+    align-items: center; 
+    background-color: #b5e2b3; 
+    padding: 10px;
+    border-radius: 5px;
+    
+  }
+  
+  .title-bar h2 {
+    flex-grow: 1;
+    text-align: center;
+    margin: 0; 
+  }
+  
+  .title-bar .toggle-switch {
+    margin-right: 15px; /* Space between toggle and title */
   }
