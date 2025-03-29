@@ -1,13 +1,22 @@
+.container {
+    width: 700px; 
+    margin: 40px auto; 
+    height: 700px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
 
 /* Toggle switch */
 .toggle-switch {
     position: relative;
     width: 60px;
     height: 34px;
-    background-color: #ccc;
+    background-color: #909090;
     border-radius: 34px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    border: 0.3px solid black;
   }
   
   .toggle-switch .slider {
@@ -19,6 +28,8 @@
     background-color: white;
     transition: transform 0.3s ease; 
     border-radius: 50%;
+    border: 0.1px solid black;
+    
   }
   
   .toggle-switch.on {
@@ -36,11 +47,11 @@
     background-color: #b5e2b3; 
     padding: 10px;
     border-radius: 5px;
-    
+    margin-bottom: 20px; /* Space between title bar and close button */
   }
   
   .title-bar h2 {
-    flex-grow: 1;
+    flex-grow: 1; /* Allow title to expand, centering it */
     text-align: center;
     margin: 0; 
   }
