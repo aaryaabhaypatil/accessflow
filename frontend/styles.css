@@ -63,11 +63,22 @@
 /* Gestures */
 .gesture-row {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    justify-content: space-between; 
     margin-bottom: 10px;
-    width: 30%;
-    
+}
+
+.left-gesture, .right-gesture {
+    display: flex;
+    flex-direction: column; 
+    flex: 0 1 auto;
+    width: 48%;
+}
+
+.gesture-row select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
 }
 
 .large-select {

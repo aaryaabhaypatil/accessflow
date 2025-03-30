@@ -15,18 +15,52 @@
             </div>
         </div>
 
+
         <div class="gestures">
             <h3>Gestures</h3>
             <div class="gesture-row">
-                <label>Scroll Left</label>
-                <select>
-                    <option value="">Choose an action</option>
-                    <option value="pageLeft">Look Left</option>
-                    <option value="contentLeft">Fixate on Left Edge</option>
-                    <option value="windowLeft">Look Up + Look Left</option>
-                </select>
+                <div class="left-gesture">
+                    <label>Scroll Left</label>
+                    <select>
+                        <option value="">Choose an action</option>
+                        <option value="pageLeft">Look Left</option>
+                        <option value="contentLeft">Fixate on Left Edge</option>
+                        <option value="windowLeft">Look Up + Look Left</option>
+                    </select>
+                </div>
+                <div class="right-gesture">
+                    <label>Scroll Right</label>
+                    <select>
+                        <option value="">Choose an action</option>
+                        <option value="pageRight">Look Right</option>
+                        <option value="contentRight">Fixate on Right Edge</option>
+                        <option value="windowRight">Look Up + Look Right</option>
+                    </select>
+                </div>
             </div>
-        </div>
+
+            <div class="gesture-row">
+                <div class="left-gesture">
+                    <label>Scroll Down</label>
+                    <select>
+                        <option value="">Choose an action</option>
+                        <option value="pageDown">Look Down</option>
+                        <option value="contentDown">Fixate on Bottom Edge</option>
+                        <option value="windowDown">Look Down + Look Left</option>
+                        <option value="windowDown">Look Down + Hold Gaze</option>
+                    </select>
+                </div>
+                <div class="right-gesture">
+                    <label>Scroll Up</label>
+                    <select>
+                        <option value="">Choose an action</option>
+                        <option value="pageDown">Look Up</option>
+                        <option value="contentDown">Fixate on top Edge</option>
+                        <option value="windowDown">Look Up + Look Left</option>
+                        <option value="windowDown">Look Up + Hold Gaze</option>
+                    </select>
+                </div>
+            </div>
 
     </div>
     <script src="/frontend/popup.js"></script> 
