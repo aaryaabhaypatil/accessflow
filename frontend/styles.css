@@ -47,15 +47,32 @@
     background-color: #b5e2b3; 
     padding: 10px;
     border-radius: 5px;
-    margin-bottom: 20px; /* Space between title bar and close button */
+    margin-bottom: 20px;
   }
   
   .title-bar h2 {
-    flex-grow: 1; /* Allow title to expand, centering it */
+    flex-grow: 1;
     text-align: center;
     margin: 0; 
   }
   
   .title-bar .toggle-switch {
-    margin-right: 15px; /* Space between toggle and title */
+    margin-right: 15px;
   }
+
+/* Gestures */
+.gesture-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+    width: 30%;
+    
+}
+
+.large-select {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
