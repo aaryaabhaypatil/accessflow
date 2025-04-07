@@ -138,6 +138,8 @@
 }
 
 
+
+
 #addButton {
     width: 20%;
     padding: 10px;
@@ -151,3 +153,9 @@
     align-self: center;
 }
 
+
+.gaze-hover {
+  outline: 3px solid #00bfff;
+  border-radius: 6px;
+  transition: outline 0.1s ease-in-out;
+}
