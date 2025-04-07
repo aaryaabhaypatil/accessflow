@@ -20,6 +20,12 @@ window.onload = function () {
     }, 200); 
     }
     }).begin();
+    
+    // Hide webcam preview
+    webgazer
+    .showVideo(false)
+    .showFaceOverlay(false)
+    .showFaceFeedbackBox(false);
+};
   
 
-}
