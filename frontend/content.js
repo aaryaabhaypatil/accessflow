@@ -12,7 +12,7 @@ window.onload = function () {
     // Find the element currently under the user's gaze
     const element = document.elementFromPoint(x, y);
     if (element) {
-    element.classList.add("gaze-hover"); // Add visual effect
+    element.classList.add("gaze-hover");
 
     // Remove the effect after a short delay
     setTimeout(() => {
