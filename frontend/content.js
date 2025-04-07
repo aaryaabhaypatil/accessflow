@@ -1,6 +1,10 @@
 
 
 window.onload = function () {
+    if (typeof webgazer === "undefined") {
+        console.error("WebGazer not loaded");
+        return;
+    }
     // Start the gaze listener using WebGazer
     webgazer.setGazeListener((data, timestamp) => {
     if (data == null) 
@@ -20,12 +24,17 @@ window.onload = function () {
     }, 200); 
     }
     }).begin();
+
     
+
     // Hide webcam preview
     webgazer
     .showVideo(false)
     .showFaceOverlay(false)
     .showFaceFeedbackBox(false);
+    
+    console.log("Gaze tracking started");
+
 };
   
 
