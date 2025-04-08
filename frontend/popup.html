@@ -2,7 +2,7 @@
 <html>
 <head>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
-    <script src="content.js"></script>
+    <script defer src="content.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,6 +17,9 @@
                     <span class="slider"></span>
                 </div>
                 <h2>AccessFlow - Eye Tracking</h2>
+                
+                <canvas id="overlay"></canvas>
+                <div id="calibration-area"></div> <!-- Add buttons/dots here -->
             </div>
         </div>
         <div class="gestures">
@@ -75,11 +78,11 @@
                     </select>
                 </div>
             </div>
+            <br>
+            <br>
+            <br>
+            <br>
 
-            <br>
-            <br>
-            <br>
-            <br>
 
 
             <div class="customise-container"> 

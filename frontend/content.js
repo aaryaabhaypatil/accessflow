@@ -33,7 +33,6 @@ window.onload = function () {
     .showFaceOverlay(false)
     .showFaceFeedbackBox(false);
     
-    console.log("Gaze tracking started");
 
 };
   

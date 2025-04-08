@@ -154,9 +154,33 @@
 }
 
 
+#gaze-marker {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background-color: red;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.6;
+  transition: transform 0.05s linear;
+}
+
 .gaze-hover {
   outline: 3px solid #00bfff;
-  border-radius: 6px;
+  border-radius: 10px;
   transition: outline 0.1s ease-in-out;
 }
+
+.gaze-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: rgba(255, 0, 0, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}
+
 
