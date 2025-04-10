@@ -11,6 +11,7 @@ window.onload = async function () {
 
     let prevX = null, prevY = null;
     const gazeDot = document.getElementById('gazeDot');
+    let gazePoints = [];  
 
     const calibrationPoints = [
         [0.1, 0.1], [0.5, 0.1], [0.9, 0.1],
@@ -19,6 +20,7 @@ window.onload = async function () {
     ];
 
     let calibrationCount = 0;
+
 
     const runCalibration = () => {
         return new Promise(resolve => {
@@ -35,18 +37,35 @@ window.onload = async function () {
                 point.style.top = `${yRatio * window.innerHeight - 10}px`;
 
                 document.body.appendChild(point);
+                
+                let sampleCount = 0;
+                const maxSamples = 5; 
+                let sampleX = 0, sampleY = 0;
 
                 point.addEventListener('click', () => {
-                    for (let i = 0; i < 5; i++) {
-                        webgazer.recordScreenPosition(
-                            xRatio * window.innerWidth,
-                            yRatio * window.innerHeight,
-                            'click'
-                        );
+                    
+                    sampleCount++;
+                    const x = event.clientX;
+                    const y = event.clientY;
+
+                    sampleX += x;
+                    sampleY += y;
+
+                    if (sampleCount >= maxSamples) {
+                       
+                        const avgX = sampleX / maxSamples;
+                        const avgY = sampleY / maxSamples;
+
+                      
+                        gazePoints.push({ x: avgX, y: avgY });
+
+                       
+                        point.style.backgroundColor = "green";
+                        setTimeout(() => document.body.removeChild(point), 300);
+
+                        calibrationCount++;
+                        showNextPoint();
                     }
-                    document.body.removeChild(point);
-                    calibrationCount++;
-                    showNextPoint();
                 });
             };
 
@@ -57,17 +76,17 @@ window.onload = async function () {
     await webgazer.setRegression('ridge').begin();
 
     webgazer
-        .showVideo(false)
+        .showVideo(false) 
         .showFaceOverlay(false)
         .showFaceFeedbackBox(false);
 
-    await runCalibration();
+    await runCalibration(); 
+
 
     webgazer.setGazeListener((data) => {
         if (!data) return;
         const x = data.x;
         const y = data.y;
-
 
         gazeDot.style.left = `${x - 5}px`;
         gazeDot.style.top = `${y - 5}px`;
