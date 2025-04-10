@@ -1,59 +1,94 @@
-window.onload = function () {
+window.onload = async function () {
     if (typeof webgazer === "undefined") {
         console.error("WebGazer not loaded");
         return;
     }
 
-    // Create a canvas element for drawing the gaze trace
-    const canvas = document.createElement('canvas');
-    document.body.appendChild(canvas);
+    const canvas = document.getElementById('gazeCanvas');
     const ctx = canvas.getContext('2d');
-
-    // Set canvas size to match the window size
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Store previous gaze coordinates
-    let prevX = null;
-    let prevY = null;
+    let prevX = null, prevY = null;
+    const gazeDot = document.getElementById('gazeDot');
 
-    // Start the gaze listener using WebGazer
-    webgazer.setGazeListener((data, timestamp) => {
-        if (data == null) return;
+    const calibrationPoints = [
+        [0.1, 0.1], [0.5, 0.1], [0.9, 0.1],
+        [0.1, 0.5], [0.5, 0.5], [0.9, 0.5],
+        [0.1, 0.9], [0.5, 0.9], [0.9, 0.9]
+    ];
 
-        // x-coordinate and y-coordinate of the gaze
-        const x = data.x;
-        const y = data.y;
+    let calibrationCount = 0;
 
-        // Draw a line from the previous gaze point to the current one
-        if (prevX !== null && prevY !== null) {
-            ctx.beginPath();
-            ctx.moveTo(prevX, prevY);
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';  // Line color (green, semi-transparent)
-            ctx.lineWidth = 2;  // Line width
-            ctx.stroke();
-        }
+    const runCalibration = () => {
+        return new Promise(resolve => {
+            const showNextPoint = () => {
+                if (calibrationCount >= calibrationPoints.length) {
+                    resolve();
+                    return;
+                }
 
-        // Update the previous gaze coordinates for the next frame
-        prevX = x;
-        prevY = y;
+                const [xRatio, yRatio] = calibrationPoints[calibrationCount];
+                const point = document.createElement('div');
+                point.classList.add('calibration-point');
+                point.style.left = `${xRatio * window.innerWidth - 10}px`;
+                point.style.top = `${yRatio * window.innerHeight - 10}px`;
 
-        // Find the element currently under the user's gaze
-        const element = document.elementFromPoint(x, y);
-        if (element) {
-            element.classList.add("gaze-hover");
+                document.body.appendChild(point);
 
-            // Remove the effect after a short delay
-            setTimeout(() => {
-                element.classList.remove("gaze-hover");
-            }, 200);
-        }
-    }).begin();
+                point.addEventListener('click', () => {
+                    for (let i = 0; i < 5; i++) {
+                        webgazer.recordScreenPosition(
+                            xRatio * window.innerWidth,
+                            yRatio * window.innerHeight,
+                            'click'
+                        );
+                    }
+                    document.body.removeChild(point);
+                    calibrationCount++;
+                    showNextPoint();
+                });
+            };
 
-    // Hide webcam preview
+            showNextPoint();
+        });
+    };
+
+    await webgazer.setRegression('ridge').begin();
+
     webgazer
         .showVideo(false)
         .showFaceOverlay(false)
         .showFaceFeedbackBox(false);
+
+    await runCalibration();
+
+    webgazer.setGazeListener((data) => {
+        if (!data) return;
+        const x = data.x;
+        const y = data.y;
+
+
+        gazeDot.style.left = `${x - 5}px`;
+        gazeDot.style.top = `${y - 5}px`;
+
+
+        if (prevX !== null && prevY !== null) {
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        prevX = x;
+        prevY = y;
+
+        const element = document.elementFromPoint(x, y);
+        if (element) {
+            element.classList.add("gaze-hover");
+            setTimeout(() => element.classList.remove("gaze-hover"), 200);
+        }
+    });
 };

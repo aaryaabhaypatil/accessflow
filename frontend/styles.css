@@ -153,6 +153,28 @@
     align-self: center;
 }
 
+#gazeCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.calibration-point {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  border-radius: 50%;
+  z-index: 10000;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+}
+
+.gaze-hover {
+  outline: 2px solid limegreen;
+}
+
 
 #gaze-marker {
   position: absolute;
@@ -184,3 +206,33 @@
 }
 
 
+#gazeCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+#gazeDot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: lime;
+  border-radius: 50%;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.calibration-point {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  border-radius: 50%;
+  z-index: 10000;
+  cursor: pointer;
+}
+
+.gaze-hover {
+  outline: 2px solid limegreen;
+}

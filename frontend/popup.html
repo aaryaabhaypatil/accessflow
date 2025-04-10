@@ -3,13 +3,17 @@
 <head>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <script defer src="content.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+   
+    
 <title>AccessFlow - Eye Tracking</title>
 <link rel="stylesheet" href="/frontend/styles.css">
 </head>
 <body>
+    <canvas id="gazeCanvas"></canvas>
+    <div id="gazeDot"></div>
     <div class="container">
         <div class="header">
             <div class="title-bar">
@@ -19,7 +23,7 @@
                 <h2>AccessFlow - Eye Tracking</h2>
                 
                 <canvas id="overlay"></canvas>
-                <div id="calibration-area"></div> <!-- Add buttons/dots here -->
+                <div id="calibration-area"></div> 
             </div>
         </div>
         <div class="gestures">
