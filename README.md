@@ -30,7 +30,6 @@ This allows users to interact with websites by simply looking at different parts
 
 This project is set up like a Chrome extension, but for now, you can just run it like a regular website to test everything out. Here’s how to get it running on your computer using a local server.
 
----
 
 ### What You’ll Need
 
