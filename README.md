@@ -28,12 +28,11 @@ This allows users to interact with websites by simply looking at different parts
 
 ## Getting Started
 
-This project is set up like a Chrome extension, but for now, you can just run it like a regular website to test everything out. Here’s how to get it running on your computer using a local server.
+This project is designed as a Chrome extension, but for testing purposes, it can be run as a standard website. The following instructions outline how to set it up and test it locally using a server.
 
 
 ### What You’ll Need
-
-You’ll need [Node.js](https://nodejs.org/) installed. It includes both `npm` and `npx`, so you don’t need to install those separately.
+[Node.js](https://nodejs.org/) must be installed, as it includes both `npm` and `npx`, eliminating the need for separate installation.
 
 To check if it’s already installed, open your terminal and run:
 
@@ -54,13 +53,12 @@ On Ubuntu
 sudo apt update
 sudo apt install nodejs npm
 ```
-On Windows
-Go to https://nodejs.org/
+On Windows 
+<br>
 
-
-Download the LTS version
-
-Install it and then open a terminal
+- Go to https://nodejs.org/
+- Download the LTS version
+- Install it and then open a terminal
 
 Check if it's working:
 
@@ -81,14 +79,14 @@ git clone https://github.com/aaryaabhaypatil/accessflow.git
 
 
 ### Start a Local Server
-We’re going to use a tool called http-server to run the project locally.
+We will use a tool called `http-server` to run the project locally.
 
 In the terminal, run:
 
 ```
 npx http-server
 ```
-It will give you a local link like:
+It will generate a local link, for example
 
 ```
 http://127.0.0.1:8080
@@ -99,6 +97,5 @@ http://localhost:8080
 ```
 
 
-Now, when you open the link, it will display the project folder structure, and you should be able to click on the `frontend` folder and run the app.
-
+The link will display the project folder structure. Navigate to the `frontend` folder and open popup.html to run the application.
 
