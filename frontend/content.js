@@ -23,7 +23,12 @@ window.onload = async function () {
 
    
     const makePointInvisible = (point) => {
-        point.style.visibility = 'hidden'; 
+        point.style.backgroundColor = 'green';
+        setTimeout(() => {
+            point.remove();
+        }, 50);
+    
+
     };
 
     const showCalibrationPoint = (xRatio, yRatio) => {
