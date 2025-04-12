@@ -232,7 +232,17 @@
   z-index: 10000;
   cursor: pointer;
 }
+.gaze-hover {
+  outline: 2px dashed blue;
+}
 
 .gaze-hover {
-  outline: 2px solid limegreen;
+  outline: 2px solid rgb(89, 50, 205);
+}
+
+
+.selected {
+  background-color: lightgreen !important;
+  border-color: green !important;
+  font-weight: bold;
 }

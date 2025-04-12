@@ -9,26 +9,18 @@ window.onload = async function () {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    let prevX = null, prevY = null;
     const gazeDot = document.getElementById('gazeDot');
-    let gazePoints = [];  
-
     const calibrationPoints = [
         [0.1, 0.1], [0.5, 0.1], [0.9, 0.1],
         [0.1, 0.5], [0.5, 0.5], [0.9, 0.5],
         [0.1, 0.9], [0.5, 0.9], [0.9, 0.9]
     ];
 
-    let calibrationCount = 0;
+    let gazePoints = [], prevX = null, prevY = null;
 
-   
     const makePointInvisible = (point) => {
         point.style.backgroundColor = 'green';
-        setTimeout(() => {
-            point.remove();
-        }, 50);
-    
-
+        setTimeout(() => point.remove(), 50);
     };
 
     const showCalibrationPoint = (xRatio, yRatio) => {
@@ -36,149 +28,107 @@ window.onload = async function () {
         point.classList.add('calibration-point');
         point.style.left = `${xRatio * window.innerWidth - 10}px`;
         point.style.top = `${yRatio * window.innerHeight - 10}px`;
-
         document.body.appendChild(point);
         return point;
     };
 
-    const runCalibration = () => {
-        return new Promise(resolve => {
-            const showNextPoint = () => {
-                if (calibrationCount >= calibrationPoints.length) {
+    const collectCalibrationSamples = (point) => {
+        return new Promise((resolve) => {
+            let sampleCount = 0;
+            const maxSamples = 5;
+            let sampleX = 0, sampleY = 0;
+
+            const onClick = (event) => {
+                sampleCount++;
+                sampleX += event.clientX;
+                sampleY += event.clientY;
+
+                if (sampleCount >= maxSamples) {
+                    point.removeEventListener('click', onClick);
+                    const avgX = sampleX / maxSamples;
+                    const avgY = sampleY / maxSamples;
+                    gazePoints.push({ x: avgX, y: avgY });
+                    makePointInvisible(point);
                     resolve();
-                    return;
                 }
-
-                const [xRatio, yRatio] = calibrationPoints[calibrationCount];
-                const point = showCalibrationPoint(xRatio, yRatio);
-
-                let sampleCount = 0;
-                const maxSamples = 5; 
-                let sampleX = 0, sampleY = 0;
-
-                const onPointClick = (event) => {
-                    sampleCount++;
-                    const x = event.clientX;
-                    const y = event.clientY;
-
-                    sampleX += x;
-                    sampleY += y;
-
-                    if (sampleCount >= maxSamples) {
-                        const avgX = sampleX / maxSamples;
-                        const avgY = sampleY / maxSamples;
-
-                        gazePoints.push({ x: avgX, y: avgY });
-
-                        makePointInvisible(point); 
-                        calibrationCount++;
-                        showNextPoint();
-                    }
-                };
-
-                point.addEventListener('click', onPointClick);
             };
 
-            showNextPoint();
+            point.addEventListener('click', onClick);
         });
     };
 
-    const recheckCalibration = () => {
-        return new Promise(resolve => {
-            const recheckNextPoint = () => {
-                if (calibrationCount >= calibrationPoints.length) {
-                    resolve();
-                    return;
-                }
-
-                const [xRatio, yRatio] = calibrationPoints[calibrationCount];
-                const point = showCalibrationPoint(xRatio, yRatio);
-
-                let sampleCount = 0;
-                const maxSamples = 5; 
-                let sampleX = 0, sampleY = 0;
-
-                const onPointClick = (event) => {
-                    sampleCount++;
-                    const x = event.clientX;
-                    const y = event.clientY;
-
-                    sampleX += x;
-                    sampleY += y;
-
-                    if (sampleCount >= maxSamples) {
-                        const avgX = sampleX / maxSamples;
-                        const avgY = sampleY / maxSamples;
-
-                        gazePoints.push({ x: avgX, y: avgY });
-
-                        makePointInvisible(point); 
-                        calibrationCount++;
-                        recheckNextPoint();
-                    }
-                };
-
-                point.addEventListener('click', onPointClick);
-            };
-
-            recheckNextPoint();
-        });
-    };
-
-    await webgazer.setRegression('ridge').begin();
-
-    webgazer
-        .showVideo(false) 
-        .showFaceOverlay(false)
-        .showFaceFeedbackBox(false);
-
-    await runCalibration(); 
-
-    
-    if (confirm("Would you like to recheck the calibration points for accuracy?")) {
-        calibrationCount = 0;
-        await recheckCalibration();
-    }
-
-    let lastGazeData = { x: 0, y: 0 };
-    let lastTime = Date.now();
-
-
-    const throttleGazeUpdates = () => {
-        const now = Date.now();
-        const timeDiff = now - lastTime;
-
-        if (timeDiff >= 50) {
-            lastTime = now;
-
-            webgazer.setGazeListener((data) => {
-                if (!data) return;
-                const x = data.x;
-                const y = data.y;
-
-                gazeDot.style.left = `${x - 5}px`;
-                gazeDot.style.top = `${y - 5}px`;
-
-                if (prevX !== null && prevY !== null) {
-                    ctx.beginPath();
-                    ctx.moveTo(prevX, prevY);
-                    ctx.lineTo(x, y);
-                    ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
-
-                prevX = x;
-                prevY = y;
-
-                const element = document.elementFromPoint(x, y);
-                if (element) {
-                    element.classList.add("gaze-hover");
-                    setTimeout(() => element.classList.remove("gaze-hover"), 200);
-                }
-            });
+    const calibrate = async () => {
+        for (const [xRatio, yRatio] of calibrationPoints) {
+            const point = showCalibrationPoint(xRatio, yRatio);
+            await collectCalibrationSamples(point);
         }
     };
 
-    setInterval(throttleGazeUpdates, 50);
+    await webgazer.setRegression('ridge').begin();
+    webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+
+    await calibrate();
+
+    if (confirm("Would you like to recheck the calibration points for accuracy?")) {
+        gazePoints = []; // Clear previous points
+        await calibrate();
+    }
+
+    // Dwell selection variables
+    let gazeTimer = null;
+    let gazeTarget = null;
+
+    const handleGazeDwellSelection = (x, y) => {
+        const element = document.elementFromPoint(x, y);
+        if (!element || !element.classList.contains('gaze-selectable')) {
+            clearTimeout(gazeTimer);
+            gazeTimer = null;
+            gazeTarget = null;
+            return;
+        }
+
+        if (element !== gazeTarget) {
+            clearTimeout(gazeTimer);
+            gazeTarget = element;
+            gazeTimer = setTimeout(() => {
+                element.classList.add('selected');
+                element.click?.();
+            }, 2000); // 2-second dwell
+        }
+    };
+
+    // Gaze listener
+    webgazer.setGazeListener((data) => {
+        if (!data) return;
+
+        const x = data.x;
+        const y = data.y;
+
+        // Update gaze dot
+        gazeDot.style.left = `${x - 5}px`;
+        gazeDot.style.top = `${y - 5}px`;
+
+        // Draw trail
+        if (prevX !== null && prevY !== null) {
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        prevX = x;
+        prevY = y;
+
+        // Highlight element under gaze
+        const element = document.elementFromPoint(x, y);
+        if (element) {
+            element.classList.add('gaze-hover');
+            setTimeout(() => element.classList.remove('gaze-hover'), 200);
+        }
+
+        // Dwell-to-select handler
+        handleGazeDwellSelection(x, y);
+    });
 };

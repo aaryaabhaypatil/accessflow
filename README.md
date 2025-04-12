@@ -96,6 +96,5 @@ or
 http://localhost:8080
 ```
 
-
 The link will display the project folder structure. Navigate to the `frontend` folder and open popup.html to run the application.
 
