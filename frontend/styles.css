@@ -204,6 +204,59 @@
   transform: translate(-50%, -50%);
   z-index: 9999;
 }
+.calibration-point {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+  border-radius: 50%;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+#gazeCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+#gazeDot {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+#gazeAtMe {
+  position: absolute;
+  top: 40%;
+  left: 40%;
+  width: 200px;
+  height: 100px;
+  background-color: lightblue;
+  border: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  text-align: center;
+  line-height: 100px;
+  transition: all 0.3s ease;
+}
+
+#gazeAtMe.reacted {
+  background-color: #ffde59;
+  transform: scale(1.1);
+  font-weight: bold;
+}
+
+.gaze-hover {
+  outline: 2px dashed orange;
+}
 
 
 #gazeCanvas {
@@ -240,9 +293,7 @@
   outline: 2px solid rgb(89, 50, 205);
 }
 
-
 .selected {
-  background-color: lightgreen !important;
-  border-color: green !important;
-  font-weight: bold;
+  background-color: gold !important;
+  outline: 3px solid red;
 }
