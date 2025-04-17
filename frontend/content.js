@@ -200,11 +200,27 @@ window.onload = async function () {
         }
     };
 
+    const gazeBuffer = [];
+    const bufferSize = 10;
+
     webgazer.setGazeListener((data) => {
         if (!data) return;
-        latestX = data.x;
-        latestY = data.y;
+
+        gazeBuffer.push({ x: data.x, y: data.y });
+        if (gazeBuffer.length > bufferSize) {
+            gazeBuffer.shift();
+        }
+
+        const sum = gazeBuffer.reduce((acc, point) => {
+            acc.x += point.x;
+            acc.y += point.y;
+            return acc;
+        }, { x: 0, y: 0 });
+
+        latestX = sum.x / gazeBuffer.length;
+        latestY = sum.y / gazeBuffer.length;
     });
+
 
     function drawLoop() {
         if (latestX && latestY) {
