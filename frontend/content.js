@@ -1,3 +1,13 @@
+function correctDrift(predX, predY) {
+    const anchor = { x: window.innerWidth * 0.9, y: window.innerHeight * 0.9 };
+    const dist = Math.hypot(predX - anchor.x, predY - anchor.y);
+    if (dist < 100) {
+        predX = (predX + anchor.x) / 2;
+        predY = (predY + anchor.y) / 2;
+    }
+    return { x: predX, y: predY };
+}
+
 window.onload = async function () {
     if (typeof webgazer === "undefined") {
         console.error("WebGazer not loaded");
@@ -14,7 +24,6 @@ window.onload = async function () {
     await webgazer.setRegression('ridge').begin();
     webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
 
-
     const calibrationDot = document.createElement('div');
     calibrationDot.id = 'calibrationDot';
     calibrationDot.style.position = 'absolute';
@@ -27,8 +36,6 @@ window.onload = async function () {
 
     function generateCombinedCalibrationPoints(numGridPointsPerRow, numRandomPoints, numEdgePoints) {
         const points = [];
-
-        // 1. Grid Points
         const gridPoints = [];
         for (let i = 0; i < numGridPointsPerRow; i++) {
             for (let j = 0; j < numGridPointsPerRow; j++) {
@@ -39,7 +46,6 @@ window.onload = async function () {
         }
         points.push(...gridPoints);
 
-        // 2. Random Points (excluding those too close to existing grid points)
         for (let i = 0; i < numRandomPoints; i++) {
             let newPoint;
             let tooClose;
@@ -51,21 +57,19 @@ window.onload = async function () {
                     const distance = Math.sqrt(
                         Math.pow(newPoint.x - existingPoint.x, 2) + Math.pow(newPoint.y - existingPoint.y, 2)
                     );
-                    if (distance < 0.1) { 
+                    if (distance < 0.1) {
                         tooClose = true;
                         break;
                     }
                 }
                 attempts++;
-                // Preventing infinite loops
-                if (attempts > 100) break; 
+                if (attempts > 100) break;
             } while (tooClose);
             if (!tooClose) {
                 points.push(newPoint);
             }
         }
 
-        // 3. Edge Points (top, bottom, left, right midpoints)
         const edgePoints = [
             { x: 0.5, y: 0.05 },
             { x: 0.5, y: 0.95 },
@@ -74,7 +78,6 @@ window.onload = async function () {
         ];
         points.push(...edgePoints);
 
-        // Add more edge points closer to the corners
         const cornerEdgePoints = [
             { x: 0.1, y: 0.1 },
             { x: 0.1, y: 0.9 },
@@ -83,7 +86,6 @@ window.onload = async function () {
         ];
         points.push(...cornerEdgePoints);
 
-        // Shuffle the points for a more varied calibration path
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -119,16 +121,12 @@ window.onload = async function () {
         });
     }
 
-    // Calibration with a combination of point patterns
     async function highAccuracyCalibration() {
-        // Creates a 5x5 grid (25 points)
-        const numGridPoints = 5; 
+        const numGridPoints = 5;
         const numRandomPoints = 30;
-        // Basic edge midpoints
-        const numEdgePoints = 4; 
+        const numEdgePoints = 4;
         const calibrationPoints = generateCombinedCalibrationPoints(numGridPoints, numRandomPoints, numEdgePoints);
-        // Stay at each point for 1.6 seconds
-        const pauseTime = 1600; 
+        const pauseTime = 1600;
         const moveDuration = 2000;
 
         alert(`Calibration will now start with ${calibrationPoints.length} points following a combined pattern (grid, random, and edges). Please focus carefully on the red dot.`);
@@ -221,30 +219,33 @@ window.onload = async function () {
         latestY = sum.y / gazeBuffer.length;
     });
 
-
     function drawLoop() {
         if (latestX && latestY) {
-            gazeDot.style.left = `${latestX - 5}px`;
-            gazeDot.style.top = `${latestY - 5}px`;
+            const corrected = correctDrift(latestX, latestY);
+            const x = corrected.x;
+            const y = corrected.y;
+
+            gazeDot.style.left = `${x - 5}px`;
+            gazeDot.style.top = `${y - 5}px`;
 
             if (prevX !== null && prevY !== null) {
                 ctx.beginPath();
                 ctx.moveTo(prevX, prevY);
-                ctx.lineTo(latestX, latestY);
+                ctx.lineTo(x, y);
                 ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
 
-            prevX = latestX;
-            prevY = latestY;
+            prevX = x;
+            prevY = y;
 
-            const element = document.elementFromPoint(latestX, latestY);
+            const element = document.elementFromPoint(x, y);
             if (element) {
                 element.classList.add('gaze-hover');
                 setTimeout(() => element.classList.remove('gaze-hover'), 100);
             }
-            handleGazeDwellSelection(latestX, latestY);
+            handleGazeDwellSelection(x, y);
         }
         requestAnimationFrame(drawLoop);
     }
