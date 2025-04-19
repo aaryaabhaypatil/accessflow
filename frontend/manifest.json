@@ -1,31 +1,33 @@
 {
-    "manifest_version": 2,
-    "name": "Eye Tracking Example",
-    "description": "A simple eye-tracking extension using WebGazer.js",
-    "version": "1.0",
-    "permissions": [
-      "activeTab",
-      "webNavigation",
-      "tabs",
-      "storage",
-      "camera",
-      "http://localhost/*",
-      "https://localhost/*"
-    ],
-    "background": {
-      "scripts": ["background.js"],
-      "persistent": false
-    },
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"],
-        "run_at": "document_end"
-        
-      }
-    ],
-    "web_accessible_resources": [
-      "webgazer.js"
-    ]
-  }
-  
+  "manifest_version": 3,
+  "name": "Eye Tracking Example",
+  "description": "A simple eye-tracking extension using WebGazer.js",
+  "version": "1.0",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost/*",
+    "https://localhost/*",
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Eye Tracker"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["webgazer.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["webgazer.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

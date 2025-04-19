@@ -8,6 +8,23 @@ function correctDrift(predX, predY) {
     return { x: predX, y: predY };
 }
 
+
+function getHeadShift() {
+    const positions = webgazer.getTracker().getPositions();
+    if (!positions) return { dx: 0, dy: 0 };
+
+    const leftEye = positions.find(p => p.name === 'leftEye');
+    const rightEye = positions.find(p => p.name === 'rightEye');
+    const nose = positions.find(p => p.name === 'nose');
+
+    if (leftEye && rightEye && nose) {
+        const headCenterX = (leftEye.x + rightEye.x) / 2;
+        const dx = headCenterX - nose.x;
+        return { dx, dy: 0 };
+    }
+    return { dx: 0, dy: 0 };
+}
+
 window.onload = async function () {
     if (typeof webgazer === "undefined") {
         console.error("WebGazer not loaded");
@@ -197,6 +214,7 @@ window.onload = async function () {
             }, 1000);
         }
     };
+
 
     const gazeBuffer = [];
     const bufferSize = 10;
