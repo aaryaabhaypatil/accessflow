@@ -8,15 +8,12 @@ function correctDrift(predX, predY) {
     return { x: predX, y: predY };
 }
 
-
 function getHeadShift() {
     const positions = webgazer.getTracker().getPositions();
     if (!positions) return { dx: 0, dy: 0 };
-
     const leftEye = positions.find(p => p.name === 'leftEye');
     const rightEye = positions.find(p => p.name === 'rightEye');
     const nose = positions.find(p => p.name === 'nose');
-
     if (leftEye && rightEye && nose) {
         const headCenterX = (leftEye.x + rightEye.x) / 2;
         const dx = headCenterX - nose.x;
@@ -26,20 +23,18 @@ function getHeadShift() {
 }
 
 window.onload = async function () {
-    if (typeof webgazer === "undefined") {
-        console.error("WebGazer not loaded");
-        return;
-    }
-
+    if (typeof webgazer === "undefined") return;
     const canvas = document.getElementById('gazeCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
     const gazeDot = document.getElementById('gazeDot');
 
     await webgazer.setRegression('ridge').begin();
-    webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+    webgazer.showVideo(false)
+        .showFaceOverlay(false)
+        .showFaceFeedbackBox(false)
+        .showPredictionPoints(false);
 
     const calibrationDot = document.createElement('div');
     calibrationDot.id = 'calibrationDot';
@@ -62,7 +57,6 @@ window.onload = async function () {
             }
         }
         points.push(...gridPoints);
-
         for (let i = 0; i < numRandomPoints; i++) {
             let newPoint;
             let tooClose;
@@ -71,9 +65,7 @@ window.onload = async function () {
                 newPoint = { x: Math.random(), y: Math.random() };
                 tooClose = false;
                 for (const existingPoint of points) {
-                    const distance = Math.sqrt(
-                        Math.pow(newPoint.x - existingPoint.x, 2) + Math.pow(newPoint.y - existingPoint.y, 2)
-                    );
+                    const distance = Math.sqrt(Math.pow(newPoint.x - existingPoint.x, 2) + Math.pow(newPoint.y - existingPoint.y, 2));
                     if (distance < 0.1) {
                         tooClose = true;
                         break;
@@ -86,7 +78,6 @@ window.onload = async function () {
                 points.push(newPoint);
             }
         }
-
         const edgePoints = [
             { x: 0.5, y: 0.05 },
             { x: 0.5, y: 0.95 },
@@ -94,7 +85,6 @@ window.onload = async function () {
             { x: 0.95, y: 0.5 },
         ];
         points.push(...edgePoints);
-
         const cornerEdgePoints = [
             { x: 0.1, y: 0.1 },
             { x: 0.1, y: 0.9 },
@@ -102,7 +92,6 @@ window.onload = async function () {
             { x: 0.9, y: 0.9 },
         ];
         points.push(...cornerEdgePoints);
-
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -116,24 +105,19 @@ window.onload = async function () {
     async function animateDot(startX, startY, endX, endY, duration) {
         return new Promise(resolve => {
             const startTime = performance.now();
-
             function animate(currentTime) {
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / duration, 1);
-
                 const currentX = startX + (endX - startX) * progress;
                 const currentY = startY + (endY - startY) * progress;
-
                 calibrationDot.style.left = `${currentX * window.innerWidth - 10}px`;
                 calibrationDot.style.top = `${currentY * window.innerHeight - 10}px`;
-
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
                     resolve();
                 }
             }
-
             requestAnimationFrame(animate);
         });
     }
@@ -145,15 +129,14 @@ window.onload = async function () {
         const calibrationPoints = generateCombinedCalibrationPoints(numGridPoints, numRandomPoints, numEdgePoints);
         const pauseTime = 1600;
         const moveDuration = 2000;
-
-        alert(`Calibration will now start with ${calibrationPoints.length} points following a combined pattern (grid, random, and edges). Please focus carefully on the red dot.`);
+        alert(`Calibration will now start. Please focus on the red dot.`);
 
         for (let i = 0; i < calibrationPoints.length; i++) {
             const point = calibrationPoints[i];
             calibrationDot.style.left = `${point.x * window.innerWidth - 10}px`;
             calibrationDot.style.top = `${point.y * window.innerHeight - 10}px`;
             await new Promise(resolve => setTimeout(resolve, pauseTime));
-            webgazer.recordScreenPosition(point.x, point.y, 'calibration');
+            webgazer.recordScreenPosition(point.x * window.innerWidth, point.y * window.innerHeight, 'calibration');
             await new Promise(resolve => setTimeout(resolve, 200));
             if (i < calibrationPoints.length - 1) {
                 await animateDot(point.x, point.y, calibrationPoints[i + 1].x, calibrationPoints[i + 1].y, moveDuration);
@@ -162,9 +145,8 @@ window.onload = async function () {
 
         await webgazer.end();
         await webgazer.setRegression('ridge').begin();
-
         calibrationDot.remove();
-        alert("High-accuracy calibration complete with a variety of points!");
+        alert("Calibration complete.");
     }
 
     await highAccuracyCalibration();
@@ -176,14 +158,12 @@ window.onload = async function () {
 
     const handleGazeDwellSelection = (x, y) => {
         const element = document.elementFromPoint(x, y);
-
         if (!element) {
             clearTimeout(gazeTimer);
             gazeTimer = null;
             gazeTarget = null;
             return;
         }
-
         if (element.id === "gazeAtMe") {
             if (gazeTarget !== element) {
                 clearTimeout(gazeTimer);
@@ -191,48 +171,40 @@ window.onload = async function () {
                 gazeTimer = setTimeout(() => {
                     element.classList.add('reacted');
                     element.innerText = "You looked at me!";
-                    console.log("Gazed at 'gazeAtMe' for 1 seconds!");
                 }, 1000);
             }
             return;
         }
-
         if (!element.classList.contains('gaze-selectable')) {
             clearTimeout(gazeTimer);
             gazeTimer = null;
             gazeTarget = null;
             return;
         }
-
         if (element !== gazeTarget) {
             clearTimeout(gazeTimer);
             gazeTarget = element;
             gazeTimer = setTimeout(() => {
-                console.log("Gaze dwell triggered on:", element);
                 element.classList.add('selected');
                 element.click?.();
             }, 1000);
         }
     };
 
-
     const gazeBuffer = [];
     const bufferSize = 10;
 
     webgazer.setGazeListener((data) => {
         if (!data) return;
-
         gazeBuffer.push({ x: data.x, y: data.y });
         if (gazeBuffer.length > bufferSize) {
             gazeBuffer.shift();
         }
-
         const sum = gazeBuffer.reduce((acc, point) => {
             acc.x += point.x;
             acc.y += point.y;
             return acc;
         }, { x: 0, y: 0 });
-
         latestX = sum.x / gazeBuffer.length;
         latestY = sum.y / gazeBuffer.length;
     });
@@ -242,10 +214,8 @@ window.onload = async function () {
             const corrected = correctDrift(latestX, latestY);
             const x = corrected.x;
             const y = corrected.y;
-
             gazeDot.style.left = `${x - 5}px`;
             gazeDot.style.top = `${y - 5}px`;
-
             if (prevX !== null && prevY !== null) {
                 ctx.beginPath();
                 ctx.moveTo(prevX, prevY);
@@ -254,10 +224,8 @@ window.onload = async function () {
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
-
             prevX = x;
             prevY = y;
-
             const element = document.elementFromPoint(x, y);
             if (element) {
                 element.classList.add('gaze-hover');
