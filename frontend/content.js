@@ -1,11 +1,10 @@
+let calibrationOffset = { x: 0, y: 0 };
+
 function correctDrift(predX, predY) {
-    const anchor = { x: window.innerWidth * 0.9, y: window.innerHeight * 0.9 };
-    const dist = Math.hypot(predX - anchor.x, predY - anchor.y);
-    if (dist < 100) {
-        predX = (predX + anchor.x) / 2;
-        predY = (predY + anchor.y) / 2;
-    }
-    return { x: predX, y: predY };
+    return {
+        x: predX - calibrationOffset.x,
+        y: predY - calibrationOffset.y,
+    };
 }
 
 function getHeadShift() {
@@ -46,60 +45,14 @@ window.onload = async function () {
     calibrationDot.style.zIndex = '9999';
     document.body.appendChild(calibrationDot);
 
-    function generateCombinedCalibrationPoints(numGridPointsPerRow, numRandomPoints, numEdgePoints) {
+    function generateGridCalibrationPoints(rows, cols) {
         const points = [];
-        const gridPoints = [];
-        for (let i = 0; i < numGridPointsPerRow; i++) {
-            for (let j = 0; j < numGridPointsPerRow; j++) {
-                const x = j / (numGridPointsPerRow - 1);
-                const y = i / (numGridPointsPerRow - 1);
-                gridPoints.push({ x, y });
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                points.push({ x: j / (cols - 1), y: i / (rows - 1) });
             }
         }
-        points.push(...gridPoints);
-        for (let i = 0; i < numRandomPoints; i++) {
-            let newPoint;
-            let tooClose;
-            let attempts = 0;
-            do {
-                newPoint = { x: Math.random(), y: Math.random() };
-                tooClose = false;
-                for (const existingPoint of points) {
-                    const distance = Math.sqrt(Math.pow(newPoint.x - existingPoint.x, 2) + Math.pow(newPoint.y - existingPoint.y, 2));
-                    if (distance < 0.1) {
-                        tooClose = true;
-                        break;
-                    }
-                }
-                attempts++;
-                if (attempts > 100) break;
-            } while (tooClose);
-            if (!tooClose) {
-                points.push(newPoint);
-            }
-        }
-        const edgePoints = [
-            { x: 0.5, y: 0.05 },
-            { x: 0.5, y: 0.95 },
-            { x: 0.05, y: 0.5 },
-            { x: 0.95, y: 0.5 },
-        ];
-        points.push(...edgePoints);
-        const cornerEdgePoints = [
-            { x: 0.1, y: 0.1 },
-            { x: 0.1, y: 0.9 },
-            { x: 0.9, y: 0.1 },
-            { x: 0.9, y: 0.9 },
-        ];
-        points.push(...cornerEdgePoints);
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-        return shuffleArray(points);
+        return points;
     }
 
     async function animateDot(startX, startY, endX, endY, duration) {
@@ -123,30 +76,13 @@ window.onload = async function () {
     }
 
     async function highAccuracyCalibration() {
-        const numGridPoints = 5;
-        const numRandomPoints = 30;
-        const numEdgePoints = 4;
-        const calibrationPoints = generateCombinedCalibrationPoints(numGridPoints, numRandomPoints, numEdgePoints);
-        const pauseTime = 1600;
-        const moveDuration = 2000;
-        alert(`Calibration will now start. Please focus on the red dot.`);
-
-        for (let i = 0; i < calibrationPoints.length; i++) {
-            const point = calibrationPoints[i];
-            calibrationDot.style.left = `${point.x * window.innerWidth - 10}px`;
-            calibrationDot.style.top = `${point.y * window.innerHeight - 10}px`;
-            await new Promise(resolve => setTimeout(resolve, pauseTime));
-            webgazer.recordScreenPosition(point.x * window.innerWidth, point.y * window.innerHeight, 'calibration');
-            await new Promise(resolve => setTimeout(resolve, 200));
-            if (i < calibrationPoints.length - 1) {
-                await animateDot(point.x, point.y, calibrationPoints[i + 1].x, calibrationPoints[i + 1].y, moveDuration);
-            }
+        const points = generateGridCalibrationPoints(9, 7);  // 63 points for better accuracy
+        for (const point of points) {
+            await animateDot(0.5, 0.5, point.x, point.y, 1000);
         }
-
-        await webgazer.end();
-        await webgazer.setRegression('ridge').begin();
-        calibrationDot.remove();
-        alert("Calibration complete.");
+        calibrationOffset = { x: 0.5, y: 0.5 }; // Store the calibration offset after calibration
+        console.log('Calibration complete');
+        calibrationDot.style.display = 'none'; // Hide the calibration dot after calibration
     }
 
     await highAccuracyCalibration();
@@ -211,11 +147,18 @@ window.onload = async function () {
 
     function drawLoop() {
         if (latestX && latestY) {
-            const corrected = correctDrift(latestX, latestY);
-            const x = corrected.x;
-            const y = corrected.y;
+            let { x, y } = correctDrift(latestX, latestY);
+            const { dx } = getHeadShift();
+            x -= dx;
+
+            // Debugging
+            console.log(`Gaze Coordinates: X: ${x}, Y: ${y}`);
+
+            // Update gaze dot position
             gazeDot.style.left = `${x - 5}px`;
             gazeDot.style.top = `${y - 5}px`;
+
+            // Drawing the path (if needed)
             if (prevX !== null && prevY !== null) {
                 ctx.beginPath();
                 ctx.moveTo(prevX, prevY);
@@ -224,16 +167,21 @@ window.onload = async function () {
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
+
             prevX = x;
             prevY = y;
+
             const element = document.elementFromPoint(x, y);
             if (element) {
                 element.classList.add('gaze-hover');
                 setTimeout(() => element.classList.remove('gaze-hover'), 100);
             }
+
             handleGazeDwellSelection(x, y);
         }
+
         requestAnimationFrame(drawLoop);
     }
+
     drawLoop();
 };
