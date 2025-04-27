@@ -16,13 +16,15 @@ function getHeadShift() {
     if (leftEye && rightEye && nose) {
         const headCenterX = (leftEye.x + rightEye.x) / 2;
         const dx = headCenterX - nose.x;
-        return { dx, dy: 0 };
+        const dy = (leftEye.y + rightEye.y) / 2 - nose.y;
+        return { dx, dy };
     }
     return { dx: 0, dy: 0 };
 }
 
 window.onload = async function () {
     if (typeof webgazer === "undefined") return;
+
     const canvas = document.getElementById('gazeCanvas');
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
@@ -31,9 +33,9 @@ window.onload = async function () {
 
     await webgazer.setRegression('ridge').begin();
     webgazer.showVideo(false)
-        .showFaceOverlay(false)
-        .showFaceFeedbackBox(false)
-        .showPredictionPoints(false);
+            .showFaceOverlay(false)
+            .showFaceFeedbackBox(false)
+            .showPredictionPoints(false);
 
     const calibrationDot = document.createElement('div');
     calibrationDot.id = 'calibrationDot';
@@ -76,16 +78,40 @@ window.onload = async function () {
     }
 
     async function highAccuracyCalibration() {
-        const points = generateGridCalibrationPoints(9, 7);  // 63 points for better accuracy
+        alert("Calibration will begin now. Please follow the dot!");
+        const points = generateGridCalibrationPoints(15, 15);
+        const totalPoints = points.length;
+        let currentPoint = 0;
+
+        // Show the progress bar
+        document.getElementById('progressContainer').style.display = 'block';
+
         for (const point of points) {
             await animateDot(0.5, 0.5, point.x, point.y, 1000);
+            currentPoint++;
+            const progress = (currentPoint / totalPoints) * 100;
+            updateCalibrationProgress(progress);
         }
-        calibrationOffset = { x: 0.5, y: 0.5 }; // Store the calibration offset after calibration
+
+        calibrationOffset = { x: 0.5, y: 0.5 };
+
         console.log('Calibration complete');
-        calibrationDot.style.display = 'none'; // Hide the calibration dot after calibration
+        calibrationDot.style.display = 'none';
+        document.getElementById('progressContainer').style.display = 'none';
     }
 
+    function updateCalibrationProgress(progress) {
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) {
+            progressBar.style.width = `${progress}%`;
+            progressBar.innerText = `${Math.round(progress)}%`;
+        }
+    
+    }
+
+    // Start the high-accuracy calibration
     await highAccuracyCalibration();
+    alert("Calibration complete! Thank you.");
 
     let gazeTimer = null;
     let gazeTarget = null;
@@ -98,17 +124,6 @@ window.onload = async function () {
             clearTimeout(gazeTimer);
             gazeTimer = null;
             gazeTarget = null;
-            return;
-        }
-        if (element.id === "gazeAtMe") {
-            if (gazeTarget !== element) {
-                clearTimeout(gazeTimer);
-                gazeTarget = element;
-                gazeTimer = setTimeout(() => {
-                    element.classList.add('reacted');
-                    element.innerText = "You looked at me!";
-                }, 1000);
-            }
             return;
         }
         if (!element.classList.contains('gaze-selectable')) {
@@ -148,17 +163,13 @@ window.onload = async function () {
     function drawLoop() {
         if (latestX && latestY) {
             let { x, y } = correctDrift(latestX, latestY);
-            const { dx } = getHeadShift();
+            const { dx, dy } = getHeadShift();
             x -= dx;
+            y -= dy;
 
-            // Debugging
-            console.log(`Gaze Coordinates: X: ${x}, Y: ${y}`);
-
-            // Update gaze dot position
             gazeDot.style.left = `${x - 5}px`;
             gazeDot.style.top = `${y - 5}px`;
 
-            // Drawing the path (if needed)
             if (prevX !== null && prevY !== null) {
                 ctx.beginPath();
                 ctx.moveTo(prevX, prevY);

@@ -290,3 +290,26 @@
   background-color: gold !important;
   outline: 3px solid red;
 }
+
+#progressContainer {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 200px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 9999;
+  display: none;
+}
+
+#progressBar {
+  height: 100%;
+  width: 0%;
+  background-color: #4caf50;
+  text-align: center;
+  color: white;
+  line-height: 20px;
+  font-size: 12px;
+}
