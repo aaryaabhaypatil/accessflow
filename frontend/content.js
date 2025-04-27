@@ -87,7 +87,7 @@ window.onload = async function () {
         document.getElementById('progressContainer').style.display = 'block';
 
         for (const point of points) {
-            await animateDot(0.5, 0.5, point.x, point.y, 1000);
+            await animateDot(0.5, 0.5, point.x, point.y, 2000); // made it 2000 ms (2 seconds)
             currentPoint++;
             const progress = (currentPoint / totalPoints) * 100;
             updateCalibrationProgress(progress);
@@ -106,7 +106,6 @@ window.onload = async function () {
             progressBar.style.width = `${progress}%`;
             progressBar.innerText = `${Math.round(progress)}%`;
         }
-    
     }
 
     // Start the high-accuracy calibration
