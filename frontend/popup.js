@@ -87,13 +87,18 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Error loading preferences:", chrome.runtime.lastError);
             return;
         }
-
-        if (data.gazePreferences) {
+    
+        // Check if gazePreferences exists and is an object
+        if (data.gazePreferences && typeof data.gazePreferences === 'object') {
+            // If the preferences are correctly stored, use them
             scrollLeftSelect.value = data.gazePreferences["Scroll Left"] || "";
             scrollRightSelect.value = data.gazePreferences["Scroll Right"] || "";
             scrollUpSelect.value = data.gazePreferences["Scroll Up"] || "";
             scrollDownSelect.value = data.gazePreferences["Scroll Down"] || "";
             triggerSelect.value = data.gazePreferences["Trigger"] || "";
+        } else {
+            console.warn("Gaze preferences not found or are invalid:", data);
+            // Handle the case where the preferences don't exist or are invalid
         }
     });
 });
