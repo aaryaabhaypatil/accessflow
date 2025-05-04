@@ -88,6 +88,13 @@
     box-sizing: border-box;
 }
 
+
+.gaze-selected {
+  outline: 3px solid lime;
+  transition: outline 0.3s;
+} 
+
+
 .customise-container {
     background-color: #b5e2b3;
     padding: 15px;
