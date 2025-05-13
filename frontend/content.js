@@ -70,14 +70,14 @@ window.onload = async function () {
         for (let row = 0; row < rows; row++) {
             const rowPoints = [];
             for (let col = 0; col < cols; col++) {
-                const jitterX = Math.random() * 0.5 + 0.25;
-                const jitterY = Math.random() * 0.5 + 0.25;
+                const jitterX = Math.random() * 0.4 + 0.3;
+                const jitterY = Math.random() * 0.4 + 0.3;
                 rowPoints.push({
                     x: (col + jitterX) * cellWidth,
                     y: (row + jitterY) * cellHeight
                 });
             }
-            if (row % 2 !== 0) rowPoints.reverse(); 
+            if (row % 2 !== 0) rowPoints.reverse(); // zigzag
             points.push(...rowPoints);
         }
         return points;
@@ -107,7 +107,7 @@ window.onload = async function () {
     async function collectGazeDataAtPoint() {
         return new Promise(resolve => {
             let gazeSamples = [];
-            const sampleDuration = 1000;
+            const sampleDuration = 1200;
             const startTime = performance.now();
             function collectGaze(currentTime) {
                 const elapsed = currentTime - startTime;
@@ -119,8 +119,8 @@ window.onload = async function () {
                     requestAnimationFrame(collectGaze);
                 } else {
                     if (gazeSamples.length > 0) {
-                        const avgX = gazeSamples.reduce((sum, sample) => sum + sample.x, 0) / gazeSamples.length;
-                        const avgY = gazeSamples.reduce((sum, sample) => sum + sample.y, 0) / gazeSamples.length;
+                        const avgX = gazeSamples.reduce((sum, s) => sum + s.x, 0) / gazeSamples.length;
+                        const avgY = gazeSamples.reduce((sum, s) => sum + s.y, 0) / gazeSamples.length;
                         calibrationData.push({ x: avgX - window.innerWidth / 2, y: avgY - window.innerHeight / 2 });
                     }
                     resolve();
@@ -132,46 +132,29 @@ window.onload = async function () {
 
     async function highAccuracyCalibration() {
         isCalibrating = true;
-        alert("Calibration will begin now. Please follow the dot!");
-        const points = generateZigzagRandomPoints(5, 5); 
-        const totalPoints = points.length;
-        let currentPoint = 0;
-
-        document.getElementById('progressContainer').style.display = 'block';
-
+        alert("Calibration will begin. Please follow the red dot.");
+        const points = generateZigzagRandomPoints(7, 7); // 7x7 grid
         let lastX = points[0].x;
         let lastY = points[0].y;
 
         calibrationDot.style.left = `${lastX * window.innerWidth - 10}px`;
         calibrationDot.style.top = `${lastY * window.innerHeight - 10}px`;
         await collectGazeDataAtPoint();
-        updateCalibrationProgress((++currentPoint / totalPoints) * 100);
 
         for (let i = 1; i < points.length; i++) {
             const point = points[i];
-            await animateDot(lastX, lastY, point.x, point.y, 2000);
+            await animateDot(lastX, lastY, point.x, point.y, 1200);
             await collectGazeDataAtPoint();
-            updateCalibrationProgress((++currentPoint / totalPoints) * 100);
             lastX = point.x;
             lastY = point.y;
         }
 
-        console.log('Calibration complete');
         calibrationDot.style.display = 'none';
-        document.getElementById('progressContainer').style.display = 'none';
         isCalibrating = false;
     }
 
-    function updateCalibrationProgress(progress) {
-        const progressBar = document.getElementById('progressBar');
-        if (progressBar) {
-            progressBar.style.width = `${progress}%`;
-            progressBar.innerText = `${Math.round(progress)}%`;
-        }
-    }
-
     const gazeBuffer = [];
-    const bufferSize = 10;
+    const bufferSize = 15;
     let latestX = null, latestY = null;
     let prevX = null, prevY = null;
 
@@ -192,16 +175,6 @@ window.onload = async function () {
                 latestY = sum.y / gazeBuffer.length;
             }
         });
-    }
-
-    function handleGazeDwellSelection(x, y) {
-        if (isFinite(x) && isFinite(y) && x >= 0 && x <= window.innerWidth && y >= 0 && y <= window.innerHeight) {
-            const element = document.elementFromPoint(x, y);
-            if (element) {
-                element.classList.add('gaze-hover');
-                setTimeout(() => element.classList.remove('gaze-hover'), 100);
-            }
-        }
     }
 
     function drawLoop() {
@@ -227,23 +200,16 @@ window.onload = async function () {
 
             prevX = x;
             prevY = y;
-
-            handleGazeDwellSelection(x, y);
         }
 
         requestAnimationFrame(drawLoop);
     }
 
     await highAccuracyCalibration();
-    alert("Calibration complete! Thank you.");
+    alert("Calibration complete!");
 
     await webgazer.clearGazeListener();
     await webgazer.begin();
-    webgazer.showVideo(false)
-        .showFaceOverlay(false)
-        .showFaceFeedbackBox(false)
-        .showPredictionPoints(false);
-
-    setupGazeListener(); 
+    setupGazeListener();
     drawLoop();
 };
