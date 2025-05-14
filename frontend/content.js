@@ -3,12 +3,15 @@ let isCalibrating = false;
 
 function correctDrift(x, y) {
     if (calibrationData.length === 0) return { x, y };
+
     const avgCalib = calibrationData.reduce((acc, point) => ({
         x: acc.x + point.x,
         y: acc.y + point.y
     }), { x: 0, y: 0 });
+
     avgCalib.x /= calibrationData.length;
     avgCalib.y /= calibrationData.length;
+
     return {
         x: x - avgCalib.x,
         y: y - avgCalib.y
@@ -35,6 +38,7 @@ window.onload = async function () {
 
     const canvas = document.getElementById('gazeCanvas');
     const ctx = canvas.getContext('2d');
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -48,57 +52,50 @@ window.onload = async function () {
 
     const calibrationDot = document.createElement('div');
     calibrationDot.id = 'calibrationDot';
-    calibrationDot.style.position = 'absolute';
-    calibrationDot.style.width = '30px';
-    calibrationDot.style.height = '30px';
-    calibrationDot.style.zIndex = 9999;
-
-    const dotCore = document.createElement('div');
-    dotCore.style.width = '20px';
-    dotCore.style.height = '20px';
-    dotCore.style.borderRadius = '50%';
-    dotCore.style.backgroundColor = 'red';
-    dotCore.style.position = 'absolute';
-    dotCore.style.top = '5px';
-    dotCore.style.left = '5px';
-    dotCore.style.zIndex = 2;
-
-    const progressRing = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    progressRing.setAttribute("width", "30");
-    progressRing.setAttribute("height", "30");
-    progressRing.style.position = "absolute";
-    progressRing.style.top = "0";
-    progressRing.style.left = "0";
-    progressRing.style.zIndex = 1;
-
-    const bgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    bgCircle.setAttribute("cx", "15");
-    bgCircle.setAttribute("cy", "15");
-    bgCircle.setAttribute("r", "13");
-    bgCircle.setAttribute("stroke", "rgba(255,255,255,0.6)");
-    bgCircle.setAttribute("stroke-width", "2");
-    bgCircle.setAttribute("fill", "none");
-
-    const progressCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    progressCircle.setAttribute("cx", "15");
-    progressCircle.setAttribute("cy", "15");
-    progressCircle.setAttribute("r", "13");
-    progressCircle.setAttribute("stroke", "lime");
-    progressCircle.setAttribute("stroke-width", "2");
-    progressCircle.setAttribute("fill", "none");
-    progressCircle.setAttribute("stroke-dasharray", "100");
-    progressCircle.setAttribute("stroke-dashoffset", "100");
-
-    progressRing.appendChild(bgCircle);
-    progressRing.appendChild(progressCircle);
-    calibrationDot.appendChild(dotCore);
-    calibrationDot.appendChild(progressRing);
+    Object.assign(calibrationDot.style, {
+        position: 'absolute',
+        width: '20px',
+        height: '20px',
+        borderRadius: '50%',
+        backgroundColor: 'red',
+        zIndex: 9999
+    });
     document.body.appendChild(calibrationDot);
+
+    // Create circular progress SVG
+    const ringNS = "http://www.w3.org/2000/svg";
+    const ringSVG = document.createElementNS(ringNS, "svg");
+    ringSVG.setAttribute("width", "40");
+    ringSVG.setAttribute("height", "40");
+    Object.assign(ringSVG.style, {
+        position: "absolute",
+        top: "-10px",
+        left: "-10px",
+        zIndex: 10000
+    });
+
+    const circle = document.createElementNS(ringNS, "circle");
+    circle.setAttribute("cx", "20");
+    circle.setAttribute("cy", "20");
+    circle.setAttribute("r", "18");
+    circle.setAttribute("stroke", "#4caf50");
+    circle.setAttribute("stroke-width", "3");
+    circle.setAttribute("fill", "transparent");
+    circle.setAttribute("stroke-linecap", "round");
+    circle.setAttribute("transform", "rotate(-90 20 20)");
+
+    const circumference = 2 * Math.PI * 18;
+    circle.setAttribute("stroke-dasharray", `${circumference}`);
+    circle.setAttribute("stroke-dashoffset", `${circumference}`);
+
+    ringSVG.appendChild(circle);
+    calibrationDot.appendChild(ringSVG);
 
     function generateZigzagRandomPoints(rows, cols) {
         const points = [];
         const cellWidth = 1 / cols;
         const cellHeight = 1 / rows;
+
         for (let row = 0; row < rows; row++) {
             const rowPoints = [];
             for (let col = 0; col < cols; col++) {
@@ -123,9 +120,8 @@ window.onload = async function () {
                 const progress = Math.min(elapsed / duration, 1);
                 const currentX = startX + (endX - startX) * progress;
                 const currentY = startY + (endY - startY) * progress;
-                calibrationDot.style.left = `${currentX * window.innerWidth - 15}px`;
-                calibrationDot.style.top = `${currentY * window.innerHeight - 15}px`;
-
+                calibrationDot.style.left = `${currentX * window.innerWidth - 10}px`;
+                calibrationDot.style.top = `${currentY * window.innerHeight - 10}px`;
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
@@ -141,17 +137,8 @@ window.onload = async function () {
             let gazeSamples = [];
             const sampleDuration = 1200;
             const startTime = performance.now();
-
-            function updateProgress(progress) {
-                const percent = Math.min(Math.max(progress, 0), 1);
-                const offset = 100 - percent * 100;
-                progressCircle.setAttribute("stroke-dashoffset", offset);
-            }
-
             function collectGaze(currentTime) {
                 const elapsed = currentTime - startTime;
-                updateProgress(elapsed / sampleDuration);
-
                 if (elapsed < sampleDuration) {
                     const gazeData = webgazer.getCurrentPrediction();
                     if (gazeData && typeof gazeData.x !== 'undefined' && typeof gazeData.y !== 'undefined') {
@@ -159,17 +146,14 @@ window.onload = async function () {
                     }
                     requestAnimationFrame(collectGaze);
                 } else {
-                    updateProgress(1);
                     if (gazeSamples.length > 0) {
                         const avgX = gazeSamples.reduce((sum, s) => sum + s.x, 0) / gazeSamples.length;
                         const avgY = gazeSamples.reduce((sum, s) => sum + s.y, 0) / gazeSamples.length;
                         calibrationData.push({ x: avgX - window.innerWidth / 2, y: avgY - window.innerHeight / 2 });
                     }
-                    updateProgress(0);
                     resolve();
                 }
             }
-
             requestAnimationFrame(collectGaze);
         });
     }
@@ -181,16 +165,19 @@ window.onload = async function () {
         let lastX = points[0].x;
         let lastY = points[0].y;
 
-        calibrationDot.style.left = `${lastX * window.innerWidth - 15}px`;
-        calibrationDot.style.top = `${lastY * window.innerHeight - 15}px`;
-        await collectGazeDataAtPoint();
+        calibrationDot.style.left = `${lastX * window.innerWidth - 10}px`;
+        calibrationDot.style.top = `${lastY * window.innerHeight - 10}px`;
 
-        for (let i = 1; i < points.length; i++) {
+        for (let i = 0; i < points.length; i++) {
             const point = points[i];
-            await animateDot(lastX, lastY, point.x, point.y, 1200);
+            if (i > 0) {
+                await animateDot(points[i - 1].x, points[i - 1].y, point.x, point.y, 1200);
+            }
             await collectGazeDataAtPoint();
-            lastX = point.x;
-            lastY = point.y;
+
+            // Update circular progress
+            const percent = (i + 1) / points.length;
+            circle.setAttribute("stroke-dashoffset", `${circumference * (1 - percent)}`);
         }
 
         calibrationDot.style.display = 'none';
@@ -224,6 +211,7 @@ window.onload = async function () {
     function drawLoop() {
         if (latestX != null && latestY != null) {
             if (!isFinite(latestX) || !isFinite(latestY)) return;
+
             let { x, y } = correctDrift(latestX - window.innerWidth / 2, latestY - window.innerHeight / 2);
             const { dx, dy } = getHeadShift();
             x = x + window.innerWidth / 2 - dx;
