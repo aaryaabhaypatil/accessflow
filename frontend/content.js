@@ -54,23 +54,33 @@ window.onload = async function () {
     calibrationDot.id = 'calibrationDot';
     Object.assign(calibrationDot.style, {
         position: 'absolute',
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    });
+
+    const dotInner = document.createElement('div');
+    Object.assign(dotInner.style, {
         width: '20px',
         height: '20px',
-        borderRadius: '50%',
         backgroundColor: 'red',
-        zIndex: 9999
+        borderRadius: '50%'
     });
-    document.body.appendChild(calibrationDot);
+    calibrationDot.appendChild(dotInner);
 
-    // Create circular progress SVG
+    // Create SVG circular progress ring
     const ringNS = "http://www.w3.org/2000/svg";
     const ringSVG = document.createElementNS(ringNS, "svg");
     ringSVG.setAttribute("width", "40");
     ringSVG.setAttribute("height", "40");
     Object.assign(ringSVG.style, {
         position: "absolute",
-        top: "-10px",
-        left: "-10px",
+        top: "0px",
+        left: "0px",
         zIndex: 10000
     });
 
@@ -90,6 +100,7 @@ window.onload = async function () {
 
     ringSVG.appendChild(circle);
     calibrationDot.appendChild(ringSVG);
+    document.body.appendChild(calibrationDot);
 
     function generateZigzagRandomPoints(rows, cols) {
         const points = [];
@@ -120,8 +131,8 @@ window.onload = async function () {
                 const progress = Math.min(elapsed / duration, 1);
                 const currentX = startX + (endX - startX) * progress;
                 const currentY = startY + (endY - startY) * progress;
-                calibrationDot.style.left = `${currentX * window.innerWidth - 10}px`;
-                calibrationDot.style.top = `${currentY * window.innerHeight - 10}px`;
+                calibrationDot.style.left = `${currentX * window.innerWidth - 20}px`;
+                calibrationDot.style.top = `${currentY * window.innerHeight - 20}px`;
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
@@ -162,11 +173,10 @@ window.onload = async function () {
         isCalibrating = true;
         alert("Calibration will begin. Please follow the red dot.");
         const points = generateZigzagRandomPoints(7, 7);
-        let lastX = points[0].x;
-        let lastY = points[0].y;
+        calibrationDot.style.display = 'flex';
 
-        calibrationDot.style.left = `${lastX * window.innerWidth - 10}px`;
-        calibrationDot.style.top = `${lastY * window.innerHeight - 10}px`;
+        calibrationDot.style.left = `${points[0].x * window.innerWidth - 20}px`;
+        calibrationDot.style.top = `${points[0].y * window.innerHeight - 20}px`;
 
         for (let i = 0; i < points.length; i++) {
             const point = points[i];
@@ -175,7 +185,6 @@ window.onload = async function () {
             }
             await collectGazeDataAtPoint();
 
-            // Update circular progress
             const percent = (i + 1) / points.length;
             circle.setAttribute("stroke-dashoffset", `${circumference * (1 - percent)}`);
         }
