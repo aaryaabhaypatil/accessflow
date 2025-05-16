@@ -3,15 +3,12 @@ let isCalibrating = false;
 
 function correctDrift(x, y) {
     if (calibrationData.length === 0) return { x, y };
-
     const avgCalib = calibrationData.reduce((acc, point) => ({
         x: acc.x + point.x,
         y: acc.y + point.y
     }), { x: 0, y: 0 });
-
     avgCalib.x /= calibrationData.length;
     avgCalib.y /= calibrationData.length;
-
     return {
         x: x - avgCalib.x,
         y: y - avgCalib.y
@@ -38,7 +35,6 @@ window.onload = async function () {
 
     const canvas = document.getElementById('gazeCanvas');
     const ctx = canvas.getContext('2d');
-
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
@@ -60,7 +56,9 @@ window.onload = async function () {
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        flexDirection: 'column',
+        textAlign: 'center'
     });
 
     const dotInner = document.createElement('div');
@@ -72,17 +70,18 @@ window.onload = async function () {
     });
     calibrationDot.appendChild(dotInner);
 
-    // Create SVG circular progress ring
+    const percentLabel = document.createElement('div');
+    percentLabel.id = 'calibrationDotText';
+
+
     const ringNS = "http://www.w3.org/2000/svg";
     const ringSVG = document.createElementNS(ringNS, "svg");
     ringSVG.setAttribute("width", "40");
     ringSVG.setAttribute("height", "40");
-    Object.assign(ringSVG.style, {
-        position: "absolute",
-        top: "0px",
-        left: "0px",
-        zIndex: 10000
-    });
+    ringSVG.style.position = "absolute";
+    ringSVG.style.top = "0px";
+    ringSVG.style.left = "0px";
+    ringSVG.style.zIndex = 10000;
 
     const circle = document.createElementNS(ringNS, "circle");
     circle.setAttribute("cx", "20");
@@ -93,6 +92,7 @@ window.onload = async function () {
     circle.setAttribute("fill", "transparent");
     circle.setAttribute("stroke-linecap", "round");
     circle.setAttribute("transform", "rotate(-90 20 20)");
+    circle.style.transition = "stroke-dashoffset 0.4s ease";
 
     const circumference = 2 * Math.PI * 18;
     circle.setAttribute("stroke-dasharray", `${circumference}`);
@@ -106,7 +106,6 @@ window.onload = async function () {
         const points = [];
         const cellWidth = 1 / cols;
         const cellHeight = 1 / rows;
-
         for (let row = 0; row < rows; row++) {
             const rowPoints = [];
             for (let col = 0; col < cols; col++) {
@@ -174,7 +173,6 @@ window.onload = async function () {
         alert("Calibration will begin. Please follow the red dot.");
         const points = generateZigzagRandomPoints(7, 7);
         calibrationDot.style.display = 'flex';
-
         calibrationDot.style.left = `${points[0].x * window.innerWidth - 20}px`;
         calibrationDot.style.top = `${points[0].y * window.innerHeight - 20}px`;
 
@@ -184,9 +182,9 @@ window.onload = async function () {
                 await animateDot(points[i - 1].x, points[i - 1].y, point.x, point.y, 1200);
             }
             await collectGazeDataAtPoint();
-
-            const percent = (i + 1) / points.length;
-            circle.setAttribute("stroke-dashoffset", `${circumference * (1 - percent)}`);
+            const percent = Math.round(((i + 1) / points.length) * 100);
+            percentLabel.textContent = `Calibrating... ${percent}%`;
+            circle.setAttribute("stroke-dashoffset", `${circumference * (1 - percent / 100)}`);
         }
 
         calibrationDot.style.display = 'none';
@@ -203,9 +201,7 @@ window.onload = async function () {
             if (!data || isCalibrating) return;
             if (typeof data.x !== 'undefined' && typeof data.y !== 'undefined') {
                 gazeBuffer.push({ x: data.x, y: data.y });
-                if (gazeBuffer.length > bufferSize) {
-                    gazeBuffer.shift();
-                }
+                if (gazeBuffer.length > bufferSize) gazeBuffer.shift();
                 const sum = gazeBuffer.reduce((acc, point) => {
                     acc.x += point.x;
                     acc.y += point.y;
@@ -241,7 +237,6 @@ window.onload = async function () {
             prevX = x;
             prevY = y;
         }
-
         requestAnimationFrame(drawLoop);
     }
 
