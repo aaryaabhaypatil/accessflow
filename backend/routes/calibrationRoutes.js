@@ -15,4 +15,16 @@ router.post('/', async (req, res) => {
 });
 
 
+// Get request for calibration data by userId
+router.get('/:userId', async (req, res) => {
+    try {
+      const data = await Calibration.find({ userId: req.params.userId });
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch calibration data' });
+    }
+  });
+  
+  module.exports = router;
+
 
