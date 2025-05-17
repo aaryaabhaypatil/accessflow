@@ -10,8 +10,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-
-
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -19,10 +17,17 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
 
+// Importing calibration routes
+const calibrationRoutes = require('./routes/calibration');
+
+// Using calibration routes for /api/calibration
+app.use('/api/calibration', calibrationRoutes);
+
+// simpler test route
 app.get('/', (req, res) => {
-    res.send('Backend server is running');
-  });
-  
+  res.send('Backend server is running');
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
