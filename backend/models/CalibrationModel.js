@@ -15,3 +15,4 @@ const CalibrationSchema = new mongoose.Schema({
     }
   });
   
+  module.exports = mongoose.model('Calibration', CalibrationSchema);
