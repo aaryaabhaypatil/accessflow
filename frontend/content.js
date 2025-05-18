@@ -141,19 +141,18 @@ window.onload = async function () {
         });
     }
 
-    async function collectGazeDataAtPoint() {
+    async function collectGazeDataAtPoint(duration = 1200) {
         return new Promise(resolve => {
             let gazeSamples = [];
-            const sampleDuration = 1200;
             const startTime = performance.now();
-            function collectGaze(currentTime) {
+            function collect(currentTime) {
                 const elapsed = currentTime - startTime;
-                if (elapsed < sampleDuration) {
+                if (elapsed < duration) {
                     const gazeData = webgazer.getCurrentPrediction();
                     if (gazeData && typeof gazeData.x !== 'undefined' && typeof gazeData.y !== 'undefined') {
                         gazeSamples.push({ x: gazeData.x, y: gazeData.y });
                     }
-                    requestAnimationFrame(collectGaze);
+                    requestAnimationFrame(collect);
                 } else {
                     if (gazeSamples.length > 0) {
                         const avgX = gazeSamples.reduce((sum, s) => sum + s.x, 0) / gazeSamples.length;
@@ -163,7 +162,7 @@ window.onload = async function () {
                     resolve();
                 }
             }
-            requestAnimationFrame(collectGaze);
+            requestAnimationFrame(collect);
         });
     }
 
@@ -203,7 +202,6 @@ window.onload = async function () {
         calibrationDot.style.display = 'none';
         isCalibrating = false;
 
-        // Save data after calibration ends
         await saveCalibrationData(calibrationData);
     }
 
