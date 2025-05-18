@@ -73,7 +73,6 @@ window.onload = async function () {
     const percentLabel = document.createElement('div');
     percentLabel.id = 'calibrationDotText';
 
-
     const ringNS = "http://www.w3.org/2000/svg";
     const ringSVG = document.createElementNS(ringNS, "svg");
     ringSVG.setAttribute("width", "40");
@@ -168,6 +167,20 @@ window.onload = async function () {
         });
     }
 
+    async function saveCalibrationData(data) {
+        try {
+            const response = await fetch('http://localhost:5000/api/calibration', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ calibration: data })
+            });
+            const result = await response.json();
+            console.log('Calibration data saved:', result);
+        } catch (error) {
+            console.error('Failed to save calibration data:', error);
+        }
+    }
+
     async function highAccuracyCalibration() {
         isCalibrating = true;
         alert("Calibration will begin. Please follow the red dot.");
@@ -189,6 +202,9 @@ window.onload = async function () {
 
         calibrationDot.style.display = 'none';
         isCalibrating = false;
+
+        // Save data after calibration ends
+        await saveCalibrationData(calibrationData);
     }
 
     const gazeBuffer = [];
@@ -248,22 +264,3 @@ window.onload = async function () {
     setupGazeListener();
     drawLoop();
 };
-
-
-async function saveCalibrationData(data) {
-    try {
-      const response = await fetch('http://localhost:5000/api/calibration', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-  
-      const result = await response.json();
-      console.log('Calibration data saved:', result);
-    } catch (error) {
-      console.error('Failed to save calibration data:', error);
-    }
-  }
-  
