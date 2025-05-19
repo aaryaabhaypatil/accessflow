@@ -37,7 +37,7 @@ window.onload = async function () {
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
+    
     const gazeDot = document.getElementById('gazeDot');
 
     await webgazer.setRegression('ridge').begin();
@@ -72,6 +72,7 @@ window.onload = async function () {
 
     const percentLabel = document.createElement('div');
     percentLabel.id = 'calibrationDotText';
+    calibrationDot.appendChild(percentLabel);
 
     const ringNS = "http://www.w3.org/2000/svg";
     const ringSVG = document.createElementNS(ringNS, "svg");
@@ -195,13 +196,12 @@ window.onload = async function () {
             }
             await collectGazeDataAtPoint();
             const percent = Math.round(((i + 1) / points.length) * 100);
-            percentLabel.textContent = `Calibrating... ${percent}%`;
+            // percentLabel.textContent = `Calibrating... ${percent}%`;
             circle.setAttribute("stroke-dashoffset", `${circumference * (1 - percent / 100)}`);
         }
 
         calibrationDot.style.display = 'none';
         isCalibrating = false;
-
         await saveCalibrationData(calibrationData);
     }
 
@@ -228,9 +228,8 @@ window.onload = async function () {
     }
 
     function drawLoop() {
-        if (latestX != null && latestY != null) {
-            if (!isFinite(latestX) || !isFinite(latestY)) return;
-
+        requestAnimationFrame(drawLoop);
+        if (latestX != null && latestY != null && isFinite(latestX) && isFinite(latestY)) {
             let { x, y } = correctDrift(latestX - window.innerWidth / 2, latestY - window.innerHeight / 2);
             const { dx, dy } = getHeadShift();
             x = x + window.innerWidth / 2 - dx;
@@ -243,7 +242,7 @@ window.onload = async function () {
                 ctx.beginPath();
                 ctx.moveTo(prevX, prevY);
                 ctx.lineTo(x, y);
-                ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+                ctx.strokeStyle = 'rgba(0, 150, 255, 0.4)';
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
@@ -251,14 +250,8 @@ window.onload = async function () {
             prevX = x;
             prevY = y;
         }
-        requestAnimationFrame(drawLoop);
     }
 
-    await highAccuracyCalibration();
-    alert("Calibration complete!");
-
-    await webgazer.clearGazeListener();
-    await webgazer.begin();
     setupGazeListener();
-    drawLoop();
+    highAccuracyCalibration().then(() => drawLoop());
 };
