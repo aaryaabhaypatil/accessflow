@@ -91,7 +91,7 @@ window.onload = async function () {
         };
     }
 
-    async function collectGazeDataAtPoint(duration = 200) {
+    async function collectGazeDataAtPoint(duration = 800) {
         return new Promise(resolve => {
             let gazeSamples = [];
             const startTime = performance.now();
@@ -131,9 +131,10 @@ window.onload = async function () {
             calibrationDot.style.top = `${pos.y}px`;
             calibrationDot.style.backgroundColor = 'transparent';
             calibrationDot.innerText = '🎯';
+            await new Promise(r => setTimeout(r, 300));
             await collectGazeDataAtPoint();
             calibrationDot.innerText = '💥';
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 600));
         }
     }
 
@@ -143,7 +144,7 @@ window.onload = async function () {
         let start = getRandomPosition();
         for (let i = 0; i < steps; i++) {
             const end = getRandomPosition();
-            const duration = 700;
+            const duration = 1000;
             const startTime = performance.now();
             calibrationDot.innerText = '🐦';
             calibrationDot.style.backgroundColor = 'transparent';
@@ -160,7 +161,7 @@ window.onload = async function () {
                 }
                 requestAnimationFrame(animate);
             });
-            await collectGazeDataAtPoint(300);
+            await collectGazeDataAtPoint(600);
             start = end;
         }
     }
@@ -175,7 +176,7 @@ window.onload = async function () {
             calibrationDot.style.backgroundColor = 'gold';
             await collectGazeDataAtPoint();
             calibrationDot.innerText = '✨';
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 600));
         }
     }
 
