@@ -1,4 +1,4 @@
-
+// Calibration Mini-Games for Eye-Tracking
 let calibrationData = [];
 let isCalibrating = false;
 
@@ -58,7 +58,7 @@ window.onload = async function () {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '24px',
+        fontSize: '48px',
         textAlign: 'center',
         lineHeight: '40px'
     });
@@ -71,7 +71,7 @@ window.onload = async function () {
         };
     }
 
-    async function collectGazeDataAtPoint(duration = 400) {
+    async function collectGazeDataAtPoint(duration = 300) {
         return new Promise(resolve => {
             let gazeSamples = [];
             const startTime = performance.now();
@@ -131,7 +131,7 @@ window.onload = async function () {
                 }
                 requestAnimationFrame(animate);
             });
-            await collectGazeDataAtPoint(400);
+            await collectGazeDataAtPoint(300);
             start = end;
         }
     }
