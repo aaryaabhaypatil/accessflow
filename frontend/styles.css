@@ -204,6 +204,7 @@ svg {
   top: 0;
   left: 0;
   z-index: 1;
+  pointer-events: none !important;
 }
 
 .calibration-point {
@@ -259,12 +260,7 @@ svg {
   cursor: pointer;
 }
 
-#gazeCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: -1;
-}
+
 
 #gazeDot {
   position: fixed;
@@ -304,12 +300,7 @@ svg {
 }
 
 
-#gazeCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
+
 
 #gazeDot {
   position: absolute;
