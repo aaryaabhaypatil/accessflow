@@ -1,3 +1,4 @@
+
 let calibrationData = [];
 let isCalibrating = false;
 
@@ -37,7 +38,7 @@ window.onload = async function () {
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
+
     const gazeDot = document.getElementById('gazeDot');
 
     await webgazer.setRegression('ridge').begin();
@@ -57,92 +58,20 @@ window.onload = async function () {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        flexDirection: 'column',
-        textAlign: 'center'
+        fontSize: '24px',
+        textAlign: 'center',
+        lineHeight: '40px'
     });
-
-    const dotInner = document.createElement('div');
-    Object.assign(dotInner.style, {
-        width: '20px',
-        height: '20px',
-        backgroundColor: 'red',
-        borderRadius: '50%'
-    });
-    calibrationDot.appendChild(dotInner);
-
-    const percentLabel = document.createElement('div');
-    percentLabel.id = 'calibrationDotText';
-    calibrationDot.appendChild(percentLabel);
-
-    const ringNS = "http://www.w3.org/2000/svg";
-    const ringSVG = document.createElementNS(ringNS, "svg");
-    ringSVG.setAttribute("width", "40");
-    ringSVG.setAttribute("height", "40");
-    ringSVG.style.position = "absolute";
-    ringSVG.style.top = "0px";
-    ringSVG.style.left = "0px";
-    ringSVG.style.zIndex = 10000;
-
-    const circle = document.createElementNS(ringNS, "circle");
-    circle.setAttribute("cx", "20");
-    circle.setAttribute("cy", "20");
-    circle.setAttribute("r", "18");
-    circle.setAttribute("stroke", "#4caf50");
-    circle.setAttribute("stroke-width", "3");
-    circle.setAttribute("fill", "transparent");
-    circle.setAttribute("stroke-linecap", "round");
-    circle.setAttribute("transform", "rotate(-90 20 20)");
-    circle.style.transition = "stroke-dashoffset 0.4s ease";
-
-    const circumference = 2 * Math.PI * 18;
-    circle.setAttribute("stroke-dasharray", `${circumference}`);
-    circle.setAttribute("stroke-dashoffset", `${circumference}`);
-
-    ringSVG.appendChild(circle);
-    calibrationDot.appendChild(ringSVG);
     document.body.appendChild(calibrationDot);
 
-    function generateZigzagRandomPoints(rows, cols) {
-        const points = [];
-        const cellWidth = 1 / cols;
-        const cellHeight = 1 / rows;
-        for (let row = 0; row < rows; row++) {
-            const rowPoints = [];
-            for (let col = 0; col < cols; col++) {
-                const jitterX = Math.random() * 0.4 + 0.3;
-                const jitterY = Math.random() * 0.4 + 0.3;
-                rowPoints.push({
-                    x: (col + jitterX) * cellWidth,
-                    y: (row + jitterY) * cellHeight
-                });
-            }
-            if (row % 2 !== 0) rowPoints.reverse();
-            points.push(...rowPoints);
-        }
-        return points;
+    function getRandomPosition() {
+        return {
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight
+        };
     }
 
-    function animateDot(startX, startY, endX, endY, duration) {
-        const startTime = performance.now();
-        return new Promise(resolve => {
-            function animate(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const currentX = startX + (endX - startX) * progress;
-                const currentY = startY + (endY - startY) * progress;
-                calibrationDot.style.left = `${currentX * window.innerWidth - 20}px`;
-                calibrationDot.style.top = `${currentY * window.innerHeight - 20}px`;
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                } else {
-                    resolve();
-                }
-            }
-            requestAnimationFrame(animate);
-        });
-    }
-
-    async function collectGazeDataAtPoint(duration = 1200) {
+    async function collectGazeDataAtPoint(duration = 400) {
         return new Promise(resolve => {
             let gazeSamples = [];
             const startTime = performance.now();
@@ -167,42 +96,71 @@ window.onload = async function () {
         });
     }
 
-    async function saveCalibrationData(data) {
-        try {
-            const response = await fetch('http://localhost:5000/api/calibration', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ calibration: data })
-            });
-            const result = await response.json();
-            console.log('Calibration data saved:', result);
-        } catch (error) {
-            console.error('Failed to save calibration data:', error);
+    async function targetPopGame() {
+        for (let i = 0; i < 10; i++) {
+            const pos = getRandomPosition();
+            calibrationDot.style.left = `${pos.x}px`;
+            calibrationDot.style.top = `${pos.y}px`;
+            calibrationDot.style.backgroundColor = 'transparent';
+            calibrationDot.innerText = '🎯';
+            await collectGazeDataAtPoint();
+            calibrationDot.innerText = '💥';
+            await new Promise(r => setTimeout(r, 300));
         }
     }
 
-    async function highAccuracyCalibration() {
-        isCalibrating = true;
-        alert("Calibration will begin. Please follow the red dot.");
-        const points = generateZigzagRandomPoints(7, 7);
-        calibrationDot.style.display = 'flex';
-        calibrationDot.style.left = `${points[0].x * window.innerWidth - 20}px`;
-        calibrationDot.style.top = `${points[0].y * window.innerHeight - 20}px`;
-
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-            if (i > 0) {
-                await animateDot(points[i - 1].x, points[i - 1].y, point.x, point.y, 1200);
-            }
-            await collectGazeDataAtPoint();
-            const percent = Math.round(((i + 1) / points.length) * 100);
-            // percentLabel.textContent = `Calibrating... ${percent}%`;
-            circle.setAttribute("stroke-dashoffset", `${circumference * (1 - percent / 100)}`);
+    async function birdFollowGame() {
+        const steps = 25;
+        let start = getRandomPosition();
+        for (let i = 0; i < steps; i++) {
+            const end = getRandomPosition();
+            const duration = 700;
+            const startTime = performance.now();
+            calibrationDot.innerText = '🐦';
+            calibrationDot.style.backgroundColor = 'transparent';
+            await new Promise(resolve => {
+                function animate(t) {
+                    const elapsed = t - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const x = start.x + (end.x - start.x) * progress;
+                    const y = start.y + (end.y - start.y) * progress;
+                    calibrationDot.style.left = `${x}px`;
+                    calibrationDot.style.top = `${y}px`;
+                    if (progress < 1) requestAnimationFrame(animate);
+                    else resolve();
+                }
+                requestAnimationFrame(animate);
+            });
+            await collectGazeDataAtPoint(400);
+            start = end;
         }
+    }
 
+    async function gemCollectorGame() {
+        for (let i = 0; i < 15; i++) {
+            const pos = getRandomPosition();
+            calibrationDot.style.left = `${pos.x}px`;
+            calibrationDot.style.top = `${pos.y}px`;
+            calibrationDot.innerText = '💎';
+            calibrationDot.style.backgroundColor = 'gold';
+            calibrationDot.style.boxShadow = '0 0 20px gold';
+            await collectGazeDataAtPoint();
+            calibrationDot.style.boxShadow = '';
+            calibrationDot.innerText = '✨';
+            await new Promise(r => setTimeout(r, 300));
+        }
+    }
+
+    async function runCalibrationMiniGames() {
+        isCalibrating = true;
+        alert("Calibration mini-games starting. Follow the symbols!");
+        calibrationDot.style.display = 'block';
+        await targetPopGame();
+        await birdFollowGame();
+        await gemCollectorGame();
         calibrationDot.style.display = 'none';
         isCalibrating = false;
-        await saveCalibrationData(calibrationData);
+        console.log("Calibration complete.", calibrationData);
     }
 
     const gazeBuffer = [];
@@ -253,5 +211,5 @@ window.onload = async function () {
     }
 
     setupGazeListener();
-    highAccuracyCalibration().then(() => drawLoop());
+    runCalibrationMiniGames().then(() => drawLoop());
 };
