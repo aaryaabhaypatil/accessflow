@@ -126,12 +126,14 @@ window.onload = async function () {
     async function targetPopGame() {
         await showGameAlert("🎯", "Let's play Target Pop! Look at the target before it pops.");
         for (let i = 0; i < 10; i++) {
+            calibrationDot.style.display = 'none';
+            await new Promise(r => setTimeout(r, 300));
             const pos = getRandomPosition();
             calibrationDot.style.left = `${pos.x}px`;
             calibrationDot.style.top = `${pos.y}px`;
             calibrationDot.style.backgroundColor = 'transparent';
             calibrationDot.innerText = '🎯';
-            await new Promise(r => setTimeout(r, 300));
+            calibrationDot.style.display = 'flex';
             await collectGazeDataAtPoint();
             calibrationDot.innerText = '💥';
             await new Promise(r => setTimeout(r, 600));
@@ -169,11 +171,14 @@ window.onload = async function () {
     async function gemCollectorGame() {
         await showGameAlert("💎", "Ready for Gem Hunt? Collect them with your eyes!");
         for (let i = 0; i < 15; i++) {
+            calibrationDot.style.display = 'none';
+            await new Promise(r => setTimeout(r, 300));
             const pos = getRandomPosition();
             calibrationDot.style.left = `${pos.x}px`;
             calibrationDot.style.top = `${pos.y}px`;
             calibrationDot.innerText = '💎';
             calibrationDot.style.backgroundColor = 'gold';
+            calibrationDot.style.display = 'flex';
             await collectGazeDataAtPoint();
             calibrationDot.innerText = '✨';
             await new Promise(r => setTimeout(r, 600));
