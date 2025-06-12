@@ -51,8 +51,8 @@ window.onload = async function () {
     calibrationDot.id = 'calibrationDot';
     Object.assign(calibrationDot.style, {
         position: 'absolute',
-        width: '40px',
-        height: '40px',
+        width: '60px',
+        height: '60px',
         borderRadius: '50%',
         zIndex: 9999,
         display: 'flex',
@@ -60,9 +60,29 @@ window.onload = async function () {
         justifyContent: 'center',
         fontSize: '48px',
         textAlign: 'center',
-        lineHeight: '40px'
+        lineHeight: '60px',
+        transition: 'all 0.3s ease-in-out'
     });
     document.body.appendChild(calibrationDot);
+
+    const alertBox = document.createElement('div');
+    alertBox.id = 'alertBox';
+    Object.assign(alertBox.style, {
+        position: 'fixed',
+        top: '20%',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '20px 30px',
+        fontSize: '28px',
+        backgroundColor: '#f0f0f0',
+        color: '#222',
+        borderRadius: '12px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        textAlign: 'center',
+        zIndex: 10000,
+        display: 'none'
+    });
+    document.body.appendChild(alertBox);
 
     function getRandomPosition() {
         return {
@@ -71,7 +91,7 @@ window.onload = async function () {
         };
     }
 
-    async function collectGazeDataAtPoint(duration = 300) {
+    async function collectGazeDataAtPoint(duration = 200) {
         return new Promise(resolve => {
             let gazeSamples = [];
             const startTime = performance.now();
@@ -96,7 +116,15 @@ window.onload = async function () {
         });
     }
 
+    async function showGameAlert(message, subtext = '') {
+        alertBox.innerHTML = `<div>${message}</div><div style="font-size: 18px; margin-top: 8px;">${subtext}</div>`;
+        alertBox.style.display = 'block';
+        await new Promise(r => setTimeout(r, 1800));
+        alertBox.style.display = 'none';
+    }
+
     async function targetPopGame() {
+        await showGameAlert("🎯", "Let's play Target Pop! Look at the target before it pops.");
         for (let i = 0; i < 10; i++) {
             const pos = getRandomPosition();
             calibrationDot.style.left = `${pos.x}px`;
@@ -110,6 +138,7 @@ window.onload = async function () {
     }
 
     async function birdFollowGame() {
+        await showGameAlert("🐦", "Time for Bird Chase! Follow the bird with your eyes.");
         const steps = 25;
         let start = getRandomPosition();
         for (let i = 0; i < steps; i++) {
@@ -137,15 +166,14 @@ window.onload = async function () {
     }
 
     async function gemCollectorGame() {
+        await showGameAlert("💎", "Ready for Gem Hunt? Collect them with your eyes!");
         for (let i = 0; i < 15; i++) {
             const pos = getRandomPosition();
             calibrationDot.style.left = `${pos.x}px`;
             calibrationDot.style.top = `${pos.y}px`;
             calibrationDot.innerText = '💎';
             calibrationDot.style.backgroundColor = 'gold';
-            calibrationDot.style.boxShadow = '0 0 20px gold';
             await collectGazeDataAtPoint();
-            calibrationDot.style.boxShadow = '';
             calibrationDot.innerText = '✨';
             await new Promise(r => setTimeout(r, 300));
         }
@@ -153,7 +181,6 @@ window.onload = async function () {
 
     async function runCalibrationMiniGames() {
         isCalibrating = true;
-        alert("Calibration mini-games starting. Follow the symbols!");
         calibrationDot.style.display = 'block';
         await targetPopGame();
         await birdFollowGame();
