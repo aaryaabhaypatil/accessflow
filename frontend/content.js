@@ -61,7 +61,8 @@ window.onload = async function () {
         fontSize: '48px',
         textAlign: 'center',
         lineHeight: '60px',
-        transition: 'all 0.3s ease-in-out'
+        transition: 'all 0.3s ease-in-out',
+        cursor: 'pointer'
     });
     document.body.appendChild(calibrationDot);
 
@@ -86,8 +87,8 @@ window.onload = async function () {
 
     function getRandomPosition() {
         return {
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight
+            x: Math.random() * (window.innerWidth - 60),
+            y: Math.random() * (window.innerHeight - 60)
         };
     }
 
@@ -146,10 +147,12 @@ window.onload = async function () {
         let start = getRandomPosition();
         for (let i = 0; i < steps; i++) {
             const end = getRandomPosition();
-            const duration = 1000;
+            const duration = 1800;
             const startTime = performance.now();
             calibrationDot.innerText = '🐦';
             calibrationDot.style.backgroundColor = 'transparent';
+
+
             await new Promise(resolve => {
                 function animate(t) {
                     const elapsed = t - startTime;
