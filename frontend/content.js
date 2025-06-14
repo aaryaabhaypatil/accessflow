@@ -210,7 +210,7 @@ window.onload = async function () {
             calibrationDot.style.left = `${pos.x}px`;
             calibrationDot.style.top = `${pos.y}px`;
             calibrationDot.innerText = '💎';
-            // calibrationDot.style.backgroundColor = 'gold';
+            calibrationDot.style.backgroundColor = 'gold';
             calibrationDot.style.display = 'flex';
             await collectGazeDataAtPoint();
             calibrationDot.innerText = '✨';
