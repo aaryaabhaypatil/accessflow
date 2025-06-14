@@ -149,15 +149,14 @@ window.onload = async function () {
             const duration = 2200;
             const startTime = performance.now();
 
-            // Show bird emoji and apply visual effects
             calibrationDot.innerText = '🐦';
             calibrationDot.style.backgroundColor = 'transparent';
             calibrationDot.style.animation = 'wiggle 0.5s ease';
 
-            // Add glowing border
+
             calibrationDot.style.boxShadow = '0 0 20px 5px gold';
 
-            // Create a fading trail effect
+
             const trail = document.createElement('div');
             Object.assign(trail.style, {
                 position: 'absolute',
@@ -179,7 +178,7 @@ window.onload = async function () {
                 calibrationDot.style.boxShadow = '';
             }, 500);
 
-        // Animate bird movement
+
             await new Promise(resolve => {
                 function animate(t) {
                     const elapsed = t - startTime;
@@ -211,7 +210,7 @@ window.onload = async function () {
             calibrationDot.style.left = `${pos.x}px`;
             calibrationDot.style.top = `${pos.y}px`;
             calibrationDot.innerText = '💎';
-            calibrationDot.style.backgroundColor = 'gold';
+            // calibrationDot.style.backgroundColor = 'gold';
             calibrationDot.style.display = 'flex';
             await collectGazeDataAtPoint();
             calibrationDot.innerText = '✨';
