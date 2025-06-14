@@ -140,19 +140,46 @@ window.onload = async function () {
             await new Promise(r => setTimeout(r, 600));
         }
     }
-
     async function birdFollowGame() {
         await showGameAlert("🐦", "Time for Bird Chase! Follow the bird with your eyes.");
         const steps = 25;
         let start = getRandomPosition();
         for (let i = 0; i < steps; i++) {
             const end = getRandomPosition();
-            const duration = 1800;
+            const duration = 2200;
             const startTime = performance.now();
+
+            // Show bird emoji and apply visual effects
             calibrationDot.innerText = '🐦';
             calibrationDot.style.backgroundColor = 'transparent';
+            calibrationDot.style.animation = 'wiggle 0.5s ease';
 
+            // Add glowing border
+            calibrationDot.style.boxShadow = '0 0 20px 5px gold';
 
+            // Create a fading trail effect
+            const trail = document.createElement('div');
+            Object.assign(trail.style, {
+                position: 'absolute',
+                left: `${start.x}px`,
+                top: `${start.y}px`,
+                width: '20px',
+                height: '20px',
+                backgroundColor: 'rgba(0, 150, 255, 0.4)',
+                borderRadius: '50%',
+                zIndex: 9998,
+                transition: 'opacity 1s ease-out'
+            });
+            document.body.appendChild(trail);
+            setTimeout(() => trail.style.opacity = '0', 10);
+            setTimeout(() => trail.remove(), 1100);
+
+            setTimeout(() => {
+                calibrationDot.style.animation = '';
+                calibrationDot.style.boxShadow = '';
+            }, 500);
+
+        // Animate bird movement
             await new Promise(resolve => {
                 function animate(t) {
                     const elapsed = t - startTime;
@@ -166,11 +193,15 @@ window.onload = async function () {
                 }
                 requestAnimationFrame(animate);
             });
-            await collectGazeDataAtPoint(600);
+
+            await collectGazeDataAtPoint(800);
             start = end;
         }
     }
 
+
+
+    
     async function gemCollectorGame() {
         await showGameAlert("💎", "Ready for Gem Hunt? Collect them with your eyes!");
         for (let i = 0; i < 15; i++) {
