@@ -4,6 +4,12 @@
 #BCA88D - tan
 #F1F0E4 - off-white light background
 */
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
 @media (max-width: 750px) {
   #popup {
     width: 95vw;          /* almost full screen width */
@@ -108,16 +114,19 @@ body, html {
   justify-content: center;
   background-color: #BCA88D;
   box-sizing: border-box;
-  padding: 0 20px;
+  padding: 0;
   height: 70px;
   box-shadow: 0 4px 8px rgba(62,63,41,0.25);
   position: relative;
+  margin: 0;
+
 }
 
 .title-bar h1 {
   flex: 1;
   text-align: center;
   margin: 0;
+  padding: 0;
   font-weight: 700;
   font-size: 1.5rem;
   color: #3E3F29;
@@ -505,9 +514,47 @@ body, html {
   transition: background-color 0.3s ease, color 0.3s ease;
   max-width: 500px;
   text-align: center;
+  max-height: 100%;
 }
 
 #openPopupBtn:hover {
   background-color: #BCA88D;
   color: #3E3F29;
+}
+
+/* Make the entire popup box white */
+#popupContent {
+  background: #fff; /* white background */
+  border-radius: 0px;
+  padding: 20px;
+  width: 580px;  /* keep it popup sized */
+  max-height: 90vh;
+  height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1px;
+}
+
+/* Remove individual white boxes from inside so they merge with the main background */
+.gestures-container,
+.customise-container {
+  margin-top: 4px;
+  margin-bottom: 7px;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  box-sizing: border-box;
+  padding: 20px0;
+  width: 100%;
+}
+
+.gestures-container h2,
+.customise-container h2,
+.gestures-container p,
+.customise-container p {
+  margin-top: 0;
+  margin-bottom: 5px; /* tiny gap */
 }

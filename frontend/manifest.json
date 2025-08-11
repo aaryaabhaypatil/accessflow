@@ -6,7 +6,8 @@
   "permissions": [
     "tabs",
     "storage",
-    "scripting"
+    "scripting",
+    "storage"
   ],
   "host_permissions": [
     "http://localhost/*",
@@ -14,7 +15,7 @@
     "<all_urls>"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "/frontend/popup.html",
     "default_title": "Eye Tracker"
   },
   "content_scripts": [
