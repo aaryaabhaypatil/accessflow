@@ -1,137 +1,194 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <div id="progressContainer">
-        <div id="progressBar">0%</div>
-    </div>
-    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
-    <script defer src="/frontend/content.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AccessFlow - Eye Tracking</title>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   
-    
+  <link rel="stylesheet" href="/frontend/styles.css" />
 
-<link rel="stylesheet" href="/frontend/styles.css">
+  <!-- WebGazer CDN -->
+  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+
+  <!-- Your custom JS -->
+  <script defer src="script.js"></script>
 </head>
 <body>
-    
-    <canvas id="gazeCanvas"></canvas>
-    <div id="gazeDot"></div>
-    <!-- <div class="container"> -->
-        <div class="header">
-            <div class="title-bar">
-                <div class="toggle-switch" id="toggleSwitch">
-                    <span class="slider"></span>
-                </div>
-                <h1 style="color: white;">AccessFlow - Eye Tracking</h1>
-                
-                <canvas id="overlay"></canvas>
-                <div id="calibration-area"></div> 
-            </div>
-        </div>
-        <div class="gestures">
-            <h3>Gestures</h3>
-            <div class="gesture-row">
-                <div class="left-gesture">
-                    <label>Scroll Left</label>
-                    <select id="scrollLeftSelect">
-                        <option value="">Choose an action</option>
-                        <option value="pageLeft">Look Left</option>
-                        <option value="contentLeft">Fixate on Left Edge</option>
-                        <option value="windowLeft">Look Up + Look Left</option>
-                    </select>
-                </div>
-                <div class="right-gesture">
-                    <label>Scroll Right</label>
-                    <select id="scrollRightSelect">
-                        <option value="">Choose an action</option>
-                        <option value="pageRight">Look Right</option>
-                        <option value="contentRight">Fixate on Right Edge</option>
-                        <option value="windowRight">Look Up + Look Right</option>
-                    </select>
-                </div>
-            </div>
-            <div class="gesture-row">
-                <div class="left-gesture">
-                    <label>Scroll Down</label>
-                    <select id="scrollDownSelect">
-                        <option value="">Choose an action</option>
-                        <option value="pageDown">Look Down</option>
-                        <option value="contentDown">Fixate on Bottom Edge</option>
-                        <option value="windowDown">Look Down + Look Left</option>
-                        <option value="windowDown">Look Down + Hold Gaze</option>
-                    </select>
-                </div>
-                <div class="right-gesture">
-                    <label>Scroll Up</label>
-                    <select id="scrollUpSelect">
-                        <option value="">Choose an action</option>
-                        <option value="pageDown">Look Up</option>
-                        <option value="contentDown">Fixate on top Edge</option>
-                        <option value="windowDown">Look Up + Look Left</option>
-                        <option value="windowDown">Look Up + Hold Gaze</option>
-                    </select>
-                </div>
-            </div>
-            <div class="gesture-row">
-                <div class="left-gesture">
-                    <label>Trigger or choose</label>
-                    <select id="triggerSelect">
-                        <option value="">Choose an action</option>
-                        <option value="fixate3">Fixate for 3 seconds</option>
-                        <option value="fixate5">Fixate for 5 seconds</option>
-                        <option value="fixate7">Fixate for 7 seconds</option>
-                        <option value="fixate10">Fixate for 10 seconds</option>
-                    </select>
-                </div>
-            </div>
-            <br>
-            <br>
-            <br>
-            <br>
 
+  <canvas id="gazeCanvas"></canvas>
+  <div id="gazeDot"></div>
 
+  <div class="header">
+    <!-- <div class="title-bar">
+      <div class="toggle-switch" id="toggleSwitch">
+        <span class="slider"></span>
+      </div>
+      <h1>AccessFlow - Eye Tracking</h1>
 
-            <div class="customise-container"> 
-                <div class="customise">
-                    <h3>Customise</h3>
-                    <div class="customise-row">
-                        <div class="action-row">
-                            <label>Action</label>
-                            <select>
-                                <option value="">Select Item</option>
-                                <option value="option1">Option 1</option>
-                                <option value="option2">Option 2</option>
-                                <option value="option3">Option 3</option>
-                            </select>
-                        </div>
-                        <div class="gesture-row">
-                            <label>Gesture</label>
-                            <select>
-                                <option value="">Select Item</option>
-                                <option value="optionA">Option A</option>
-                                <option value="optionB">Option B</option>
-                                <option value="optionC">Option C</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button id="addButton">Add</button>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: center; align-items: center; height: 10vh;">
-                <button id="saveButton">Save</button>
-            </div> 
+      <canvas id="overlay"></canvas>
+      <div id="calibration-area"></div>
+    </div> -->
+    <div class="title-bar">
+        <div class="toggle-switch" id="toggleSwitch"></div>
+        <h1>AccessFlow - Eye Tracking</h1>
+        <button class="close-btn" id="closeBtn">&times;</button>
     </div>
-    <canvas id="gazeCanvas"></canvas>
+    </div>
 
-    <!-- <div id="gazeAtMe" class="gaze-selectable">Look here</div> -->
-    <video id="camera" autoplay></video>
-    <div id="calibrationDot" class="calibrationDot"></div>
-    <div id="progressBar"><div id="progress"></div></div>
+<div class="gestures-container">
+  <h3 class="gestures-title">Gestures</h3>
+  <!-- <div class="gesture-row">
+    <label for="scrollLeftSelect" class="gesture-label">Scroll Left</label>
+    <select id="scrollLeftSelect" class="gesture-select">
+      <option value="">Choose an action</option>
+      <option value="pageLeft">Look Left</option>
+      <option value="contentLeft">Fixate on Left Edge</option>
+      <option value="windowLeft">Look Up + Look Left</option>
+    </select>
+  </div>
+  <div class="gesture-row">
+    <label for="scrollRightSelect" class="gesture-label">Scroll Right</label>
+    <select id="scrollRightSelect" class="gesture-select">
+      <option value="">Choose an action</option>
+      <option value="pageRight">Look Right</option>
+      <option value="contentRight">Fixate on Right Edge</option>
+      <option value="windowRight">Look Up + Look Right</option>
+    </select>
+  </div>
+  <div class="gesture-row">
+    <label for="scrollDownSelect" class="gesture-label">Scroll Down</label>
+    <select id="scrollDownSelect" class="gesture-select">
+      <option value="">Choose an action</option>
+      <option value="pageDown">Look Down</option>
+      <option value="contentDown">Fixate on Bottom Edge</option>
+      <option value="windowDown">Look Down + Look Left</option>
+      <option value="holdGazeDown">Look Down + Hold Gaze</option>
+    </select>
+  </div>
+  <div class="gesture-row">
+    <label for="scrollUpSelect" class="gesture-label">Scroll Up</label>
+    <select id="scrollUpSelect" class="gesture-select">
+      <option value="">Choose an action</option>
+      <option value="pageUp">Look Up</option>
+      <option value="contentUp">Fixate on Top Edge</option>
+      <option value="windowUp">Look Up + Look Left</option>
+      <option value="holdGazeUp">Look Up + Hold Gaze</option>
+    </select>
+  </div>
+  <div class="gesture-row">
+    <label for="triggerSelect" class="gesture-label">Trigger or Choose</label>
+    <select id="triggerSelect" class="gesture-select">
+      <option value="">Choose an action</option>
+      <option value="fixate3">Fixate for 3 seconds</option>
+      <option value="fixate5">Fixate for 5 seconds</option>
+      <option value="fixate7">Fixate for 7 seconds</option>
+      <option value="fixate10">Fixate for 10 seconds</option>
+    </select>
+  </div> -->
+<div class="gesture-container">
+  <div class="gesture-row">
+    <div class="gesture-column">
+      <label for="scrollLeftSelect" class="gesture-label">Scroll Left</label>
+      <select id="scrollLeftSelect" class="gesture-select">
+        <option value="">Choose an action</option>
+        <option value="pageLeft">Look Left</option>
+        <option value="contentLeft">Fixate on Left Edge</option>
+        <option value="windowLeft">Look Up + Look Left</option>
+      </select>
+    </div>
 
-    <audio id="chirpSound" src="chirp.mp3" preload="auto"></audio>
-    <script src="/frontend/content.js" defer></script>
+    <div class="gesture-column">
+      <label for="scrollRightSelect" class="gesture-label">Scroll Right</label>
+      <select id="scrollRightSelect" class="gesture-select">
+        <option value="">Choose an action</option>
+        <option value="pageRight">Look Right</option>
+        <option value="contentRight">Fixate on Right Edge</option>
+        <option value="windowRight">Look Up + Look Right</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="gesture-row">
+    <div class="gesture-column">
+      <label for="scrollDownSelect" class="gesture-label">Scroll Down</label>
+      <select id="scrollDownSelect" class="gesture-select">
+        <option value="">Choose an action</option>
+        <option value="pageDown">Look Down</option>
+        <option value="contentDown">Fixate on Bottom Edge</option>
+        <option value="windowDown">Look Down + Look Left</option>
+        <option value="holdGazeDown">Look Down + Hold Gaze</option>
+      </select>
+    </div>
+
+    <div class="gesture-column">
+      <label for="scrollUpSelect" class="gesture-label">Scroll Up</label>
+      <select id="scrollUpSelect" class="gesture-select">
+        <option value="">Choose an action</option>
+        <option value="pageUp">Look Up</option>
+        <option value="contentUp">Fixate on Top Edge</option>
+        <option value="windowUp">Look Up + Look Left</option>
+        <option value="holdGazeUp">Look Up + Hold Gaze</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="gesture-row">
+    <div class="gesture-column">
+      <label for="triggerSelect" class="gesture-label">Trigger or Choose</label>
+      <select id="triggerSelect" class="gesture-select">
+        <option value="">Choose an action</option>
+        <option value="fixate3">Fixate for 3 seconds</option>
+        <option value="fixate5">Fixate for 5 seconds</option>
+        <option value="fixate7">Fixate for 7 seconds</option>
+        <option value="fixate10">Fixate for 10 seconds</option>
+      </select>
+    </div>
+
+    <!-- Empty right column for alignment -->
+    <div class="gesture-column"></div>
+  </div>
+</div>
+
+</div>
+
+ <div class="customise-container">
+    <h3 class="customise-title">Customise</h3>
+    <div class="customise-row">
+        <div class="action-row">
+            <label for="customActionSelect" class="customise-label">Action</label>
+            <select id="customActionSelect" class="gesture-select">
+                <option value="">Select Item</option>
+                <option value="option1">Option 1</option>
+                <option value="option2">Option 2</option>
+                <option value="option3">Option 3</option>
+            </select>
+        </div>
+        <div class="gesture-row">
+            <label for="customGestureSelect" class="customise-label">Gesture</label>
+            <select id="customGestureSelect" class="gesture-select">
+                <option value="">Select Item</option>
+                <option value="optionA">Option A</option>
+                <option value="optionB">Option B</option>
+                <option value="optionC">Option C</option>
+            </select>
+        </div>
+    </div>
+    <div style="text-align:center; margin-top: 20px;">
+        <button id="addButton" class="btn-primary">Add</button>
+    </div>
+</div>
+
+
+  <div class="save-container">
+    <button id="saveButton">Save</button>
+  </div>
+
+  <video id="camera" autoplay muted playsinline></video>
+  <div id="progressContainer">
+    <div id="progressBar">0%</div>
+  </div>
+
+  <!-- Calibration dot and alert box will be created dynamically by JS -->
 
 </body>
 </html>
