@@ -157,6 +157,35 @@
       <!-- <div id="feedbackMessage" style="display:none; color: green; margin-top: 10px; font-weight: bold; text-align: center;">
         Saved!
       </div> -->
+      <!-- Blur overlay, hidden by default -->
+      <div id="blurOverlay" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        z-index: 10900;
+      "></div>
+
+      <!-- Your feedback box -->
+      <div id="feedbackBox" style="
+        display:none;
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #3E3F29;
+        color: #F1F0E4;
+        padding: 20px 40px;
+        border-radius: 10px;
+        font-weight: 700;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        z-index: 11000;
+        text-align: center;
+      ">
+      </div>
+
 
       <div id="feedbackBox" style="
         display: none;

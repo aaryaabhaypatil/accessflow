@@ -136,15 +136,20 @@ document.addEventListener("DOMContentLoaded", function () {
   // Show the feedback box as a popup overlay, then hide it and close popup after 2 seconds
   function showFeedbackBox() {
     if (!feedbackBox) return;
-
+    const blurOverlay = document.getElementById('blurOverlay');
+    if (blurOverlay) blurOverlay.style.display = 'block';
+  
     feedbackBox.textContent = "Preferences saved!";
     feedbackBox.style.display = "block";
-
+  
     setTimeout(() => {
       feedbackBox.style.display = "none";
+      if (blurOverlay) blurOverlay.style.display = "none";
+  
       if (popupOverlay) {
         popupOverlay.style.display = "none";
       }
-    }, 2000);
+    }, 1000);
   }
+  
 });
