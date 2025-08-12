@@ -15,7 +15,7 @@
     "<all_urls>"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "landing.html",
     "default_title": "Eye Tracker"
   },
   "content_scripts": [
