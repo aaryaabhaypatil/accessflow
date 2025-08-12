@@ -96,7 +96,7 @@
         </div>
       </div>
 
-      <div class="customise-container" role="region" aria-label="Customize settings">
+      <!-- <div class="customise-container" role="region" aria-label="Customize settings">
         <h3 class="customise-title">Customise</h3>
         <div class="customise-row">
           <div class="action-row">
@@ -121,9 +121,42 @@
         <div style="text-align:center; margin-top: 20px;">
           <button id="addButton" class="btn-primary">Add</button>
         </div>
+      </div> -->
+      <div class="gestures-container" role="region" aria-label="Customize settings">
+        
+        <h3 class="customise-title">Customise</h3>
+      
+        <div class="gesture-row">
+          <div class="gesture-column">
+            <label for="customActionSelect" class="gesture-label">Action</label>
+            <select id="customActionSelect" class="gesture-select">
+              <option value="">Select Item</option>
+              <option value="option1">Option 1</option>
+              <option value="option2">Option 2</option>
+              <option value="option3">Option 3</option>
+            </select>
+          </div>
+      
+          <div class="gesture-column">
+            <label for="customGestureSelect" class="gesture-label">Gesture</label>
+            <select id="customGestureSelect" class="gesture-select">
+              <option value="">Select Item</option>
+              <option value="optionA">Option A</option>
+              <option value="optionB">Option B</option>
+              <option value="optionC">Option C</option>
+            </select>
+          </div>
+        </div>
+      
+        <div style="text-align:center;">
+          <button id="addButton" class="btn-primary">Add</button>
+        </div>
       </div>
-
+      
       <button id="saveButton">Save</button>
+      <div id="feedbackMessage" style="display:none; color: green; margin-top: 10px; font-weight: bold; text-align: center;">
+        Saved!
+      </div>
 
       <video id="camera" autoplay muted playsinline></video>
       <!-- calibrationDot and alertBox created dynamically by your JS -->

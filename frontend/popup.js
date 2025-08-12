@@ -4,10 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const popupOverlay = document.getElementById("popupOverlay");
   const closeBtn = document.getElementById("closeBtn");
 
+
+
+  
   // Toggle switch
   const toggleSwitch = document.getElementById("toggleSwitch");
   let isTrackingOn = false;
-
+  
   // Open popup on button click
   if (openPopupBtn && popupOverlay) {
     openPopupBtn.addEventListener("click", () => {
@@ -26,25 +29,35 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("Close button or popup overlay not found.");
   }
 
-  // Toggle switch click
+ 
   if (toggleSwitch) {
+    // Load saved state from localStorage (or chrome.storage)
+    const savedState = localStorage.getItem('isTrackingOn');
+    isTrackingOn = savedState === 'true';
+
+    if (isTrackingOn) {
+      toggleSwitch.classList.add("active");
+    } else {
+      toggleSwitch.classList.remove("active");
+    }
+
     toggleSwitch.addEventListener("click", function () {
       isTrackingOn = !isTrackingOn;
 
       if (isTrackingOn) {
-        this.classList.add("active");  
+        this.classList.add("active");
         console.log("Toggle clicked. Eye tracking is now ON.");
-
       } else {
         this.classList.remove("active");
         console.log("Toggle clicked. Eye tracking is now OFF.");
-
       }
+
+      // Save state to localStorage
+      localStorage.setItem('isTrackingOn', isTrackingOn.toString());
     });
   } else {
     console.error("Toggle switch element not found.");
   }
-
   // Select elements
   const scrollLeftSelect = document.getElementById("scrollLeftSelect");
   const scrollRightSelect = document.getElementById("scrollRightSelect");
@@ -57,7 +70,6 @@ document.addEventListener("DOMContentLoaded", function () {
   if (addButton) {
     addButton.addEventListener("click", function () {
       console.log("Add Settings button clicked!");
-
     });
   } else {
     console.error("Add button element not found.");
@@ -65,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Save button
   const saveButton = document.getElementById("saveButton");
+  const feedbackMessage = document.getElementById('feedbackMessage');
   if (saveButton) {
     saveButton.addEventListener("click", function () {
       console.log("Save Preferences button clicked!");
@@ -86,10 +99,38 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Error saving preferences:", chrome.runtime.lastError);
           } else {
             console.log("Preferences saved successfully:", preferences);
+
+            // Show feedback message and close popup
+            if (feedbackMessage) {
+              feedbackMessage.style.display = "block";
+
+              setTimeout(() => {
+                feedbackMessage.style.display = "none";
+                if (popupOverlay) {
+                  popupOverlay.style.display = "none";
+                }
+              }, 2000);
+            } else if (popupOverlay) {
+              // No feedback element — just close popup immediately
+              popupOverlay.style.display = "none";
+            }
           }
         });
       } else {
         console.warn("chrome.storage.local is not available. Are you running this as a Chrome extension?");
+        
+        // Fallback: show feedback or close popup anyway
+        if (feedbackMessage) {
+          feedbackMessage.style.display = "block";
+          setTimeout(() => {
+            feedbackMessage.style.display = "none";
+            if (popupOverlay) {
+              popupOverlay.style.display = "none";
+            }
+          }, 2000);
+        } else if (popupOverlay) {
+          popupOverlay.style.display = "none";
+        }
       }
     });
   } else {
