@@ -4,13 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const popupOverlay = document.getElementById("popupOverlay");
   const closeBtn = document.getElementById("closeBtn");
 
+  // Feedback box element (you need to add this in your HTML with id="feedbackBox")
+  const feedbackBox = document.getElementById("feedbackBox");
 
-
-  
   // Toggle switch
   const toggleSwitch = document.getElementById("toggleSwitch");
   let isTrackingOn = false;
-  
+
   // Open popup on button click
   if (openPopupBtn && popupOverlay) {
     openPopupBtn.addEventListener("click", () => {
@@ -29,9 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("Close button or popup overlay not found.");
   }
 
- 
+  // Toggle switch with persistence in localStorage
   if (toggleSwitch) {
-    // Load saved state from localStorage (or chrome.storage)
+    // Load saved state
     const savedState = localStorage.getItem('isTrackingOn');
     isTrackingOn = savedState === 'true';
 
@@ -52,12 +52,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Toggle clicked. Eye tracking is now OFF.");
       }
 
-      // Save state to localStorage
+      // Save toggle state
       localStorage.setItem('isTrackingOn', isTrackingOn.toString());
     });
   } else {
     console.error("Toggle switch element not found.");
   }
+
   // Select elements
   const scrollLeftSelect = document.getElementById("scrollLeftSelect");
   const scrollRightSelect = document.getElementById("scrollRightSelect");
@@ -75,9 +76,8 @@ document.addEventListener("DOMContentLoaded", function () {
     console.error("Add button element not found.");
   }
 
-  // Save button
+  // Save button with feedback box
   const saveButton = document.getElementById("saveButton");
-  const feedbackMessage = document.getElementById('feedbackMessage');
   if (saveButton) {
     saveButton.addEventListener("click", function () {
       console.log("Save Preferences button clicked!");
@@ -92,52 +92,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log("Preferences to be saved:", preferences);
 
-      // Save preferences to chrome.storage.local
+      // Save preferences to chrome.storage.local if available
       if (chrome && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ gazePreferences: preferences }, function () {
           if (chrome.runtime.lastError) {
             console.error("Error saving preferences:", chrome.runtime.lastError);
           } else {
             console.log("Preferences saved successfully:", preferences);
-
-            // Show feedback message and close popup
-            if (feedbackMessage) {
-              feedbackMessage.style.display = "block";
-
-              setTimeout(() => {
-                feedbackMessage.style.display = "none";
-                if (popupOverlay) {
-                  popupOverlay.style.display = "none";
-                }
-              }, 2000);
-            } else if (popupOverlay) {
-              // No feedback element — just close popup immediately
-              popupOverlay.style.display = "none";
-            }
+            showFeedbackBox();
           }
         });
       } else {
         console.warn("chrome.storage.local is not available. Are you running this as a Chrome extension?");
-        
-        // Fallback: show feedback or close popup anyway
-        if (feedbackMessage) {
-          feedbackMessage.style.display = "block";
-          setTimeout(() => {
-            feedbackMessage.style.display = "none";
-            if (popupOverlay) {
-              popupOverlay.style.display = "none";
-            }
-          }, 2000);
-        } else if (popupOverlay) {
-          popupOverlay.style.display = "none";
-        }
+        // Show feedback anyway
+        showFeedbackBox();
       }
     });
   } else {
     console.error("Save button element not found.");
   }
 
-  // Load preferences from chrome.storage.local on popup load
+  // Load preferences on popup load
   if (chrome && chrome.storage && chrome.storage.local) {
     chrome.storage.local.get(["gazePreferences"], function (data) {
       if (chrome.runtime.lastError) {
@@ -156,5 +131,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   } else {
     console.warn("chrome.storage.local is not available. Are you running this as a Chrome extension?");
+  }
+
+  // Show the feedback box as a popup overlay, then hide it and close popup after 2 seconds
+  function showFeedbackBox() {
+    if (!feedbackBox) return;
+
+    feedbackBox.textContent = "Preferences saved!";
+    feedbackBox.style.display = "block";
+
+    setTimeout(() => {
+      feedbackBox.style.display = "none";
+      if (popupOverlay) {
+        popupOverlay.style.display = "none";
+      }
+    }, 2000);
   }
 });
