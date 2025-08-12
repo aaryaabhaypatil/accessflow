@@ -3,21 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AccessFlow Eye Tracking Popup</title>
-
-
-  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
-
+  <title>AccessFlow Landing Page</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@700&family=Work+Sans:wght@300;400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-
-  <script defer src="popup.js"></script>
 </head>
 <body>
+  <div class="container">
+    <div class="toggle-switch" id="toggleSwitch"></div>
 
-<button id="openPopupBtn">Open AccessFlow Popup</button>
+    <div class="button open-popup" id="openPopupBtn">
+      <div>Open AccessFlow Popup</div>
+    </div>
 
+    <div class="button calibrate-small">
+      <div>Calibrate</div>
+    </div>
 
+    <div class="top-section">
+      <div class="accessflow-description">
+        <span class="no-wrap">
+          <span class="accessflow-desc-light">AccessFlow is a </span>
+          <span class="accessflow-desc-bold">browser extension </span>
+          <span class="accessflow-desc-light">
+            that empowers you to navigate websites using only your eyes. Built for accessibility, it provides a hands-free browsing experience, making the web more inclusive for people with lived experience of disability.
+          </span>
+        </span>
+      </div>
+      <img class="feature-image" src="/Screenshot 2025-08-12 at 7.35.05 pm.png" alt="Feature image" />
+    </div>
 
+    <div class="background-box"></div>
+
+    <div class="key-features">
+      <span class="key-features-heading">Key Features<br/></span>
+      <ul class="key-features-list">
+        <li>Eye Gesture Navigation – Scroll, click, and explore the web with nothing but your gaze.</li>
+        <li>Customisable Gestures – Fine-tune sensitivity and actions to match your style.</li>
+        <li>Real-Time Tracking – Enjoy smooth, instant responses as your eyes lead the way.</li>
+        <li>Accessible by Design – Creating alongside people with lived experience of disability.</li>
+        <li>Privacy First – Your gaze data never leaves your browser. <b>Ever.</b></li>
+        <li>Game-Based Calibration – Kick things off with fun mini-games that get your eyes in sync.</li>
+      </ul>
+    </div>
+
+    <div class="calibrate-instruction">
+      <span class="black-light">Click on&nbsp;</span>
+      <span class="black-bold">Calibrate&nbsp;</span>
+      <span class="black-light"> button to get started!!</span>
+    </div>
+  </div>
+
+  <!-- Popup Overlay -->
   <div id="popupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
     <div id="popupContent">
       <div class="header">
@@ -97,32 +133,6 @@
         </div>
       </div>
 
-      <!-- <div class="customise-container" role="region" aria-label="Customize settings">
-        <h3 class="customise-title">Customise</h3>
-        <div class="customise-row">
-          <div class="action-row">
-            <label for="customActionSelect" class="customise-label">Action</label>
-            <select id="customActionSelect" class="gesture-select">
-              <option value="">Select Item</option>
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-              <option value="option3">Option 3</option>
-            </select>
-          </div>
-          <div class="gesture-row">
-            <label for="customGestureSelect" class="customise-label">Gesture</label>
-            <select id="customGestureSelect" class="gesture-select">
-              <option value="">Select Item</option>
-              <option value="optionA">Option A</option>
-              <option value="optionB">Option B</option>
-              <option value="optionC">Option C</option>
-            </select>
-          </div>
-        </div>
-        <div style="text-align:center; margin-top: 20px;">
-          <button id="addButton" class="btn-primary">Add</button>
-        </div>
-      </div> -->
       <div class="gestures-container" role="region" aria-label="Customize settings">
         
         <h3 class="customise-title">Customise</h3>
@@ -211,6 +221,6 @@
     </div>
   </div>
 
-
+  <script src="popup.js"></script>
 </body>
 </html>

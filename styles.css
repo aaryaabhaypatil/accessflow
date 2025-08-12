@@ -59,7 +59,7 @@ html, body {
   word-wrap: break-word;
   background-color: #3E3F29;
   cursor: pointer;
-  border-radius: 6px; /* optional, for consistent rounding */
+  border-radius: 15px; /* optional, for consistent rounding */
   box-sizing: border-box;
 }
 
