@@ -54,6 +54,7 @@ html, body {
   right: 3vw;
   width: 20vw;
   height: 3.2vh;
+  align-items: center;
 }
 .calibrate-small {
   top: 6.8vh;
@@ -397,6 +398,7 @@ body, html {
 }
 
 .toggle-switch {
+  top:6.8vh;
   width: 50px;
   height: 26px;
   background-color: #7D8D86;
@@ -756,7 +758,7 @@ body, html {
   }
 #openPopupBtn {
   display: block; /* to center */
-  margin: 20px auto;
+  /* margin: 20px auto; */
   padding: 12px 28px;
   font-size: 1.1rem;
   cursor: pointer;
@@ -770,6 +772,7 @@ body, html {
   max-width: 500px;
   text-align: center;
   max-height: 100%;
+  align-items: center;
 }
 
 #openPopupBtn:hover {
