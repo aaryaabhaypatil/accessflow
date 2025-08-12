@@ -9,7 +9,7 @@
 </head>
 <body>
   <div class="container">
-    <div class="toggle-switch" id="toggleSwitch"></div>
+    <div class="toggle-switch-popup" id="toggle-switch-popup"></div>
 
     <div class="button open-popup" id="openPopupBtn">
       <div>Open AccessFlow Popup</div>
@@ -181,43 +181,27 @@
 
       <!-- Your feedback box -->
       <div id="feedbackBox" style="
-        display:none;
-        position: fixed;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #3E3F29;
-        color: #F1F0E4;
-        padding: 20px 40px;
-        border-radius: 10px;
-        font-weight: 700;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-        z-index: 11000;
-        text-align: center;
-      ">
-      </div>
-
-
-      <div id="feedbackBox" style="
         display: none;
-        position: absolute;
+        position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         background-color: #3E3F29;
         color: #F1F0E4;
-        padding: 15px 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        padding: 25px 45px; /* Bigger padding for bigger box */
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
         font-weight: 700;
+        font-size: 1.5rem; /* Bigger text */
         z-index: 20000;
         text-align: center;
-        min-width: 150px;
-      "></div>
+        min-width: 250px; /* Increased minimum width */
+      ">
+      </div>
 
 
       <video id="camera" autoplay muted playsinline></video>
-      <!-- calibrationDot and alertBox created dynamically by your JS -->
+
     </div>
   </div>
 

@@ -54,13 +54,19 @@ html, body {
   right: 3vw;
   width: 20vw;
   height: 3.2vh;
-  align-items: center;
+  display: flex;
+  align-items: center;   /* vertical centering */
+  justify-content: center; /* horizontal centering */
+
+  line-height: 1; /* prevents weird vertical offset */
+
 }
 .calibrate-small {
   top: 6.8vh;
   left: 50vw;
   width: 20vw;
   height: 3.2vh;
+  align-items: center;
 }
 
 /* Top section wrapper for horizontal layout */
@@ -228,12 +234,13 @@ html, body {
 
 /* Toggle switch in popup */
 .toggle-switch-popup {
+  top: 6.8vh;
   width: 50px;
   height: 26px;
   background-color: #7D8D86;
   border-radius: 20px;
   position: absolute;
-  left: 20px;
+  left: 110px;
   cursor: pointer;
 }
 
@@ -757,7 +764,8 @@ body, html {
     color: #3E3F29;
   }
 #openPopupBtn {
-  display: block; /* to center */
+   display: flex;
+  
   /* margin: 20px auto; */
   padding: 12px 28px;
   font-size: 1.1rem;

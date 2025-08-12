@@ -6,6 +6,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Feedback box element (you need to add this in your HTML with id="feedbackBox")
   const feedbackBox = document.getElementById("feedbackBox");
+  const toggle = document.querySelector(".toggle-switch-popup");
+
+  // Load saved state from localStorage
+  if (localStorage.getItem("toggleActive") === "true") {
+    toggle.classList.add("active");
+  }
+
+  toggle.addEventListener("click", () => {
+    toggle.classList.toggle("active");
+    localStorage.setItem("toggleActive", toggle.classList.contains("active"));
+  });
 
   // Toggle switch
   const toggleSwitch = document.getElementById("toggleSwitch");
