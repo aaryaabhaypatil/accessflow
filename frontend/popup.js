@@ -1,14 +1,123 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // Popup elements
   const openPopupBtn = document.getElementById("openPopupBtn");
   const popupOverlay = document.getElementById("popupOverlay");
   const closeBtn = document.getElementById("closeBtn");
-
-  // Feedback box element (you need to add this in your HTML with id="feedbackBox")
   const feedbackBox = document.getElementById("feedbackBox");
   const toggle = document.querySelector(".toggle-switch-popup");
 
-  // Load saved state from localStorage
+  let calibrationDot = document.getElementById("calibrationDot");
+  if (!calibrationDot) {
+    calibrationDot = document.createElement("div");
+    calibrationDot.id = "calibrationDot";
+    calibrationDot.style.position = "fixed";
+    calibrationDot.style.width = "20px";
+    calibrationDot.style.height = "20px";
+    calibrationDot.style.backgroundColor = "red";
+    calibrationDot.style.borderRadius = "50%";
+    calibrationDot.style.zIndex = "15000";
+    calibrationDot.style.pointerEvents = "none";
+    calibrationDot.style.display = "none";
+    document.body.appendChild(calibrationDot);
+  }
+
+  const blurOverlay = document.getElementById("blurOverlay");
+
+  const calibrationPoints = [
+    { x: 0.1, y: 0.1 },
+    { x: 0.5, y: 0.1 },
+    { x: 0.9, y: 0.1 },
+    { x: 0.1, y: 0.5 },
+    { x: 0.5, y: 0.5 },
+    { x: 0.9, y: 0.5 },
+    { x: 0.1, y: 0.9 },
+    { x: 0.5, y: 0.9 },
+    { x: 0.9, y: 0.9 }
+  ];
+
+  let currentCalibrationIndex = 0;
+  let calibrationInProgress = false;
+  const fixationDuration = 1500;
+  const animationRadius = 15;
+
+  let animationFrameId;
+  let animationStartTime;
+
+  function startCalibrationGame() {
+    if (calibrationInProgress) return;
+    calibrationInProgress = true;
+    currentCalibrationIndex = 0;
+
+    if (blurOverlay) {
+      blurOverlay.classList.add("active");
+      blurOverlay.style.display = "block";
+      blurOverlay.style.opacity = "1";
+    }
+
+    calibrationDot.style.display = "block";
+    nextCalibrationPoint();
+  }
+
+  function nextCalibrationPoint() {
+    if (currentCalibrationIndex >= calibrationPoints.length) {
+      finishCalibration();
+      return;
+    }
+    const point = calibrationPoints[currentCalibrationIndex];
+    animateCalibrationDot(point.x, point.y);
+    setTimeout(() => {
+      console.log(`Calibration point ${currentCalibrationIndex + 1} recorded at (${point.x}, ${point.y})`);
+      currentCalibrationIndex++;
+      nextCalibrationPoint();
+    }, fixationDuration);
+  }
+
+  function animateCalibrationDot(normX, normY) {
+    cancelAnimationFrame(animationFrameId);
+    animationStartTime = performance.now();
+
+    function updatePosition(timestamp) {
+      const elapsed = timestamp - animationStartTime;
+      const angle = (elapsed / 1000) * 2 * Math.PI * 0.5;
+      const centerX = window.innerWidth * normX;
+      const centerY = window.innerHeight * normY;
+      const offsetX = animationRadius * Math.cos(angle);
+      const offsetY = animationRadius * Math.sin(angle);
+
+      calibrationDot.style.left = `${centerX + offsetX - 10}px`;
+      calibrationDot.style.top = `${centerY + offsetY - 10}px`;
+
+      animationFrameId = requestAnimationFrame(updatePosition);
+    }
+
+    animationFrameId = requestAnimationFrame(updatePosition);
+  }
+
+  function finishCalibration() {
+    cancelAnimationFrame(animationFrameId);
+    calibrationDot.style.display = "none";
+    calibrationInProgress = false;
+
+    if (blurOverlay) {
+      blurOverlay.style.opacity = "0";
+      setTimeout(() => {
+        blurOverlay.style.display = "none";
+      }, 300);
+    }
+    blurOverlay.classList.remove("active");
+    alert("Calibration complete! Thank you for playing.");
+  }
+
+  const calibrateBtn = document.getElementById("calibrateBtn");
+  if (calibrateBtn) {
+    calibrateBtn.addEventListener("click", () => {
+      if (!calibrationInProgress) {
+        startCalibrationGame();
+      } else {
+        alert("Calibration is already in progress!");
+      }
+    });
+  }
+
   if (localStorage.getItem("toggleActive") === "true") {
     toggle.classList.add("active");
   }
@@ -18,31 +127,22 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem("toggleActive", toggle.classList.contains("active"));
   });
 
-  // Toggle switch
   const toggleSwitch = document.getElementById("toggleSwitch");
   let isTrackingOn = false;
 
-  // Open popup on button click
   if (openPopupBtn && popupOverlay) {
     openPopupBtn.addEventListener("click", () => {
       popupOverlay.style.display = "flex";
     });
-  } else {
-    console.error("Open popup button or popup overlay not found.");
   }
 
-  // Close popup on close button click
   if (closeBtn && popupOverlay) {
     closeBtn.addEventListener("click", () => {
       popupOverlay.style.display = "none";
     });
-  } else {
-    console.error("Close button or popup overlay not found.");
   }
 
-  // Toggle switch with persistence in localStorage
   if (toggleSwitch) {
-    // Load saved state
     const savedState = localStorage.getItem('isTrackingOn');
     isTrackingOn = savedState === 'true';
 
@@ -63,31 +163,23 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Toggle clicked. Eye tracking is now OFF.");
       }
 
-      // Save toggle state
       localStorage.setItem('isTrackingOn', isTrackingOn.toString());
     });
-  } else {
-    console.error("Toggle switch element not found.");
   }
 
-  // Select elements
   const scrollLeftSelect = document.getElementById("scrollLeftSelect");
   const scrollRightSelect = document.getElementById("scrollRightSelect");
   const scrollUpSelect = document.getElementById("scrollUpSelect");
   const scrollDownSelect = document.getElementById("scrollDownSelect");
   const triggerSelect = document.getElementById("triggerSelect");
 
-  // Add button
   const addButton = document.getElementById("addButton");
   if (addButton) {
     addButton.addEventListener("click", function () {
       console.log("Add Settings button clicked!");
     });
-  } else {
-    console.error("Add button element not found.");
   }
 
-  // Save button with feedback box
   const saveButton = document.getElementById("saveButton");
   if (saveButton) {
     saveButton.addEventListener("click", function () {
@@ -103,7 +195,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log("Preferences to be saved:", preferences);
 
-      // Save preferences to chrome.storage.local if available
       if (chrome && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ gazePreferences: preferences }, function () {
           if (chrome.runtime.lastError) {
@@ -115,15 +206,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       } else {
         console.warn("chrome.storage.local is not available. Are you running this as a Chrome extension?");
-        // Show feedback anyway
         showFeedbackBox();
       }
     });
-  } else {
-    console.error("Save button element not found.");
   }
 
-  // Load preferences on popup load
   if (chrome && chrome.storage && chrome.storage.local) {
     chrome.storage.local.get(["gazePreferences"], function (data) {
       if (chrome.runtime.lastError) {
@@ -136,31 +223,25 @@ document.addEventListener("DOMContentLoaded", function () {
         if (scrollUpSelect) scrollUpSelect.value = data.gazePreferences["Scroll Up"] || "";
         if (scrollDownSelect) scrollDownSelect.value = data.gazePreferences["Scroll Down"] || "";
         if (triggerSelect) triggerSelect.value = data.gazePreferences["Trigger or choose"] || "";
-      } else {
-        console.warn("Gaze preferences not found or invalid:", data);
       }
     });
-  } else {
-    console.warn("chrome.storage.local is not available. Are you running this as a Chrome extension?");
   }
 
-  // Show the feedback box as a popup overlay, then hide it and close popup after 2 seconds
   function showFeedbackBox() {
     if (!feedbackBox) return;
     const blurOverlay = document.getElementById('blurOverlay');
     if (blurOverlay) blurOverlay.style.display = 'block';
-  
+
     feedbackBox.textContent = "Preferences saved!";
     feedbackBox.style.display = "block";
-  
+
     setTimeout(() => {
       feedbackBox.style.display = "none";
       if (blurOverlay) blurOverlay.style.display = "none";
-  
+
       if (popupOverlay) {
         popupOverlay.style.display = "none";
       }
     }, 1000);
   }
-  
 });
