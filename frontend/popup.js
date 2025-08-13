@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let calibrationInProgress = false;
 
+  // --- Create dots if they don't exist ---
   let birdDot = document.getElementById("birdDot");
   if (!birdDot) {
     birdDot = document.createElement("div");
@@ -17,7 +18,6 @@ document.addEventListener("DOMContentLoaded", function () {
     birdDot.style.zIndex = "15000";
     birdDot.style.pointerEvents = "none";
     birdDot.style.display = "none";
-
     birdDot.textContent = "🐦";
     birdDot.style.fontSize = "80px";
     document.body.appendChild(birdDot);
@@ -63,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
     { x: 0.9, y: 0.9 }
   ];
 
+  // -------------------- Calibration (Bird Game) --------------------
   function startGames() {
     if (calibrationInProgress) return;
     calibrationInProgress = true;
@@ -81,20 +82,81 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function runBirdGameSeries(callback) {
+    // Randomize the calibration points order
+    const points = [...calibrationPoints];
+    for (let i = points.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [points[i], points[j]] = [points[j], points[i]];
+    }
+
     let index = 0;
+    const collectedData = []; // store gaze data per point
+
     function next() {
-      if (index >= calibrationPoints.length) {
+      if (index >= points.length) {
+        console.log("Collected gaze data:", collectedData);
         callback();
         return;
       }
-      runBirdGame(calibrationPoints[index], () => {
+
+      runBirdGame(points[index], (medianGaze) => {
+        collectedData.push({ point: points[index], medianGaze });
         index++;
         next();
       });
     }
+
     next();
   }
 
+  function runBirdGame(point, callback) {
+    const birdDot = document.getElementById("birdDot");
+    const samples = [];
+    const requiredSamples = 5;
+    let sampleCount = 0;
+
+    birdDot.style.left = `${window.innerWidth * point.x}px`;
+    birdDot.style.top = `${window.innerHeight * point.y}px`;
+    birdDot.textContent = "🐦";
+    birdDot.style.display = "block";
+
+    // Pulsate effect
+    let scale = 1;
+    const pulsateInterval = setInterval(() => {
+      scale = scale === 1 ? 1.3 : 1;
+      birdDot.style.transform = `scale(${scale})`;
+    }, 500);
+
+    // Collect gaze samples
+    const sampleInterval = setInterval(() => {
+      if (window.webgazer) {
+        const prediction = webgazer.getCurrentPrediction();
+        if (prediction) samples.push({ x: prediction.x, y: prediction.y });
+      }
+      sampleCount++;
+      if (sampleCount >= requiredSamples) {
+        clearInterval(sampleInterval);
+        clearInterval(pulsateInterval);
+        birdDot.style.display = "none";
+
+        // Compute median gaze for this point
+        const medianGaze = {
+          x: median(samples.map(s => s.x)),
+          y: median(samples.map(s => s.y))
+        };
+        callback(medianGaze);
+      }
+    }, 300);
+  }
+
+  function median(values) {
+    if (values.length === 0) return 0;
+    values.sort((a, b) => a - b);
+    const mid = Math.floor(values.length / 2);
+    return values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+  }
+
+  // -------------------- Target & Gem Games (unchanged) --------------------
   function runTargetGameSeries(callback) {
     let index = 0;
     function next() {
@@ -108,6 +170,20 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
     next();
+  }
+
+  function runTargetGame(point, callback) {
+    targetDot.style.left = `${window.innerWidth * point.x}px`;
+    targetDot.style.top = `${window.innerHeight * point.y}px`;
+    targetDot.textContent = "🎯";
+    targetDot.style.display = "block";
+    setTimeout(() => {
+      targetDot.textContent = "💥";
+      setTimeout(() => {
+        targetDot.style.display = "none";
+        callback();
+      }, 500);
+    }, 1500);
   }
 
   function runGemGameSeries(callback) {
@@ -125,38 +201,6 @@ document.addEventListener("DOMContentLoaded", function () {
     next();
   }
 
-  function runBirdGame(point, callback) {
-    let frames = 30;
-    let i = 0;
-    birdDot.style.display = "block";
-    const interval = setInterval(() => {
-      const angle = (i / frames) * 2 * Math.PI;
-      const radius = 50;
-      birdDot.style.left = `${window.innerWidth * point.x + radius * Math.cos(angle)}px`;
-      birdDot.style.top = `${window.innerHeight * point.y + radius * Math.sin(angle)}px`;
-      i++;
-      if (i > frames) {
-        clearInterval(interval);
-        birdDot.style.display = "none";
-        callback();
-      }
-    }, 30);
-  }
-
-  function runTargetGame(point, callback) {
-    targetDot.style.left = `${window.innerWidth * point.x}px`;
-    targetDot.style.top = `${window.innerHeight * point.y}px`;
-    targetDot.textContent = "🎯";
-    targetDot.style.display = "block";
-    setTimeout(() => {
-      targetDot.textContent = "💥";
-      setTimeout(() => {
-        targetDot.style.display = "none";
-        callback();
-      }, 500);
-    }, 1500);
-  }
-
   function runGemGame(point, callback) {
     gemDot.style.left = `${window.innerWidth * point.x}px`;
     gemDot.style.top = `${window.innerHeight * point.y}px`;
@@ -171,6 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1500);
   }
 
+  // -------------------- Finish --------------------
   function finishGames() {
     calibrationInProgress = false;
     birdDot.style.display = "none";
@@ -189,6 +234,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const calibrateBtn = document.getElementById("calibrateBtn");
   if (calibrateBtn) calibrateBtn.addEventListener("click", startGames);
 
+  // -------------------- Toggle & Popup --------------------
   if (localStorage.getItem("toggleActive") === "true") toggle.classList.add("active");
   toggle.addEventListener("click", () => {
     toggle.classList.toggle("active");
@@ -211,6 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // -------------------- Preferences --------------------
   const scrollLeftSelect = document.getElementById("scrollLeftSelect");
   const scrollRightSelect = document.getElementById("scrollRightSelect");
   const scrollUpSelect = document.getElementById("scrollUpSelect");
