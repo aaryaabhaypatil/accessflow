@@ -100,28 +100,33 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function runGemGame() {
-    return new Promise(resolve => {
-      // Generate random position
-      const x = Math.random() * (window.innerWidth - 80); // minus 80 so gem doesn't go off-screen
+  return new Promise(async resolve => {
+    const numPoints = 15;
+
+    for (let i = 0; i < numPoints; i++) {
+
+      const x = Math.random() * (window.innerWidth - 80);
       const y = Math.random() * (window.innerHeight - 80);
 
-      // Place the gem at the random location
+   
       gemDot.style.left = `${x}px`;
       gemDot.style.top = `${y}px`;
       gemDot.textContent = "💎";
       gemDot.style.display = "block";
 
-      // Show the sparkle after a short delay
-      setTimeout(() => {
-        gemDot.textContent = "✨"; // sparkle
-        // Remove the gem completely after showing sparkle
-        setTimeout(() => {
-          gemDot.style.display = "none";
-          resolve(); // resolves the promise, signaling game is finished
-        }, 800); // sparkle visible for 0.8s
-      }, 800); // gem visible for 0.8s
-    });
-  }
+
+      await new Promise(res => setTimeout(res, 800));
+      gemDot.textContent = "✨";
+
+
+      await new Promise(res => setTimeout(res, 800));
+      gemDot.style.display = "none";
+    }
+
+    resolve(); 
+  });
+}
+
 
 
 
