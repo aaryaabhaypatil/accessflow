@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentCalibrationPoint = null;
   let gazeDataLog = [];
 
-
+  // Helper: create a calibration dot
   function createDot(id, emoji) {
     let dot = document.getElementById(id);
     if (!dot) {
@@ -30,7 +30,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const birdDot = createDot("birdDot", "🐦");
   const targetDot = createDot("targetDot", "🎯");
-  const gemDot = createDot("gemDot", "💎");
+  const gemDot = createDot("gemDot", "💎✨");
+
+  // --- NEW: real-time gaze dot ---
+  const gazeDot = document.createElement("div");
+  gazeDot.id = "gazeDot";
+  gazeDot.style.position = "fixed";
+  gazeDot.style.width = "20px";
+  gazeDot.style.height = "20px";
+  gazeDot.style.borderRadius = "50%";
+  gazeDot.style.background = "red";
+  gazeDot.style.zIndex = "20000";
+  gazeDot.style.pointerEvents = "none";
+  gazeDot.style.display = "none";
+  document.body.appendChild(gazeDot);
 
   const calibrationPoints = [
     { x: 0.1, y: 0.1 }, { x: 0.5, y: 0.1 }, { x: 0.9, y: 0.1 },
@@ -38,14 +51,12 @@ document.addEventListener("DOMContentLoaded", function () {
     { x: 0.1, y: 0.9 }, { x: 0.5, y: 0.9 }, { x: 0.9, y: 0.9 }
   ];
 
-
   function median(values) {
     if (values.length === 0) return 0;
     values.sort((a, b) => a - b);
     const mid = Math.floor(values.length / 2);
     return values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
   }
-
 
   async function startGames() {
     if (calibrationInProgress) return;
@@ -58,60 +69,99 @@ document.addEventListener("DOMContentLoaded", function () {
       blurOverlay.style.opacity = "1";
     }
 
-    await runBirdGameSeries();
-    await runTargetGameSeries();
-    await runGemGameSeries();
+    await runBirdGame();
+    await runTargetGame();
+    await runGemGame();
 
     finishGames();
   }
 
-  function runBirdGameSeries() {
-    return runGameSeries(calibrationPoints, runBirdGame, "bird");
-  }
+  // ---------------------------
+  // Independent Games
+  // ---------------------------
 
-  function runTargetGameSeries() {
-    return runGameSeries(calibrationPoints, runTargetGame, "target");
-  }
-
-  function runGemGameSeries() {
-    return runGameSeries(calibrationPoints, runGemGame, "gem");
-  }
-
-  function runGameSeries(points, runGameFn, gameName) {
-    return new Promise(resolve => {
-      const shuffled = [...points].sort(() => Math.random() - 0.5);
-      let index = 0;
-
-      function next() {
-        if (index >= shuffled.length) return resolve();
-        runGameFn(shuffled[index], () => {
-          index++;
-          next();
-        });
+  function runBirdGame() {
+    return new Promise((resolve) => {
+      birdDot.style.display = "block";
+      let x = 0, y = 100;
+      function move() {
+        if (x > window.innerWidth) {
+          birdDot.style.display = "none";
+          resolve();
+          return;
+        }
+        birdDot.style.left = `${x}px`;
+        birdDot.style.top = `${y}px`;
+        x += 20;
+        setTimeout(move, 200);
       }
-      next();
+      move();
+    });
+  }
+
+  function runGemGame() {
+    return new Promise(resolve => {
+      // Generate random position
+      const x = Math.random() * (window.innerWidth - 80); // minus 80 so gem doesn't go off-screen
+      const y = Math.random() * (window.innerHeight - 80);
+
+      // Place the gem at the random location
+      gemDot.style.left = `${x}px`;
+      gemDot.style.top = `${y}px`;
+      gemDot.textContent = "💎";
+      gemDot.style.display = "block";
+
+      // Show the sparkle after a short delay
+      setTimeout(() => {
+        gemDot.textContent = "✨"; // sparkle
+        // Remove the gem completely after showing sparkle
+        setTimeout(() => {
+          gemDot.style.display = "none";
+          resolve(); // resolves the promise, signaling game is finished
+        }, 800); // sparkle visible for 0.8s
+      }, 800); // gem visible for 0.8s
     });
   }
 
 
-  function runBirdGame(point, callback) {
-    runCalibrationPoint(point, birdDot, callback, "bird");
+
+
+  function runTargetGame() {
+    return new Promise((resolve) => {
+      targetDot.style.display = "block";
+      let moves = 0;
+
+      function move() {
+        if (moves >= 5) {
+          targetDot.style.display = "none";
+          resolve();
+          return;
+        }
+        const x = Math.random() * (window.innerWidth - 100);
+        const y = Math.random() * (window.innerHeight - 100);
+        targetDot.style.left = `${x}px`;
+        targetDot.style.top = `${y}px`;
+        targetDot.textContent = "🎯";
+
+        setTimeout(() => {
+          targetDot.textContent = "💥";
+          setTimeout(() => {
+            targetDot.textContent = "🎯";
+            moves++;
+            move();
+          }, 500);
+        }, 1000);
+      }
+      move();
+    });
   }
 
-  function runTargetGame(point, callback) {
-    runCalibrationPoint(point, targetDot, callback, "target");
-  }
+  
 
-  function runGemGame(point, callback) {
-    gemDot.style.left = `${window.innerWidth * point.x}px`;
-    gemDot.style.top = `${window.innerHeight * point.y}px`;
-    gemDot.style.display = "block";
-    setTimeout(() => {
-      gemDot.style.display = "none";
-      callback();
-    }, 1000);
-  }
 
+  // ---------------------------
+  // Calibration + Gaze tracker
+  // ---------------------------
   function runCalibrationPoint(point, dot, callback, type) {
     const samples = [];
     const requiredSamples = 5;
@@ -135,9 +185,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (window.webgazer) {
         const prediction = webgazer.getCurrentPrediction();
         if (prediction) {
-          samples.push({ x: prediction.x, y: prediction.y });
-          console.log("Target:", { x: currentCalibrationPoint.x, y: currentCalibrationPoint.y }, 
-                      "User gaze:", { x: prediction.x, y: prediction.y });
+          const gazeX = Math.min(Math.max(prediction.x, 0), window.innerWidth);
+          const gazeY = Math.min(Math.max(prediction.y, 0), window.innerHeight);
+
+          samples.push({ x: gazeX, y: gazeY });
+          gazeDot.style.left = `${gazeX - 10}px`;
+          gazeDot.style.top = `${gazeY - 10}px`;
+          gazeDot.style.display = "block";
+
+          console.log("Target:", { x: currentCalibrationPoint.x, y: currentCalibrationPoint.y },
+                      "User gaze:", { x: gazeX, y: gazeY });
         }
       }
 
@@ -158,22 +215,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 300);
   }
 
-
-  function finishGames() {
-    calibrationInProgress = false;
-    birdDot.style.display = "none";
-    targetDot.style.display = "none";
-    gemDot.style.display = "none";
-    if (blurOverlay) blurOverlay.style.display = "none";
-    alert("Calibration complete!");
-  }
-
   async function startGazeTracker() {
     if (!window.webgazer) return;
 
     try {
       await webgazer.setRegression('ridge')
-        .setGazeListener((data, elapsedTime) => { /* we log inside runCalibrationPoint */ })
+        .setGazeListener((data) => {
+          if (data) {
+            const x = Math.min(Math.max(data.x, 0), window.innerWidth);
+            const y = Math.min(Math.max(data.y, 0), window.innerHeight);
+            gazeDot.style.left = `${x - 10}px`;
+            gazeDot.style.top = `${y - 10}px`;
+            gazeDot.style.display = "block";
+          }
+        })
         .begin();
       webgazer.showVideo(true).showFaceOverlay(true);
       console.log("Gaze tracking started");
@@ -181,6 +236,17 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Camera permission denied or error starting WebGazer:", err);
     }
   }
+
+  function finishGames() {
+    calibrationInProgress = false;
+    birdDot.style.display = "none";
+    targetDot.style.display = "none";
+    gemDot.style.display = "none";
+    if (blurOverlay) blurOverlay.style.display = "none";
+    alert("Calibration complete! Red dot now shows your real-time gaze.");
+  }
+
+  // --- UI TOGGLES & BUTTONS ---
   if (localStorage.getItem("toggleActive") === "true") toggle.classList.add("active");
   toggle.addEventListener("click", () => {
     toggle.classList.toggle("active");
@@ -194,6 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (openPopupBtn && popupOverlay) openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
   if (closeBtn && popupOverlay) closeBtn.addEventListener("click", () => popupOverlay.style.display = "none");
+
   if (toggleSwitch) {
     const savedState = localStorage.getItem('isTrackingOn');
     isTrackingOn = savedState === 'true';
@@ -204,7 +271,6 @@ document.addEventListener("DOMContentLoaded", function () {
       localStorage.setItem('isTrackingOn', isTrackingOn.toString());
     });
   }
-
 
   const scrollLeftSelect = document.getElementById("scrollLeftSelect");
   const scrollRightSelect = document.getElementById("scrollRightSelect");
@@ -250,60 +316,4 @@ document.addEventListener("DOMContentLoaded", function () {
       if (popupOverlay) popupOverlay.style.display = "none";
     }, 1000);
   }
-  // Draw live gaze path
-const gazeCanvas = document.getElementById("gazePathCanvas");
-const ctx = gazeCanvas.getContext("2d");
-
-function resizeCanvas() {
-  gazeCanvas.width = window.innerWidth;
-  gazeCanvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-let lastX = null;
-let lastY = null;
-
-function startGazePathTracking() {
-  if (!window.webgazer) return;
-  ctx.clearRect(0, 0, gazeCanvas.width, gazeCanvas.height);
-
-  webgazer.setGazeListener((data) => {
-    if (data) {
-      const x = data.x;
-      const y = data.y;
-
-
-      if (lastX !== null && lastY !== null) {
-        ctx.strokeStyle = "rgba(255, 0, 0, 0.7)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }
-
-
-      ctx.fillStyle = "rgba(0, 0, 255, 0.7)";
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      lastX = x;
-      lastY = y;
-    }
-  });
-}
-
-
-function finishGames() {
-  calibrationInProgress = false;
-  birdDot.style.display = "none";
-  targetDot.style.display = "none";
-  gemDot.style.display = "none";
-  if (blurOverlay) blurOverlay.style.display = "none";
-  alert("Calibration complete! Now tracking your gaze path...");
-  startGazePathTracking();
-}
-
 });
