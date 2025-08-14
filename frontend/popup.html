@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="webgazer.js"></script>
+
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AccessFlow Landing Page</title>
@@ -17,6 +20,9 @@
 
     <div class="button calibrate-small" id="calibrateBtn">
       <div>Calibrate</div>
+      <!-- optional, only if you want a visible preview -->
+    <video id="webgazerVideoFeed" autoplay playsinline style="position: fixed; top: 0; left: 0; width: 160px; height: 120px; z-index: 20000; display: none;"></video>
+
       
     </div>
     <div id="blurOverlay"></div>
