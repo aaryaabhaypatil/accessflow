@@ -76,28 +76,61 @@ document.addEventListener("DOMContentLoaded", function () {
     finishGames();
   }
 
-  // ---------------------------
-  // Independent Games
-  // ---------------------------
+
 
   function runBirdGame() {
-    return new Promise((resolve) => {
-      birdDot.style.display = "block";
-      let x = 0, y = 100;
-      function move() {
-        if (x > window.innerWidth) {
-          birdDot.style.display = "none";
-          resolve();
-          return;
-        }
-        birdDot.style.left = `${x}px`;
-        birdDot.style.top = `${y}px`;
-        x += 20;
-        setTimeout(move, 200);
+  return new Promise((resolve) => {
+    birdDot.style.display = "block";
+
+
+    const points = Array.from({ length: 15 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+    }));
+
+    let index = 0;
+
+    function moveToNextPoint() {
+      if (index >= points.length) {
+        birdDot.style.display = "none";
+        resolve();
+        return;
       }
-      move();
-    });
-  }
+
+      const startX = parseFloat(birdDot.style.left) || points[index].x;
+      const startY = parseFloat(birdDot.style.top) || points[index].y;
+      const endX = points[index].x;
+      const endY = points[index].y;
+
+      const duration = 2000; 
+      const startTime = performance.now();
+
+      function animate(time) {
+        const elapsed = time - startTime;
+        const t = Math.min(elapsed / duration, 1); 
+
+        const currentX = startX + (endX - startX) * t;
+        const currentY = startY + (endY - startY) * t;
+
+        birdDot.style.left = `${currentX}px`;
+        birdDot.style.top = `${currentY}px`;
+
+        if (t < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          index++;
+          moveToNextPoint();
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    moveToNextPoint();
+  });
+}
+
+
 
   function runGemGame() {
   return new Promise(async resolve => {
