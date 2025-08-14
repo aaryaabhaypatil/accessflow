@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const feedbackBox = document.getElementById("feedbackBox");
   const blurOverlay = document.getElementById("blurOverlay");
   const calibrateBtn = document.getElementById("calibrateBtn");
+  const toggle = document.querySelector(".toggle-switch-popup");
 
   let calibrationInProgress = false;
   let currentCalibrationPoint = null;
@@ -180,10 +181,129 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Camera permission denied or error starting WebGazer:", err);
     }
   }
+  if (localStorage.getItem("toggleActive") === "true") toggle.classList.add("active");
+  toggle.addEventListener("click", () => {
+    toggle.classList.toggle("active");
+    localStorage.setItem("toggleActive", toggle.classList.contains("active"));
+  });
 
+  const toggleSwitch = document.getElementById("toggleSwitch");
+  let isTrackingOn = false;
 
   if (calibrateBtn) calibrateBtn.addEventListener("click", startGames);
 
   if (openPopupBtn && popupOverlay) openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
   if (closeBtn && popupOverlay) closeBtn.addEventListener("click", () => popupOverlay.style.display = "none");
+  if (toggleSwitch) {
+    const savedState = localStorage.getItem('isTrackingOn');
+    isTrackingOn = savedState === 'true';
+    toggleSwitch.classList.toggle("active", isTrackingOn);
+    toggleSwitch.addEventListener("click", function () {
+      isTrackingOn = !isTrackingOn;
+      this.classList.toggle("active", isTrackingOn);
+      localStorage.setItem('isTrackingOn', isTrackingOn.toString());
+    });
+  }
+
+
+  const scrollLeftSelect = document.getElementById("scrollLeftSelect");
+  const scrollRightSelect = document.getElementById("scrollRightSelect");
+  const scrollUpSelect = document.getElementById("scrollUpSelect");
+  const scrollDownSelect = document.getElementById("scrollDownSelect");
+  const triggerSelect = document.getElementById("triggerSelect");
+  const addButton = document.getElementById("addButton");
+  if (addButton) addButton.addEventListener("click", () => console.log("Add Settings button clicked!"));
+
+  const saveButton = document.getElementById("saveButton");
+  if (saveButton) saveButton.addEventListener("click", function () {
+    const preferences = {
+      "Scroll Left": scrollLeftSelect?.value || "",
+      "Scroll Right": scrollRightSelect?.value || "",
+      "Scroll Up": scrollUpSelect?.value || "",
+      "Scroll Down": scrollDownSelect?.value || "",
+      "Trigger or choose": triggerSelect?.value || ""
+    };
+    if (chrome?.storage?.local) chrome.storage.local.set({ gazePreferences: preferences }, () => showFeedbackBox());
+    else showFeedbackBox();
+  });
+
+  if (chrome?.storage?.local) {
+    chrome.storage.local.get(["gazePreferences"], function (data) {
+      if (data.gazePreferences) {
+        if (scrollLeftSelect) scrollLeftSelect.value = data.gazePreferences["Scroll Left"] || "";
+        if (scrollRightSelect) scrollRightSelect.value = data.gazePreferences["Scroll Right"] || "";
+        if (scrollUpSelect) scrollUpSelect.value = data.gazePreferences["Scroll Up"] || "";
+        if (scrollDownSelect) scrollDownSelect.value = data.gazePreferences["Scroll Down"] || "";
+        if (triggerSelect) triggerSelect.value = data.gazePreferences["Trigger or choose"] || "";
+      }
+    });
+  }
+
+  function showFeedbackBox() {
+    if (!feedbackBox) return;
+    if (blurOverlay) blurOverlay.style.display = 'block';
+    feedbackBox.textContent = "Preferences saved!";
+    feedbackBox.style.display = "block";
+    setTimeout(() => {
+      feedbackBox.style.display = "none";
+      if (blurOverlay) blurOverlay.style.display = "none";
+      if (popupOverlay) popupOverlay.style.display = "none";
+    }, 1000);
+  }
+  // Draw live gaze path
+const gazeCanvas = document.getElementById("gazePathCanvas");
+const ctx = gazeCanvas.getContext("2d");
+
+function resizeCanvas() {
+  gazeCanvas.width = window.innerWidth;
+  gazeCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let lastX = null;
+let lastY = null;
+
+function startGazePathTracking() {
+  if (!window.webgazer) return;
+  ctx.clearRect(0, 0, gazeCanvas.width, gazeCanvas.height);
+
+  webgazer.setGazeListener((data) => {
+    if (data) {
+      const x = data.x;
+      const y = data.y;
+
+
+      if (lastX !== null && lastY !== null) {
+        ctx.strokeStyle = "rgba(255, 0, 0, 0.7)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+
+
+      ctx.fillStyle = "rgba(0, 0, 255, 0.7)";
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fill();
+
+      lastX = x;
+      lastY = y;
+    }
+  });
+}
+
+
+function finishGames() {
+  calibrationInProgress = false;
+  birdDot.style.display = "none";
+  targetDot.style.display = "none";
+  gemDot.style.display = "none";
+  if (blurOverlay) blurOverlay.style.display = "none";
+  alert("Calibration complete! Now tracking your gaze path...");
+  startGazePathTracking();
+}
+
 });

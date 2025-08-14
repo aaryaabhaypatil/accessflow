@@ -22,6 +22,7 @@
       <div>Calibrate</div>
       <!-- optional, only if you want a visible preview -->
     <video id="webgazerVideoFeed" autoplay playsinline style="position: fixed; top: 0; left: 0; width: 160px; height: 120px; z-index: 20000; display: none;"></video>
+      <canvas id="gazePathCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99999;"></canvas>
 
       
     </div>
@@ -171,13 +172,11 @@
           <button id="addButton" class="btn-primary">Add</button>
         </div>
       </div>
+
       
       <button id="saveButton">Save</button>
-      <!-- <div id="feedbackMessage" style="display:none; color: green; margin-top: 10px; font-weight: bold; text-align: center;">
-        Saved!
-      </div> -->
-      <!-- Blur overlay, hidden by default -->
-      <div id="blurOverlay" style="
+
+      <div id="popupblurOverlay" style="
         display: none;
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
@@ -187,7 +186,7 @@
         z-index: 10900;
       "></div>
 
-      <!-- Your feedback box -->
+
       <div id="feedbackBox" style="
         display: none;
         position: fixed;
