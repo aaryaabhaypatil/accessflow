@@ -3,6 +3,8 @@ window.onload = async function () {
   let correctionModel = null;
   let calibrationDone = false;
   const gazePath = [];
+  const dataset = [];
+
 
   const smoothFactor = 0.2;
   let smoothedGaze = { x: 0, y: 0 };
@@ -134,34 +136,48 @@ window.onload = async function () {
     return coeffs.map(v => v[0]);
   }
 
-  function moveDot() {
-    if (current >= positions.length) {
-      correctionModel = fitAffineModel(calibrationPairs);
-      dot.style.display = "none";
-      calibrationDone = true; 
-      alert("Calibration finished!");
-      return;
-    }
-
-    const pos = positions[current];
-    dot.style.left = `${pos.x - 25}px`;
-    dot.style.top = `${pos.y - 25}px`;
-
-    const samples = [];
-    const interval = setInterval(() => { if (currentGaze) samples.push({ x: currentGaze.x, y: currentGaze.y }); }, 100);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      if (samples.length > 0) {
-        const filtered = filterOutliers(samples, 150);
-        const medianX = getMedian(filtered.map(s => s.x));
-        const medianY = getMedian(filtered.map(s => s.y));
-        calibrationPairs.push({ gazeX: medianX, gazeY: medianY, dotX: pos.x, dotY: pos.y });
-      }
-      current++;
-      moveDot();
-    }, 2000);
+    function moveDot() {
+  if (current >= positions.length) {
+    correctionModel = fitAffineModel(calibrationPairs);
+    dot.style.display = "none";
+    calibrationDone = true; 
+    alert("Calibration finished!");
+    saveDataset();
+    return;
   }
+
+  const pos = positions[current];
+  dot.style.left = `${pos.x - 25}px`;
+  dot.style.top = `${pos.y - 25}px`;
+
+  const samples = [];
+  const interval = setInterval(() => { 
+    if (currentGaze) samples.push({ x: currentGaze.x, y: currentGaze.y }); 
+  }, 100);
+
+  setTimeout(() => {
+    clearInterval(interval);
+    if (samples.length > 0) {
+      const filtered = filterOutliers(samples, 150);
+      const medianX = getMedian(filtered.map(s => s.x));
+      const medianY = getMedian(filtered.map(s => s.y));
+      calibrationPairs.push({ gazeX: medianX, gazeY: medianY, dotX: pos.x, dotY: pos.y });
+
+
+      samples.forEach(s => {
+        dataset.push({
+          rawX: s.x,
+          rawY: s.y,
+          screenX: pos.x,
+          screenY: pos.y
+        });
+      });
+    }
+    current++;
+    moveDot();
+  }, 2000);
+}
+
 
 
   function traceGazePath() {
@@ -191,7 +207,13 @@ window.onload = async function () {
 
     requestAnimationFrame(traceGazePath);
   }
-
+  function saveDataset() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataset));
+    const dlAnchor = document.createElement('a');
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", "gaze_dataset.json");
+    dlAnchor.click();
+    }
   moveDot();      
   traceGazePath();
 };
