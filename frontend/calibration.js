@@ -3,7 +3,29 @@ window.onload = async function () {
   let correctionModel = null;
   const gazePath = [];
 
+  // For smoothing
+  const smoothFactor = 0.2;
+  let smoothedGaze = { x: 0, y: 0 };
 
+  // For median filtering
+  const gazeHistory = [];
+  const historyLength = 5;
+
+  function getSmoothedGaze(rawGaze) {
+    smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + rawGaze.x * smoothFactor;
+    smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + rawGaze.y * smoothFactor;
+    return { ...smoothedGaze };
+  }
+
+  function getMedianGaze(rawGaze) {
+    gazeHistory.push(rawGaze);
+    if (gazeHistory.length > historyLength) gazeHistory.shift();
+    const xs = gazeHistory.map(p => p.x).sort((a, b) => a - b);
+    const ys = gazeHistory.map(p => p.y).sort((a, b) => a - b);
+    return { x: xs[Math.floor(xs.length / 2)], y: ys[Math.floor(ys.length / 2)] };
+  }
+
+  // Start WebGazer
   await webgazer.setRegression('ridge')
     .setTracker('clmtrackr')
     .setGazeListener((data) => {
@@ -26,7 +48,7 @@ window.onload = async function () {
 
   webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
 
-
+  // Dot for calibration
   const dot = document.createElement("div");
   dot.style.position = "fixed";
   dot.style.width = "50px";
@@ -36,7 +58,7 @@ window.onload = async function () {
   dot.style.zIndex = "9999";
   document.body.appendChild(dot);
 
-
+  // Canvas for continuous gaze path
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -48,7 +70,7 @@ window.onload = async function () {
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 
-
+  // Generate 7x9 calibration points
   const rows = 7;
   const cols = 9;
   const positions = [];
@@ -83,77 +105,78 @@ window.onload = async function () {
 
   function fitAffineModel(pairs) {
     if (pairs.length === 0) return [0, 0, 0, 0, 0, 0];
-
-    return [1, 0, 0, 0, 1, 0];
+    return [1, 0, 0, 0, 1, 0]; 
   }
 
   function moveDot() {
-  if (current >= positions.length) {
-    correctionModel = fitAffineModel(calibrationPairs);
-    dot.style.display = "none";
-    alert("Calibration finished!");
-    requestAnimationFrame(traceGazePath);
-    return;
-  }
+    if (current >= positions.length) {
+      correctionModel = fitAffineModel(calibrationPairs);
+      dot.style.display = "none";
+      alert("Calibration finished!");
+      requestAnimationFrame(traceGazePath);
+      return;
+    }
 
-  const pos = positions[current];
-  dot.style.left = `${pos.x - 25}px`;
-  dot.style.top = `${pos.y - 25}px`;
+    const pos = positions[current];
+    dot.style.left = `${pos.x - 25}px`;
+    dot.style.top = `${pos.y - 25}px`;
 
-  const samples = [];
-  const interval = setInterval(() => {
-    if (currentGaze) {
-      samples.push({ x: currentGaze.x, y: currentGaze.y });
+    const samples = [];
+    const interval = setInterval(() => {
+      if (currentGaze) {
+        samples.push({ x: currentGaze.x, y: currentGaze.y });
 
-
-      console.log(`Gaze coordinates → x: ${currentGaze.x.toFixed(2)}, y: ${currentGaze.y.toFixed(2)}`);
-      if (correctionModel) {
-        const [a, b, c, d, e, f] = correctionModel;
-        const userX = a * currentGaze.x + b * currentGaze.y + c;
-        const userY = d * currentGaze.x + e * currentGaze.y + f;
-        console.log(`User coordinates → x: ${userX.toFixed(2)}, y: ${userY.toFixed(2)}`);
-      } else {
-
-        console.log(`User coordinates → x: ${currentGaze.x.toFixed(2)}, y: ${currentGaze.y.toFixed(2)}`);
+        // Print gaze and user coordinates during calibration
+        console.log(`Gaze coordinates → x: ${currentGaze.x.toFixed(2)}, y: ${currentGaze.y.toFixed(2)}`);
+        if (correctionModel) {
+          const [a, b, c, d, e, f] = correctionModel;
+          const userX = a * currentGaze.x + b * currentGaze.y + c;
+          const userY = d * currentGaze.x + e * currentGaze.y + f;
+          console.log(`User coordinates → x: ${userX.toFixed(2)}, y: ${userY.toFixed(2)}`);
+        } else {
+          console.log(`User coordinates → x: ${currentGaze.x.toFixed(2)}, y: ${currentGaze.y.toFixed(2)}`);
+        }
       }
-    }
-  }, 100);
+    }, 100);
 
-  setTimeout(() => {
-    clearInterval(interval);
-    if (samples.length > 0) {
-      const filtered = filterOutliers(samples, 150);
-      const medianX = getMedian(filtered.map(s => s.x));
-      const medianY = getMedian(filtered.map(s => s.y));
-      calibrationPairs.push({ gazeX: medianX, gazeY: medianY, dotX: pos.x, dotY: pos.y });
-      console.log(`Dot ${current + 1}: Median Gaze (${medianX.toFixed(2)}, ${medianY.toFixed(2)}) → Dot (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`);
-    }
-    current++;
-    moveDot();
-  }, 2000);
-}
-
+    setTimeout(() => {
+      clearInterval(interval);
+      if (samples.length > 0) {
+        const filtered = filterOutliers(samples, 150);
+        const medianX = getMedian(filtered.map(s => s.x));
+        const medianY = getMedian(filtered.map(s => s.y));
+        calibrationPairs.push({ gazeX: medianX, gazeY: medianY, dotX: pos.x, dotY: pos.y });
+        console.log(`Dot ${current + 1}: Median Gaze (${medianX.toFixed(2)}, ${medianY.toFixed(2)}) → Dot (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`);
+      }
+      current++;
+      moveDot();
+    }, 2000);
+  }
 
   function traceGazePath() {
     if (currentGaze) {
+      // Apply smoothing + median filtering
+      let filteredGaze = getMedianGaze(currentGaze);
+      let smoothGaze = getSmoothedGaze(filteredGaze);
 
+      // Draw small circle
       ctx.fillStyle = "limegreen";
       ctx.beginPath();
-      ctx.arc(currentGaze.x, currentGaze.y, 3, 0, 2 * Math.PI);
+      ctx.arc(smoothGaze.x, smoothGaze.y, 3, 0, 2 * Math.PI);
       ctx.fill();
 
-
+      // Connect to previous point
       if (gazePath.length > 0) {
         const last = gazePath[gazePath.length - 1];
         ctx.beginPath();
         ctx.strokeStyle = "limegreen";
         ctx.lineWidth = 2;
         ctx.moveTo(last.x, last.y);
-        ctx.lineTo(currentGaze.x, currentGaze.y);
+        ctx.lineTo(smoothGaze.x, smoothGaze.y);
         ctx.stroke();
       }
 
-      gazePath.push({ x: currentGaze.x, y: currentGaze.y });
+      gazePath.push({ x: smoothGaze.x, y: smoothGaze.y });
     }
 
     requestAnimationFrame(traceGazePath);
