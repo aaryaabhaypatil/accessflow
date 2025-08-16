@@ -214,19 +214,24 @@ window.onload = async function () {
 
     requestAnimationFrame(traceGazePath);
   }
-    async function saveDataset() {
-  try {
-    const response = await fetch('http://localhost:3000/save-gaze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dataset)
-    });
-    if (!response.ok) throw new Error('Failed to save');
-    console.log('Dataset saved to backend');
-  } catch (err) {
-    console.error('❌ Failed to save dataset:', err);
+  async function saveDataset() {
+    const chunkSize = 1000; // number of points per chunk
+    for (let i = 0; i < dataset.length; i += chunkSize) {
+      const chunk = dataset.slice(i, i + chunkSize);
+      try {
+        const res = await fetch('http://localhost:3000/save-gaze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(chunk)
+        });
+        if (!res.ok) throw new Error('Failed to save');
+      } catch (err) {
+        console.error('❌ Failed to save chunk:', err);
+      }
+    }
+    console.log('All chunks sent successfully!');
   }
-}
+
 
 
 
