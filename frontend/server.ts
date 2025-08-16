@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.post('/save-gaze', (req, res) => {
   const data = req.body;
-  fs.writeFileSync('gaze_dataset.json', JSON.stringify(data, null, 2));
+  fs.writeFileSync('received_data.json', JSON.stringify(data, null, 2));
   res.json({ status: 'ok' });
 });
 
