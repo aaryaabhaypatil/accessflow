@@ -25,6 +25,22 @@ window.onload = async function () {
     return { x: xs[Math.floor(xs.length / 2)], y: ys[Math.floor(ys.length / 2)] };
   }
 
+  // Limit sudden jumps
+  function limitJump(lastPoint, newPoint, maxDistance = 100) {
+    if (!lastPoint) return newPoint;
+    const dx = newPoint.x - lastPoint.x;
+    const dy = newPoint.y - lastPoint.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance > maxDistance) {
+      const ratio = maxDistance / distance;
+      return {
+        x: lastPoint.x + dx * ratio,
+        y: lastPoint.y + dy * ratio
+      };
+    }
+    return newPoint;
+  }
+
   // Start WebGazer
   await webgazer.setRegression('ridge')
     .setTracker('clmtrackr')
@@ -69,6 +85,18 @@ window.onload = async function () {
   canvas.style.pointerEvents = "none";
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
+
+  // Coordinate display
+  const coordDisplay = document.createElement("div");
+  coordDisplay.style.position = "fixed";
+  coordDisplay.style.top = "10px";
+  coordDisplay.style.left = "10px";
+  coordDisplay.style.background = "rgba(0,0,0,0.5)";
+  coordDisplay.style.color = "white";
+  coordDisplay.style.padding = "5px 10px";
+  coordDisplay.style.borderRadius = "5px";
+  coordDisplay.style.zIndex = "10001";
+  document.body.appendChild(coordDisplay);
 
   // Generate 7x9 calibration points
   const rows = 7;
@@ -155,19 +183,26 @@ window.onload = async function () {
 
   function traceGazePath() {
     if (currentGaze) {
-      // Apply smoothing + median filtering
+
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
       let filteredGaze = getMedianGaze(currentGaze);
       let smoothGaze = getSmoothedGaze(filteredGaze);
 
-      // Draw small circle
+
+      let last = gazePath[gazePath.length - 1];
+      smoothGaze = limitJump(last, smoothGaze);
+
+        
       ctx.fillStyle = "limegreen";
       ctx.beginPath();
       ctx.arc(smoothGaze.x, smoothGaze.y, 3, 0, 2 * Math.PI);
       ctx.fill();
 
-      // Connect to previous point
+
       if (gazePath.length > 0) {
-        const last = gazePath[gazePath.length - 1];
         ctx.beginPath();
         ctx.strokeStyle = "limegreen";
         ctx.lineWidth = 2;
@@ -177,6 +212,9 @@ window.onload = async function () {
       }
 
       gazePath.push({ x: smoothGaze.x, y: smoothGaze.y });
+
+      // Update on-screen coordinates
+      coordDisplay.innerText = `Gaze: (${smoothGaze.x.toFixed(1)}, ${smoothGaze.y.toFixed(1)})`;
     }
 
     requestAnimationFrame(traceGazePath);
