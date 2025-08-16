@@ -182,43 +182,40 @@ window.onload = async function () {
   }
 
   function traceGazePath() {
-    if (currentGaze) {
+  if (currentGaze) {
+    // Apply median filtering + smoothing
+    let filteredGaze = getMedianGaze(currentGaze);
+    let smoothGaze = getSmoothedGaze(filteredGaze);
 
-      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Limit sudden jumps
+    let last = gazePath[gazePath.length - 1];
+    smoothGaze = limitJump(last, smoothGaze);
 
+    // Draw small circle
+    ctx.fillStyle = "limegreen";
+    ctx.beginPath();
+    ctx.arc(smoothGaze.x, smoothGaze.y, 3, 0, 2 * Math.PI);
+    ctx.fill();
 
-      let filteredGaze = getMedianGaze(currentGaze);
-      let smoothGaze = getSmoothedGaze(filteredGaze);
-
-
-      let last = gazePath[gazePath.length - 1];
-      smoothGaze = limitJump(last, smoothGaze);
-
-        
-      ctx.fillStyle = "limegreen";
+    // Connect to previous point
+    if (gazePath.length > 0) {
       ctx.beginPath();
-      ctx.arc(smoothGaze.x, smoothGaze.y, 3, 0, 2 * Math.PI);
-      ctx.fill();
-
-
-      if (gazePath.length > 0) {
-        ctx.beginPath();
-        ctx.strokeStyle = "limegreen";
-        ctx.lineWidth = 2;
-        ctx.moveTo(last.x, last.y);
-        ctx.lineTo(smoothGaze.x, smoothGaze.y);
-        ctx.stroke();
-      }
-
-      gazePath.push({ x: smoothGaze.x, y: smoothGaze.y });
-
-      // Update on-screen coordinates
-      coordDisplay.innerText = `Gaze: (${smoothGaze.x.toFixed(1)}, ${smoothGaze.y.toFixed(1)})`;
+      ctx.strokeStyle = "limegreen";
+      ctx.lineWidth = 2;
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(smoothGaze.x, smoothGaze.y);
+      ctx.stroke();
     }
 
-    requestAnimationFrame(traceGazePath);
+    gazePath.push({ x: smoothGaze.x, y: smoothGaze.y });
+
+    // Update on-screen coordinates
+    coordDisplay.innerText = `Gaze: (${smoothGaze.x.toFixed(1)}, ${smoothGaze.y.toFixed(1)})`;
   }
+
+  requestAnimationFrame(traceGazePath);
+}
+
 
   moveDot();
 };
