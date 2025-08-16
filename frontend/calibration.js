@@ -1,9 +1,15 @@
 window.onload = async function () {
+    const dataset = [];
+    const stored = localStorage.getItem("gazeDataset");
+    if (stored) {
+        dataset.push(...JSON.parse(stored));
+    }
+
   let currentGaze = null;
   let correctionModel = null;
   let calibrationDone = false;
   const gazePath = [];
-  const dataset = [];
+  
 
 
   const smoothFactor = 0.2;
@@ -172,6 +178,7 @@ window.onload = async function () {
           screenY: pos.y
         });
       });
+      localStorage.setItem("gazeDataset", JSON.stringify(dataset));
     }
     current++;
     moveDot();
@@ -207,13 +214,26 @@ window.onload = async function () {
 
     requestAnimationFrame(traceGazePath);
   }
-  function saveDataset() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataset));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", "gaze_dataset.json");
-    dlAnchor.click();
-    }
+  async function saveDataset() {
+  try {
+    // Save to localStorage too, in case server is down
+    localStorage.setItem("gazeDataset", JSON.stringify(dataset));
+
+    // Send to backend
+    const response = await fetch("http://localhost:3000/save-gaze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dataset),
+    });
+
+    const result = await response.json();
+    console.log("✅ Dataset saved to server:", result);
+  } catch (err) {
+    console.error("❌ Failed to save dataset:", err);
+  }
+}
+
+
   moveDot();      
   traceGazePath();
 };
