@@ -214,24 +214,20 @@ window.onload = async function () {
 
     requestAnimationFrame(traceGazePath);
   }
-  async function saveDataset() {
+    async function saveDataset() {
   try {
-    // Save to localStorage too, in case server is down
-    localStorage.setItem("gazeDataset", JSON.stringify(dataset));
-
-    // Send to backend
-    const response = await fetch("http://localhost:3000/save-gaze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dataset),
+    const response = await fetch('http://localhost:3000/save-gaze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dataset)
     });
-
-    const result = await response.json();
-    console.log("✅ Dataset saved to server:", result);
+    if (!response.ok) throw new Error('Failed to save');
+    console.log('Dataset saved to backend');
   } catch (err) {
-    console.error("❌ Failed to save dataset:", err);
+    console.error('❌ Failed to save dataset:', err);
   }
 }
+
 
 
   moveDot();      
