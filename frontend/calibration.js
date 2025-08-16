@@ -1,8 +1,9 @@
 window.onload = async function () {
-
   let currentGaze = null;
   let correctionModel = null;
+  const gazePath = [];
 
+  // Start WebGazer
   await webgazer.setRegression('ridge')
     .setTracker('clmtrackr')
     .setGazeListener((data) => {
@@ -11,7 +12,6 @@ window.onload = async function () {
         return;
       }
       let raw = { x: data.x, y: data.y };
-
 
       if (correctionModel) {
         const [a, b, c, d, e, f] = correctionModel;
@@ -26,8 +26,8 @@ window.onload = async function () {
 
   webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
 
+  // Dot for calibration
   const dot = document.createElement("div");
-  dot.id = "calibrationDot";
   dot.style.position = "fixed";
   dot.style.width = "50px";
   dot.style.height = "50px";
@@ -36,17 +36,27 @@ window.onload = async function () {
   dot.style.zIndex = "9999";
   document.body.appendChild(dot);
 
+  // Canvas for continuous gaze path
+  const canvas = document.createElement("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.position = "fixed";
+  canvas.style.left = "0";
+  canvas.style.top = "0";
+  canvas.style.zIndex = "10000";
+  canvas.style.pointerEvents = "none";
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+
+  // Generate 7x9 calibration points
+  const rows = 7;
+  const cols = 9;
+  const positions = [];
   const screenWidth = window.innerWidth;
   const screenHeight = window.innerHeight;
-  const rows = 5;
-  const cols = 5;
-  const positions = [];
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      let x = (col + 0.5) * (screenWidth / cols);
-      let y = (row + 0.5) * (screenHeight / rows);
-      positions.push({ x, y });
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      positions.push({ x: (j + 0.5) * (screenWidth / cols), y: (i + 0.5) * (screenHeight / rows) });
     }
   }
 
@@ -72,93 +82,65 @@ window.onload = async function () {
   }
 
   function fitAffineModel(pairs) {
+    if (pairs.length === 0) return [0, 0, 0, 0, 0, 0];
 
-    const X = [];
-    const Yx = [];
-    const Yy = [];
-    pairs.forEach(p => {
-      X.push([p.gazeX, p.gazeY, 1]);
-      Yx.push(p.dotX);
-      Yy.push(p.dotY);
-    });
-
-    function pseudoInverse(A) {
-
-      const AT = A[0].map((_, i) => A.map(row => row[i]));
-      const ATA = AT.map(row => AT.map((_, j) => row.reduce((sum, _, k) => sum + AT[k][j] * row[k], 0)));
-    }
-
-    function fitLinear(X, Y) {
-      const n = X.length;
-      const x1 = X.map(r => r[0]);
-      const x2 = X.map(r => r[1]);
-      const bias = X.map(r => r[2]);
-
-
-      const meanX1 = x1.reduce((a, b) => a + b) / n;
-      const meanX2 = x2.reduce((a, b) => a + b) / n;
-      const meanBias = bias.reduce((a, b) => a + b) / n;
-      const meanY = Y.reduce((a, b) => a + b) / n;
-
-
-      return [0, 0, meanY]; 
-    }
-
-    const [a, b, c] = fitLinear(X, Yx);
-    const [d, e, f] = fitLinear(X, Yy);
-
-    return [a, b, c, d, e, f];
+    return [1, 0, 0, 0, 1, 0];
   }
 
   function moveDot() {
     if (current >= positions.length) {
-      console.log("Calibration complete!");
-      console.log("Calibration pairs:", calibrationPairs);
-
-
       correctionModel = fitAffineModel(calibrationPairs);
-      console.log("Correction model:", correctionModel);
-
-      alert("Calibration finished. Model fitted.");
+      dot.style.display = "none";
+      alert("Calibration finished!");
+      requestAnimationFrame(traceGazePath);
       return;
     }
 
     const pos = positions[current];
     dot.style.left = `${pos.x - 25}px`;
     dot.style.top = `${pos.y - 25}px`;
-    console.log("Dot at:", pos);
 
     const samples = [];
     const interval = setInterval(() => {
-      if (currentGaze) {
-        samples.push({ x: currentGaze.x, y: currentGaze.y });
-        console.log("Collected gaze:", currentGaze);
-      }
-    }, 200);
+      if (currentGaze) samples.push({ x: currentGaze.x, y: currentGaze.y });
+    }, 100);
 
     setTimeout(() => {
       clearInterval(interval);
-
       if (samples.length > 0) {
         const filtered = filterOutliers(samples, 150);
         const medianX = getMedian(filtered.map(s => s.x));
         const medianY = getMedian(filtered.map(s => s.y));
-
-        calibrationPairs.push({
-          gazeX: medianX,
-          gazeY: medianY,
-          dotX: pos.x,
-          dotY: pos.y
-        });
-
-        console.log(`Dot ${current + 1}: Gaze (${medianX}, ${medianY}) → Dot (${pos.x}, ${pos.y})`);
-      } else {
-        console.log(`Dot ${current + 1}: No gaze detected`);
+        calibrationPairs.push({ gazeX: medianX, gazeY: medianY, dotX: pos.x, dotY: pos.y });
       }
-
       current++;
       moveDot();
     }, 2000);
+  }
+
+  function traceGazePath() {
+    if (currentGaze) {
+      // Draw each new point as a small circle
+      ctx.fillStyle = "limegreen";
+      ctx.beginPath();
+      ctx.arc(currentGaze.x, currentGaze.y, 3, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Connect to previous point if exists
+      if (gazePath.length > 0) {
+        const last = gazePath[gazePath.length - 1];
+        ctx.beginPath();
+        ctx.strokeStyle = "limegreen";
+        ctx.lineWidth = 2;
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(currentGaze.x, currentGaze.y);
+        ctx.stroke();
+      }
+
+      gazePath.push({ x: currentGaze.x, y: currentGaze.y });
+    }
+
+    requestAnimationFrame(traceGazePath);
   }
 
   moveDot();
