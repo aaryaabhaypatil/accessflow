@@ -1,13 +1,11 @@
 window.onload = async function () {
   let currentGaze = null;
   let correctionModel = null;
+  let calibrationDone = false;
   const gazePath = [];
 
-  // For smoothing
   const smoothFactor = 0.2;
   let smoothedGaze = { x: 0, y: 0 };
-
-  // For median filtering
   const gazeHistory = [];
   const historyLength = 5;
 
@@ -25,7 +23,6 @@ window.onload = async function () {
     return { x: xs[Math.floor(xs.length / 2)], y: ys[Math.floor(ys.length / 2)] };
   }
 
-  // Limit sudden jumps
   function limitJump(lastPoint, newPoint, maxDistance = 100) {
     if (!lastPoint) return newPoint;
     const dx = newPoint.x - lastPoint.x;
@@ -33,29 +30,19 @@ window.onload = async function () {
     const distance = Math.hypot(dx, dy);
     if (distance > maxDistance) {
       const ratio = maxDistance / distance;
-      return {
-        x: lastPoint.x + dx * ratio,
-        y: lastPoint.y + dy * ratio
-      };
+      return { x: lastPoint.x + dx * ratio, y: lastPoint.y + dy * ratio };
     }
     return newPoint;
   }
 
-  // Start WebGazer
   await webgazer.setRegression('ridge')
     .setTracker('clmtrackr')
     .setGazeListener((data) => {
-      if (data == null) {
-        currentGaze = null;
-        return;
-      }
+      if (!data) { currentGaze = null; return; }
       let raw = { x: data.x, y: data.y };
-
       if (correctionModel) {
         const [a, b, c, d, e, f] = correctionModel;
-        const correctedX = a * raw.x + b * raw.y + c;
-        const correctedY = d * raw.x + e * raw.y + f;
-        currentGaze = { x: correctedX, y: correctedY };
+        currentGaze = { x: a * raw.x + b * raw.y + c, y: d * raw.x + e * raw.y + f };
       } else {
         currentGaze = raw;
       }
@@ -64,7 +51,6 @@ window.onload = async function () {
 
   webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
 
-  // Dot for calibration
   const dot = document.createElement("div");
   dot.style.position = "fixed";
   dot.style.width = "50px";
@@ -74,7 +60,6 @@ window.onload = async function () {
   dot.style.zIndex = "9999";
   document.body.appendChild(dot);
 
-  // Canvas for continuous gaze path
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -86,7 +71,6 @@ window.onload = async function () {
   document.body.appendChild(canvas);
   const ctx = canvas.getContext("2d");
 
-  // Coordinate display
   const coordDisplay = document.createElement("div");
   coordDisplay.style.position = "fixed";
   coordDisplay.style.top = "10px";
@@ -98,50 +82,64 @@ window.onload = async function () {
   coordDisplay.style.zIndex = "10001";
   document.body.appendChild(coordDisplay);
 
-  // Generate 7x9 calibration points
-  const rows = 7;
-  const cols = 9;
+  const rows = 7, cols = 9;
   const positions = [];
-  const screenWidth = window.innerWidth;
-  const screenHeight = window.innerHeight;
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
+  const screenWidth = window.innerWidth, screenHeight = window.innerHeight;
+  for (let i = 0; i < rows; i++)
+    for (let j = 0; j < cols; j++)
       positions.push({ x: (j + 0.5) * (screenWidth / cols), y: (i + 0.5) * (screenHeight / rows) });
-    }
-  }
 
   let current = 0;
   const calibrationPairs = [];
 
   function getMedian(values) {
-    if (values.length === 0) return null;
+    if (!values.length) return null;
     values.sort((a, b) => a - b);
     const mid = Math.floor(values.length / 2);
-    return values.length % 2 !== 0
-      ? values[mid]
-      : (values[mid - 1] + values[mid]) / 2;
+    return values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
   }
 
   function filterOutliers(samples, threshold = 150) {
-    if (samples.length === 0) return samples;
+    if (!samples.length) return samples;
     const meanX = samples.reduce((a, s) => a + s.x, 0) / samples.length;
     const meanY = samples.reduce((a, s) => a + s.y, 0) / samples.length;
-    return samples.filter(s =>
-      Math.hypot(s.x - meanX, s.y - meanY) < threshold
-    );
+    return samples.filter(s => Math.hypot(s.x - meanX, s.y - meanY) < threshold);
   }
 
   function fitAffineModel(pairs) {
-    if (pairs.length === 0) return [0, 0, 0, 0, 0, 0];
-    return [1, 0, 0, 0, 1, 0]; 
+    if (pairs.length < 3) return [1, 0, 0, 0, 1, 0];
+    const X = [], Y = [];
+    for (let p of pairs) {
+      X.push([p.gazeX, p.gazeY, 1, 0, 0, 0]); Y.push(p.dotX);
+      X.push([0, 0, 0, p.gazeX, p.gazeY, 1]); Y.push(p.dotY);
+    }
+    function transpose(mat) { return mat[0].map((_, col) => mat.map(row => row[col])); }
+    function multiply(a, b) {
+      const result = Array(a.length).fill(0).map(() => Array(b[0].length).fill(0));
+      for (let i = 0; i < a.length; i++) for (let j = 0; j < b[0].length; j++) for (let k = 0; k < b.length; k++)
+        result[i][j] += a[i][k] * b[k][j];
+      return result;
+    }
+    function invertMatrix(m) {
+      const n = m.length;
+      const I = Array(n).fill(0).map((_, i) => Array(n).fill(0).map((_, j) => i === j ? 1 : 0));
+      for (let i = 0; i < n; i++) {
+        let diag = m[i][i]; for (let j = 0; j < n; j++) { m[i][j] /= diag; I[i][j] /= diag; }
+        for (let k = 0; k < n; k++) { if (k === i) continue; let factor = m[k][i]; for (let j = 0; j < n; j++) { m[k][j] -= factor * m[i][j]; I[k][j] -= factor * I[i][j]; } }
+      }
+      return I;
+    }
+    const XT = transpose(X), XTX = multiply(XT, X), XTY = multiply(XT, Y.map(v => [v])), XTXinv = invertMatrix(XTX);
+    const coeffs = multiply(XTXinv, XTY);
+    return coeffs.map(v => v[0]);
   }
 
   function moveDot() {
     if (current >= positions.length) {
       correctionModel = fitAffineModel(calibrationPairs);
       dot.style.display = "none";
+      calibrationDone = true; 
       alert("Calibration finished!");
-      requestAnimationFrame(traceGazePath);
       return;
     }
 
@@ -150,22 +148,7 @@ window.onload = async function () {
     dot.style.top = `${pos.y - 25}px`;
 
     const samples = [];
-    const interval = setInterval(() => {
-      if (currentGaze) {
-        samples.push({ x: currentGaze.x, y: currentGaze.y });
-
-        // Print gaze and user coordinates during calibration
-        console.log(`Gaze coordinates → x: ${currentGaze.x.toFixed(2)}, y: ${currentGaze.y.toFixed(2)}`);
-        if (correctionModel) {
-          const [a, b, c, d, e, f] = correctionModel;
-          const userX = a * currentGaze.x + b * currentGaze.y + c;
-          const userY = d * currentGaze.x + e * currentGaze.y + f;
-          console.log(`User coordinates → x: ${userX.toFixed(2)}, y: ${userY.toFixed(2)}`);
-        } else {
-          console.log(`User coordinates → x: ${currentGaze.x.toFixed(2)}, y: ${currentGaze.y.toFixed(2)}`);
-        }
-      }
-    }, 100);
+    const interval = setInterval(() => { if (currentGaze) samples.push({ x: currentGaze.x, y: currentGaze.y }); }, 100);
 
     setTimeout(() => {
       clearInterval(interval);
@@ -174,48 +157,41 @@ window.onload = async function () {
         const medianX = getMedian(filtered.map(s => s.x));
         const medianY = getMedian(filtered.map(s => s.y));
         calibrationPairs.push({ gazeX: medianX, gazeY: medianY, dotX: pos.x, dotY: pos.y });
-        console.log(`Dot ${current + 1}: Median Gaze (${medianX.toFixed(2)}, ${medianY.toFixed(2)}) → Dot (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)})`);
       }
       current++;
       moveDot();
     }, 2000);
   }
 
+
   function traceGazePath() {
-  if (currentGaze) {
-    // Apply median filtering + smoothing
-    let filteredGaze = getMedianGaze(currentGaze);
-    let smoothGaze = getSmoothedGaze(filteredGaze);
+    if (calibrationDone && currentGaze) {
+      let last = gazePath[gazePath.length - 1];
+      let filtered = getMedianGaze(currentGaze);
+      let smooth = getSmoothedGaze(filtered);
+      smooth = limitJump(last, smooth);
 
-    // Limit sudden jumps
-    let last = gazePath[gazePath.length - 1];
-    smoothGaze = limitJump(last, smoothGaze);
+      
 
-    // Draw small circle
-    ctx.fillStyle = "limegreen";
-    ctx.beginPath();
-    ctx.arc(smoothGaze.x, smoothGaze.y, 3, 0, 2 * Math.PI);
-    ctx.fill();
+      ctx.fillStyle = "limegreen";
+      ctx.beginPath(); ctx.arc(smooth.x, smooth.y, 3, 0, 2 * Math.PI); ctx.fill();
 
-    // Connect to previous point
-    if (gazePath.length > 0) {
-      ctx.beginPath();
-      ctx.strokeStyle = "limegreen";
-      ctx.lineWidth = 2;
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(smoothGaze.x, smoothGaze.y);
-      ctx.stroke();
+      if (last) {
+        ctx.beginPath();
+        ctx.strokeStyle = "limegreen";
+        ctx.lineWidth = 2;
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(smooth.x, smooth.y);
+        ctx.stroke();
+      }
+
+      gazePath.push({ x: smooth.x, y: smooth.y });
+      coordDisplay.innerText = `Gaze: (${smooth.x.toFixed(1)}, ${smooth.y.toFixed(1)})`;
     }
 
-    gazePath.push({ x: smoothGaze.x, y: smoothGaze.y });
-
-    // Update on-screen coordinates
-    coordDisplay.innerText = `Gaze: (${smoothGaze.x.toFixed(1)}, ${smoothGaze.y.toFixed(1)})`;
+    requestAnimationFrame(traceGazePath);
   }
 
-  requestAnimationFrame(traceGazePath);
-}
-
-
-  moveDot();
+  moveDot();      
+  traceGazePath();
 };
