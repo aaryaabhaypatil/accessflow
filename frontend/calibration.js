@@ -68,6 +68,16 @@ window.onload = async function () {
   dot.style.zIndex = "9999";
   document.body.appendChild(dot);
 
+  const dotGaze = document.createElement("div");
+  dotGaze.style.position = "fixed";
+  dotGaze.style.width = "20px"; // smaller than calibration dot
+  dotGaze.style.height = "20px";
+  dotGaze.style.background = "red";
+  dotGaze.style.borderRadius = "50%";
+  dotGaze.style.zIndex = "10002"; // above everything
+  dotGaze.style.pointerEvents = "none"; // so it doesn’t block clicks
+  document.body.appendChild(dotGaze);
+
   const canvas = document.createElement("canvas");
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -187,43 +197,40 @@ window.onload = async function () {
 
 
 
-  function traceGazePath() {
-  if (calibrationDone && currentGaze) {
-    let last = gazePath[gazePath.length - 1];
-    let filtered = getMedianGaze(currentGaze);
-    let smooth = getSmoothedGaze(filtered);
+    function traceGazePath() {
+    if (currentGaze) {
+        let last = gazePath[gazePath.length - 1];
+        let filtered = getMedianGaze(currentGaze);
+        let smooth = getSmoothedGaze(filtered);
+        smooth = limitJump(last, smooth);
 
-    // Extra interpolation for smooth movement
-    if (last) {
-      const alpha = 0.1; // smaller alpha = slower, smoother movement
-      smooth = {
-        x: last.x + (smooth.x - last.x) * alpha,
-        y: last.y + (smooth.y - last.y) * alpha
-      };
+        // Always move the gaze dot
+        dotGaze.style.left = `${smooth.x - 10}px`; // center the 20px dot
+        dotGaze.style.top = `${smooth.y - 10}px`;
+
+        if (calibrationDone) {
+            // Only draw the path after calibration
+            ctx.fillStyle = "limegreen";
+            ctx.beginPath(); ctx.arc(smooth.x, smooth.y, 3, 0, 2 * Math.PI); ctx.fill();
+
+            if (last) {
+                ctx.beginPath();
+                ctx.strokeStyle = "limegreen";
+                ctx.lineWidth = 2;
+                ctx.moveTo(last.x, last.y);
+                ctx.lineTo(smooth.x, smooth.y);
+                ctx.stroke();
+            }
+
+            gazePath.push({ x: smooth.x, y: smooth.y });
+        }
+
+        coordDisplay.innerText = `Gaze: (${smooth.x.toFixed(1)}, ${smooth.y.toFixed(1)})`;
     }
 
-    smooth = limitJump(last, smooth);
-
-    ctx.fillStyle = "limegreen";
-    ctx.beginPath();
-    ctx.arc(smooth.x, smooth.y, 3, 0, 2 * Math.PI);
-    ctx.fill();
-
-    if (last) {
-      ctx.beginPath();
-      ctx.strokeStyle = "limegreen";
-      ctx.lineWidth = 2;
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(smooth.x, smooth.y);
-      ctx.stroke();
-    }
-
-    gazePath.push({ x: smooth.x, y: smooth.y });
-    coordDisplay.innerText = `Gaze: (${smooth.x.toFixed(1)}, ${smooth.y.toFixed(1)})`;
-  }
-
-  requestAnimationFrame(traceGazePath);
+    requestAnimationFrame(traceGazePath);
 }
+
 
   async function saveDataset() {
     const chunkSize = 1000; // number of points per chunk
