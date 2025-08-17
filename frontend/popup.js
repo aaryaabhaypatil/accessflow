@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
   pathCanvas.style.left = "0";
   pathCanvas.width = window.innerWidth;
   pathCanvas.height = window.innerHeight;
-  pathCanvas.style.zIndex = "19999"; // below gazeDot, above page
+  pathCanvas.style.zIndex = "19999";
   pathCanvas.style.pointerEvents = "none";
   document.body.appendChild(pathCanvas);
 
@@ -68,10 +68,10 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
 
-  // import { initGazeDot, updateGazeDot, currentGaze } from "./gazeDot.js";
+
 
 async function startCalibration() {
-    // initialize gaze dot
+
     window.initGazeDot();
 
     const dataset = [];
@@ -320,7 +320,6 @@ async function startCalibration() {
         console.log('All chunks sent successfully!');
     }
 
-    // start calibration and tracing
     moveDot();      
     traceGazePath();
 }
@@ -469,12 +468,7 @@ async function startCalibration() {
     });
   }
 
-  
 
-
-  // ---------------------------
-  // Calibration + Gaze tracker
-  // ---------------------------
   function runCalibrationPoint(point, dot, callback, type) {
     const samples = [];
     const requiredSamples = 5;
@@ -538,12 +532,10 @@ async function startCalibration() {
             const x = Math.min(Math.max(data.x, 0), window.innerWidth);
             const y = Math.min(Math.max(data.y, 0), window.innerHeight);
 
-            // move red dot
             gazeDot.style.left = `${x - 10}px`;
             gazeDot.style.top = `${y - 10}px`;
             gazeDot.style.display = "block";
 
-            // draw path only after calibration
             if (pathDrawingEnabled) {
               pathCtx.fillStyle = "rgba(255,0,0,0.6)";
               pathCtx.beginPath();
@@ -568,24 +560,21 @@ async function startCalibration() {
   gemDot.style.display = "none";
   if (blurOverlay) blurOverlay.style.display = "none";
 
-  // enable path drawing AFTER calibration
   pathDrawingEnabled = true;
 
   alert("Calibration complete! Red dot now shows your real-time gaze with path.");
 }
 
 
-  // --- UI TOGGLES & BUTTONS ---
-  const toggleSwitch = document.getElementById("toggleSwitch");
+const toggleSwitch = document.getElementById("toggle-switch-popup");
 let isTrackingOn = false;
 
-// Initialize toggle based on saved state
 if (toggleSwitch) {
   const savedState = localStorage.getItem('isTrackingOn') === 'true';
   isTrackingOn = savedState;
   toggleSwitch.classList.toggle("active", isTrackingOn);
 
-  // Auto-start calibration if toggle was ON before reload
+
   if (isTrackingOn) {
     startCalibration();
   }
@@ -596,9 +585,9 @@ if (toggleSwitch) {
     localStorage.setItem('isTrackingOn', isTrackingOn.toString());
 
     if (isTrackingOn) {
-      startCalibration();  // start calibration when switched ON
+      startCalibration(); 
     } else {
-      // Stop/pause calibration when turned OFF
+
       if (window.webgazer) {
         webgazer.pause();
         console.log("Calibration paused.");
@@ -607,18 +596,13 @@ if (toggleSwitch) {
   });
 }
 
-// Handle calibrate button
+
 if (calibrateBtn) {
   calibrateBtn.addEventListener("click", () => {
-    if (!isTrackingOn) {
-      alert("Turn ON the toggle to start calibration.");
-      return;
-    }
-    startGames(); // your mini-games calibration
+    startGames(); 
   });
 }
 
-// Handle popup buttons
 if (openPopupBtn && popupOverlay) {
   openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
 }
@@ -670,6 +654,4 @@ if (closeBtn && popupOverlay) {
       if (popupOverlay) popupOverlay.style.display = "none";
     }, 1000);
   }
-
-  
 });
