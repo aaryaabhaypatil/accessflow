@@ -14,6 +14,22 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentCalibrationPoint = null;
   let gazeDataLog = [];
 
+  // Canvas for drawing gaze path
+  const pathCanvas = document.createElement("canvas");
+  pathCanvas.id = "gazePathCanvas";
+  pathCanvas.style.position = "fixed";
+  pathCanvas.style.top = "0";
+  pathCanvas.style.left = "0";
+  pathCanvas.width = window.innerWidth;
+  pathCanvas.height = window.innerHeight;
+  pathCanvas.style.zIndex = "19999"; // below gazeDot, above page
+  pathCanvas.style.pointerEvents = "none";
+  document.body.appendChild(pathCanvas);
+
+  const pathCtx = pathCanvas.getContext("2d");
+  let pathDrawingEnabled = false; // <- only true after calibration
+
+
   // Helper: create a calibration dot
   function createDot(id, emoji) {
     let dot = document.getElementById(id);
@@ -261,15 +277,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       await webgazer.setRegression('ridge')
-        .setGazeListener((data) => {
+       .setGazeListener((data) => {
           if (data) {
             const x = Math.min(Math.max(data.x, 0), window.innerWidth);
             const y = Math.min(Math.max(data.y, 0), window.innerHeight);
+
+            // move red dot
             gazeDot.style.left = `${x - 10}px`;
             gazeDot.style.top = `${y - 10}px`;
             gazeDot.style.display = "block";
+
+            // draw path only after calibration
+            if (pathDrawingEnabled) {
+              pathCtx.fillStyle = "rgba(255,0,0,0.6)";
+              pathCtx.beginPath();
+              pathCtx.arc(x, y, 3, 0, 2 * Math.PI);
+              pathCtx.fill();
+            }
           }
         })
+
         .begin();
       webgazer.showVideo(true).showFaceOverlay(true);
       console.log("Gaze tracking started");
@@ -279,13 +306,18 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function finishGames() {
-    calibrationInProgress = false;
-    birdDot.style.display = "none";
-    targetDot.style.display = "none";
-    gemDot.style.display = "none";
-    if (blurOverlay) blurOverlay.style.display = "none";
-    alert("Calibration complete! Red dot now shows your real-time gaze.");
-  }
+  calibrationInProgress = false;
+  birdDot.style.display = "none";
+  targetDot.style.display = "none";
+  gemDot.style.display = "none";
+  if (blurOverlay) blurOverlay.style.display = "none";
+
+  // enable path drawing AFTER calibration
+  pathDrawingEnabled = true;
+
+  alert("Calibration complete! Red dot now shows your real-time gaze with path.");
+}
+
 
   // --- UI TOGGLES & BUTTONS ---
   if (localStorage.getItem("toggleActive") === "true") toggle.classList.add("active");
