@@ -9,6 +9,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const blurOverlay = document.getElementById("blurOverlay");
   const calibrateBtn = document.getElementById("calibrateBtn");
   const toggle = document.querySelector(".toggle-switch-popup");
+  const pauseBtn = document.getElementById("pauseCalibrationBtn");
+  const resumeBtn = document.getElementById("resumeCalibrationBtn");
 
   let calibrationInProgress = false;
   let currentCalibrationPoint = null;
@@ -602,6 +604,59 @@ if (calibrateBtn) {
     startGames(); 
   });
 }
+
+let gamesPaused = false;
+let currentGameResolver = null; // Keeps track of the game promise resolver
+
+function pauseGames() {
+  gamesPaused = true;
+  console.log("Calibration games paused.");
+}
+
+function resumeGames() {
+  if (!gamesPaused) return;
+  gamesPaused = false;
+  console.log("Calibration games resumed.");
+
+  // If a game was waiting, continue it
+  if (currentGameResolver) {
+    currentGameResolver();
+    currentGameResolver = null;
+  }
+}
+
+if (pauseBtn) pauseBtn.addEventListener("click", pauseGames);
+if (resumeBtn) resumeBtn.addEventListener("click", resumeGames);
+
+// Wrap a game so it respects pause/resume
+async function runWithPause(gameFn) {
+  while (gamesPaused) {
+    await new Promise(resolve => {
+      currentGameResolver = resolve;
+    });
+  }
+  return gameFn();
+}
+
+// Override startGames to use pausable wrappers
+const originalStartGames = startGames;
+startGames = async function () {
+  if (calibrationInProgress) return;
+  calibrationInProgress = true;
+
+  await startGazeTracker();
+
+  if (blurOverlay) {
+    blurOverlay.style.display = "block";
+    blurOverlay.style.opacity = "1";
+  }
+
+  await runWithPause(runBirdGame);
+  await runWithPause(runTargetGame);
+  await runWithPause(runGemGame);
+
+  finishGames();
+};
 
 if (openPopupBtn && popupOverlay) {
   openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
