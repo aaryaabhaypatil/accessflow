@@ -188,32 +188,43 @@ window.onload = async function () {
 
 
   function traceGazePath() {
-    if (calibrationDone && currentGaze) {
-      let last = gazePath[gazePath.length - 1];
-      let filtered = getMedianGaze(currentGaze);
-      let smooth = getSmoothedGaze(filtered);
-      smooth = limitJump(last, smooth);
+  if (calibrationDone && currentGaze) {
+    let last = gazePath[gazePath.length - 1];
+    let filtered = getMedianGaze(currentGaze);
+    let smooth = getSmoothedGaze(filtered);
 
-      
-
-      ctx.fillStyle = "limegreen";
-      ctx.beginPath(); ctx.arc(smooth.x, smooth.y, 3, 0, 2 * Math.PI); ctx.fill();
-
-      if (last) {
-        ctx.beginPath();
-        ctx.strokeStyle = "limegreen";
-        ctx.lineWidth = 2;
-        ctx.moveTo(last.x, last.y);
-        ctx.lineTo(smooth.x, smooth.y);
-        ctx.stroke();
-      }
-
-      gazePath.push({ x: smooth.x, y: smooth.y });
-      coordDisplay.innerText = `Gaze: (${smooth.x.toFixed(1)}, ${smooth.y.toFixed(1)})`;
+    // Extra interpolation for smooth movement
+    if (last) {
+      const alpha = 0.1; // smaller alpha = slower, smoother movement
+      smooth = {
+        x: last.x + (smooth.x - last.x) * alpha,
+        y: last.y + (smooth.y - last.y) * alpha
+      };
     }
 
-    requestAnimationFrame(traceGazePath);
+    smooth = limitJump(last, smooth);
+
+    ctx.fillStyle = "limegreen";
+    ctx.beginPath();
+    ctx.arc(smooth.x, smooth.y, 3, 0, 2 * Math.PI);
+    ctx.fill();
+
+    if (last) {
+      ctx.beginPath();
+      ctx.strokeStyle = "limegreen";
+      ctx.lineWidth = 2;
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(smooth.x, smooth.y);
+      ctx.stroke();
+    }
+
+    gazePath.push({ x: smooth.x, y: smooth.y });
+    coordDisplay.innerText = `Gaze: (${smooth.x.toFixed(1)}, ${smooth.y.toFixed(1)})`;
   }
+
+  requestAnimationFrame(traceGazePath);
+}
+
   async function saveDataset() {
     const chunkSize = 1000; // number of points per chunk
     for (let i = 0; i < dataset.length; i += chunkSize) {
