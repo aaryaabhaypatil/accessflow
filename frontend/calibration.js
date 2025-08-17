@@ -1,4 +1,6 @@
+// import { initGazeDot, updateGazeDot, currentGaze } from "./gazeDot.js";
 window.onload = async function () {
+    window.initGazeDot();
     const dataset = [];
     const stored = localStorage.getItem("gazeDataset");
     if (stored) {
@@ -46,14 +48,17 @@ window.onload = async function () {
   await webgazer.setRegression('ridge')
     .setTracker('clmtrackr')
     .setGazeListener((data) => {
-      if (!data) { currentGaze = null; return; }
+      if (!data) { window.currentGaze.x = 0; window.currentGaze.y = 0; return; }
       let raw = { x: data.x, y: data.y };
       if (correctionModel) {
         const [a, b, c, d, e, f] = correctionModel;
-        currentGaze = { x: a * raw.x + b * raw.y + c, y: d * raw.x + e * raw.y + f };
+        window.currentGaze.x = a * raw.x + b * raw.y + c;
+        window.currentGaze.y = d * raw.x + e * raw.y + f;
       } else {
-        currentGaze = raw;
+        window.currentGaze.x = raw.x;
+        window.currentGaze.y = raw.y;
       }
+      window.updateGazeDot();
     })
     .begin();
 
@@ -197,39 +202,39 @@ window.onload = async function () {
 
 
 
-    function traceGazePath() {
-    if (currentGaze) {
+  function traceGazePath() {
+    if (window.currentGaze) {
+      // always update gaze dot
+      window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
+      window.dotGaze.style.top = `${window.currentGaze.y - 10}px`;
+
+      if (calibrationDone) { // only draw path after calibration
         let last = gazePath[gazePath.length - 1];
-        let filtered = getMedianGaze(currentGaze);
-        let smooth = getSmoothedGaze(filtered);
-        smooth = limitJump(last, smooth);
+        const filtered = getMedianGaze(window.currentGaze);
+        const smooth = getSmoothedGaze(filtered);
+        const limited = limitJump(last, smooth);
 
-        // Always move the gaze dot
-        dotGaze.style.left = `${smooth.x - 10}px`; // center the 20px dot
-        dotGaze.style.top = `${smooth.y - 10}px`;
+        ctx.fillStyle = "limegreen";
+        ctx.beginPath(); 
+        ctx.arc(limited.x, limited.y, 3, 0, 2 * Math.PI); 
+        ctx.fill();
 
-        if (calibrationDone) {
-            // Only draw the path after calibration
-            ctx.fillStyle = "limegreen";
-            ctx.beginPath(); ctx.arc(smooth.x, smooth.y, 3, 0, 2 * Math.PI); ctx.fill();
-
-            if (last) {
-                ctx.beginPath();
-                ctx.strokeStyle = "limegreen";
-                ctx.lineWidth = 2;
-                ctx.moveTo(last.x, last.y);
-                ctx.lineTo(smooth.x, smooth.y);
-                ctx.stroke();
-            }
-
-            gazePath.push({ x: smooth.x, y: smooth.y });
+        if (last) {
+          ctx.beginPath();
+          ctx.strokeStyle = "limegreen";
+          ctx.lineWidth = 2;
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(limited.x, limited.y);
+          ctx.stroke();
         }
 
-        coordDisplay.innerText = `Gaze: (${smooth.x.toFixed(1)}, ${smooth.y.toFixed(1)})`;
+        gazePath.push({ x: limited.x, y: limited.y });
+        coordDisplay.innerText = `Gaze: (${limited.x.toFixed(1)}, ${limited.y.toFixed(1)})`;
+      }
     }
-
     requestAnimationFrame(traceGazePath);
-}
+  }
+
 
 
   async function saveDataset() {
