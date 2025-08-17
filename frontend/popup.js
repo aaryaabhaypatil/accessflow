@@ -382,15 +382,16 @@ async function startCalibration() {
       const startTime = performance.now();
 
       function animate(time) {
+        if (gamesPaused) {
+          requestAnimationFrame(animate);
+          return;
+        }
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1); 
-
         const currentX = startX + (endX - startX) * t;
         const currentY = startY + (endY - startY) * t;
-
         birdDot.style.left = `${currentX}px`;
         birdDot.style.top = `${currentY}px`;
-
         if (t < 1) {
           requestAnimationFrame(animate);
         } else {
@@ -398,6 +399,7 @@ async function startCalibration() {
           moveToNextPoint();
         }
       }
+
 
       requestAnimationFrame(animate);
     }
