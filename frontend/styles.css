@@ -918,7 +918,10 @@ body, html {
 }
 
 #pauseCalibrationBtn {
-  left: 10vw;
+  position: absolute; 
+  top: 20px;
+  border-radius: 10px;
+  left: 3vw;
   width: 15vw;
   height: 4.2vh;
   align-items: center;
@@ -931,3 +934,22 @@ body, html {
   word-wrap: break-word;
 }
 
+
+#resumeCalibrationBtn {
+  position: absolute; 
+  top: 20px;
+  border-radius: 10px;
+  left: 20vw;
+  width: 15vw;
+  height: 4.2vh;
+  align-items: center;
+  background-color: #3E3F29;
+  color: #F1F0E4;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 2.5vh;
+  font-weight: 300;
+  line-height: 1.0;
+  word-wrap: break-word;
+  
+
+}
