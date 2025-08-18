@@ -738,40 +738,35 @@ if (closeBtn && popupOverlay) {
 
 
      function traceGazePath() {
-         if (window.currentGaze) {
-             window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
-             window.dotGaze.style.top = `${window.currentGaze.y - 10}px`;
+        if (window.currentGaze) {
+            window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
+            window.dotGaze.style.top = `${window.currentGaze.y - 10}px`;
 
+            if (calibrationDone) {
+                const last = gazePath[gazePath.length - 1];
+                const current = window.currentGaze;
 
-             if (calibrationDone) {
-                 let last = gazePath[gazePath.length - 1];
-                 const filtered = getMedianGaze(window.currentGaze);
-                 const smooth = getSmoothedGaze(filtered);
-                 const limited = limitJump(last, smooth);
+                ctx.fillStyle = "limegreen";
+                ctx.beginPath();
+                ctx.arc(current.x, current.y, 3, 0, 2 * Math.PI);
+                ctx.fill();
 
+                if (last) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = "limegreen";
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(last.x, last.y);
+                    ctx.lineTo(current.x, current.y);
+                    ctx.stroke();
+                }
 
-                 ctx.fillStyle = "limegreen";
-                 ctx.beginPath();
-                 ctx.arc(limited.x, limited.y, 3, 0, 2 * Math.PI);
-                 ctx.fill();
+                gazePath.push({ x: current.x, y: current.y });
+                coordDisplay.innerText = `Gaze: (${current.x.toFixed(1)}, ${current.y.toFixed(1)})`;
+            }
+        }
+        requestAnimationFrame(traceGazePath);
+    }
 
-
-                 if (last) {
-                     ctx.beginPath();
-                     ctx.strokeStyle = "limegreen";
-                     ctx.lineWidth = 2;
-                     ctx.moveTo(last.x, last.y);
-                     ctx.lineTo(limited.x, limited.y);
-                     ctx.stroke();
-                 }
-
-
-                 gazePath.push({ x: limited.x, y: limited.y });
-                 coordDisplay.innerText = `Gaze: (${limited.x.toFixed(1)}, ${limited.y.toFixed(1)})`;
-             }
-         }
-         requestAnimationFrame(traceGazePath);
-     }
 
 
      async function saveDataset() {
