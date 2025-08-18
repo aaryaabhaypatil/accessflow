@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const birdDot = createDot("birdDot", "🐦");
   const targetDot = createDot("targetDot", "🎯");
-  const gemDot = createDot("gemDot", "💎✨");
+  const gemDot = createDot("gemDot", "💎");
 
 
   // To track users gaze during gamified calibration
@@ -233,7 +233,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // Separate log for the target game
-
 const targetGazeLog = []; 
 
 function runTargetGame() {
@@ -282,6 +281,132 @@ function runTargetGame() {
     move();
   });
 }
+
+ // Separate log for the gem game
+const gemGazeLog = [];
+function runGemGame() {
+  return new Promise((resolve) => {
+    gemDot.style.display = "block";
+    let moves = 0;
+
+    function move() {
+      if (moves >= 5) {
+        gemDot.style.display = "none";
+        resolve();
+        return;
+      }
+
+      const x = Math.random() * (window.innerWidth - 100);
+      const y = Math.random() * (window.innerHeight - 100);
+      gemDot.style.left = `${x}px`;
+      gemDot.style.top = `${y}px`;
+      gemDot.textContent = "💎"; 
+
+      // Log gaze at spawn
+      if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+        const gazeEntry = {
+          time: Date.now(),
+          gazeX: window.currentGaze.x,
+          gazeY: window.currentGaze.y,
+          targetX: x,
+          targetY: y,
+          game: "gem",
+          moveIndex: moves
+        };
+        gemGazeLog.push(gazeEntry);
+        console.log("Gem game gaze:", gazeEntry);
+      }
+
+      setTimeout(() => {
+        gemDot.textContent = "✨"; 
+        setTimeout(() => {
+          gemDot.textContent = "💎";
+          moves++;
+          move();
+        }, 500);
+      }, 1000);
+    }
+
+    move();
+  });
+}
+
+
+const postCalibrationGazePath = []; // Separate path for after calibration
+
+function startPostCalibrationGazeTracing() {
+  const canvas = document.createElement("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.position = "fixed";
+  canvas.style.left = "0";
+  canvas.style.top = "0";
+  canvas.style.zIndex = "10000";
+  canvas.style.pointerEvents = "none";
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+
+  const gazeHistory = [];
+  const historyLength = 5;
+  const smoothFactor = 0.2;
+  let smoothedGaze = { x: 0, y: 0 };
+
+  function getMedianGaze(rawGaze) {
+    gazeHistory.push(rawGaze);
+    if (gazeHistory.length > historyLength) gazeHistory.shift();
+    const xs = gazeHistory.map(p => p.x).sort((a, b) => a - b);
+    const ys = gazeHistory.map(p => p.y).sort((a, b) => a - b);
+    return { x: xs[Math.floor(xs.length / 2)], y: ys[Math.floor(ys.length / 2)] };
+  }
+
+  function getSmoothedGaze(rawGaze) {
+    smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + rawGaze.x * smoothFactor;
+    smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + rawGaze.y * smoothFactor;
+    return { ...smoothedGaze };
+  }
+
+  function limitJump(lastPoint, newPoint, maxDistance = 100) {
+    if (!lastPoint) return newPoint;
+    const dx = newPoint.x - lastPoint.x;
+    const dy = newPoint.y - lastPoint.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance > maxDistance) {
+      const ratio = maxDistance / distance;
+      return { x: lastPoint.x + dx * ratio, y: lastPoint.y + dy * ratio };
+    }
+    return newPoint;
+  }
+
+  function trace() {
+    if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+      let last = postCalibrationGazePath[postCalibrationGazePath.length - 1];
+      const filtered = getMedianGaze(window.currentGaze);
+      const smooth = getSmoothedGaze(filtered);
+      const limited = limitJump(last, smooth);
+
+      // Draw gaze path
+      ctx.fillStyle = "cyan";
+      ctx.beginPath();
+      ctx.arc(limited.x, limited.y, 3, 0, 2 * Math.PI);
+      ctx.fill();
+
+      if (last) {
+        ctx.beginPath();
+        ctx.strokeStyle = "cyan";
+        ctx.lineWidth = 2;
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(limited.x, limited.y);
+        ctx.stroke();
+      }
+
+      postCalibrationGazePath.push({ x: limited.x, y: limited.y });
+    }
+    requestAnimationFrame(trace);
+  }
+
+  trace();
+}
+
 
 
 
@@ -393,6 +518,7 @@ startGames = async function () {
   await runWithPause(runGemGame);
 
   finishGames();
+  startPostCalibrationGazeTracing();
 };
 
 
