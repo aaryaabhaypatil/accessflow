@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let calibrationInProgress = false;
   let currentCalibrationPoint = null;
   let gazeDataLog = [];
+  let gameGazeLog = [];
 
   // Canvas for drawing gaze path
   const pathCanvas = document.createElement("canvas");
@@ -354,10 +355,9 @@ async function startCalibration() {
 
 
 
-  function runBirdGame() {
+    function runBirdGame() {
   return new Promise((resolve) => {
     birdDot.style.display = "block";
-
 
     const points = Array.from({ length: 15 }, () => ({
       x: Math.random() * window.innerWidth,
@@ -383,15 +383,32 @@ async function startCalibration() {
 
       function animate(time) {
         if (gamesPaused) {
-          requestAnimationFrame(animate);
+          requestAnimationFrame(animate); 
           return;
         }
+
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1); 
         const currentX = startX + (endX - startX) * t;
         const currentY = startY + (endY - startY) * t;
+
         birdDot.style.left = `${currentX}px`;
         birdDot.style.top = `${currentY}px`;
+
+
+        if (window.currentGaze) {
+          gameGazeLog.push({
+            time: Date.now(),
+            gazeX: window.currentGaze.x,
+            gazeY: window.currentGaze.y,
+            targetX: currentX,
+            targetY: currentY,
+            game: "bird",
+            pointIndex: index
+          });
+          
+        }
+
         if (t < 1) {
           requestAnimationFrame(animate);
         } else {
@@ -400,13 +417,13 @@ async function startCalibration() {
         }
       }
 
-
       requestAnimationFrame(animate);
     }
 
     moveToNextPoint();
   });
 }
+
 
 
 
