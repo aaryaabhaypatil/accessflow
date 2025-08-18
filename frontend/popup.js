@@ -477,7 +477,7 @@ function startTrackingLoop() {
       gazeDot.style.top = `${y - 10}px`;
       gazeDot.style.display = "block";
 
-      window.currentGaze = { x, y }; // safe assignment
+      window.currentGaze = { x, y }; 
 
       if (pathDrawingEnabled) {
         pathCtx.fillStyle = "rgba(255,0,0,0.6)";
