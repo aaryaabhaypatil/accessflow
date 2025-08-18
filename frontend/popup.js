@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let calibrationInProgress = false;
   let currentCalibrationPoint = null;
   let gazeDataLog = [];
-  let gameGazeLog = [];
+  let gameGazeLog = []
 
   // Canvas for drawing gaze path
   const pathCanvas = document.createElement("canvas");
@@ -335,23 +335,24 @@ async function startCalibration() {
     return values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
   }
 
-  async function startGames() {
-    if (calibrationInProgress) return;
-    calibrationInProgress = true;
 
-    await startGazeTracker();
+startGames = async function () {
+  if (calibrationInProgress) return;
+  calibrationInProgress = true;
 
-    if (blurOverlay) {
-      blurOverlay.style.display = "block";
-      blurOverlay.style.opacity = "1";
-    }
+  await startGazeTracker();
 
-    await runBirdGame();
-    await runTargetGame();
-    await runGemGame();
-
-    finishGames();
+  if (blurOverlay) {
+    blurOverlay.style.display = "block";
+    blurOverlay.style.opacity = "1";
   }
+
+  await runWithPause(runBirdGame);
+  await runWithPause(runTargetGame);
+  await runWithPause(runGemGame);
+
+  finishGames();
+};
 
 
 
@@ -383,7 +384,7 @@ async function startCalibration() {
 
       function animate(time) {
         if (gamesPaused) {
-          requestAnimationFrame(animate); 
+          requestAnimationFrame(animate); // wait while paused
           return;
         }
 
@@ -395,9 +396,9 @@ async function startCalibration() {
         birdDot.style.left = `${currentX}px`;
         birdDot.style.top = `${currentY}px`;
 
-
-        if (window.currentGaze) {
-          gameGazeLog.push({
+        // Collect gaze during the animation
+        if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+          const gazeEntry = {
             time: Date.now(),
             gazeX: window.currentGaze.x,
             gazeY: window.currentGaze.y,
@@ -405,9 +406,12 @@ async function startCalibration() {
             targetY: currentY,
             game: "bird",
             pointIndex: index
-          });
-          
+          };
+
+          gameGazeLog.push(gazeEntry);
+          console.log("Bird game gaze:", gazeEntry);
         }
+
 
         if (t < 1) {
           requestAnimationFrame(animate);
@@ -658,24 +662,7 @@ async function runWithPause(gameFn) {
 }
 
 // Override startGames to use pausable wrappers
-const originalStartGames = startGames;
-startGames = async function () {
-  if (calibrationInProgress) return;
-  calibrationInProgress = true;
 
-  await startGazeTracker();
-
-  if (blurOverlay) {
-    blurOverlay.style.display = "block";
-    blurOverlay.style.opacity = "1";
-  }
-
-  await runWithPause(runBirdGame);
-  await runWithPause(runTargetGame);
-  await runWithPause(runGemGame);
-
-  finishGames();
-};
 
 if (openPopupBtn && popupOverlay) {
   openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
