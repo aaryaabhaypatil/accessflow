@@ -232,37 +232,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+// Separate log for the target game
 
+const targetGazeLog = []; 
 
-  function runTargetGame() {
-    return new Promise((resolve) => {
-      targetDot.style.display = "block";
-      let moves = 0;
+function runTargetGame() {
+  return new Promise((resolve) => {
+    targetDot.style.display = "block";
+    let moves = 0;
 
-      function move() {
-        if (moves >= 5) {
-          targetDot.style.display = "none";
-          resolve();
-          return;
-        }
-        const x = Math.random() * (window.innerWidth - 100);
-        const y = Math.random() * (window.innerHeight - 100);
-        targetDot.style.left = `${x}px`;
-        targetDot.style.top = `${y}px`;
-        targetDot.textContent = "🎯";
-
-        setTimeout(() => {
-          targetDot.textContent = "💥";
-          setTimeout(() => {
-            targetDot.textContent = "🎯";
-            moves++;
-            move();
-          }, 500);
-        }, 1000);
+    function move() {
+      if (moves >= 5) {
+        targetDot.style.display = "none";
+        resolve();
+        return;
       }
-      move();
-    });
-  }
+
+      const x = Math.random() * (window.innerWidth - 100);
+      const y = Math.random() * (window.innerHeight - 100);
+      targetDot.style.left = `${x}px`;
+      targetDot.style.top = `${y}px`;
+      targetDot.textContent = "🎯";
+
+      // Log gaze at spawn
+      if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+        const gazeEntry = {
+          time: Date.now(),
+          gazeX: window.currentGaze.x,
+          gazeY: window.currentGaze.y,
+          targetX: x,
+          targetY: y,
+          game: "target",
+          moveIndex: moves
+        };
+        targetGazeLog.push(gazeEntry);
+        console.log("Target game gaze:", gazeEntry);
+      }
+
+      setTimeout(() => {
+        targetDot.textContent = "💥";
+        setTimeout(() => {
+          targetDot.textContent = "🎯";
+          moves++;
+          move();
+        }, 500);
+      }, 1000);
+    }
+
+    move();
+  });
+}
+
+
+
 
 // Start WebGazer and wait until camera is ready
 async function startGazeTracker() {
@@ -735,7 +757,6 @@ if (closeBtn && popupOverlay) {
              moveDot();
          }, 2000);
      }
-
 
      function traceGazePath() {
         if (window.currentGaze) {
