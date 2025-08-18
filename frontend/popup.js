@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const pathCtx = pathCanvas.getContext("2d");
   let pathDrawingEnabled = false; 
 
+  // Start camera as soon as the extension is on
+  initGazeTracking();
 
   // Calibration dot as emojis for the games
   function createDot(id, emoji) {
@@ -408,9 +410,6 @@ function startPostCalibrationGazeTracing() {
 }
 
 
-
-
-
 // Start WebGazer and wait until camera is ready
 async function startGazeTracker() {
   if (!window.webgazer) {
@@ -600,6 +599,63 @@ async function runWithPause(gameFn) {
   }
   return gameFn();
 }
+
+async function initGazeTracking() {
+
+  if (!window.webgazer) {
+    alert("WebGazer is not loaded!");
+    throw new Error("WebGazer not found");
+  }
+  if (!window.dotGaze) {
+    const dotGaze = document.createElement("div");
+    dotGaze.style.position = "fixed";
+    dotGaze.style.width = "20px";
+    dotGaze.style.height = "20px";
+    dotGaze.style.background = "red";
+    dotGaze.style.borderRadius = "50%";
+    dotGaze.style.zIndex = "10002";
+    dotGaze.style.pointerEvents = "none";
+    document.body.appendChild(dotGaze);
+    window.dotGaze = dotGaze;
+  }
+
+  window.currentGaze = { x: 0, y: 0 };
+
+  await webgazer
+    .setRegression("ridge")
+    .setTracker("clmtrackr")
+    .setGazeListener((data) => {
+      if (!data || !isFinite(data.x) || !isFinite(data.y)) {
+        window.currentGaze = { x: 0, y: 0 };
+        return;
+      }
+      window.currentGaze = { x: data.x, y: data.y };
+      if (window.dotGaze) {
+        window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
+        window.dotGaze.style.top = `${window.currentGaze.y - 10}px`;
+      }
+    })
+    .begin();
+  const webgazerDot = document.getElementById("webgazerGazeDot");
+  if (webgazerDot) {
+    webgazerDot.style.display = "none";
+    webgazerDot.style.opacity = "0";
+    webgazerDot.style.width = "0px";
+    webgazerDot.style.height = "0px";
+  }
+  webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+  console.log("Gaze tracking started, custom dot visible.");
+}
+
+
+
+
+
+
+
+
+
+
 
 if (openPopupBtn && popupOverlay) {
   openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
