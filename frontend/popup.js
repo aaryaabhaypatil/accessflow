@@ -337,23 +337,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 
-  // Starting the games
-  startGames = async function () {
-    if (calibrationInProgress) return;
-    calibrationInProgress = true;
-    // Only start if the camera is on
-    await startGazeTracker();
-    // Blur the screen for less distractions
-    if (blurOverlay) {
-      blurOverlay.style.display = "block";
-      blurOverlay.style.opacity = "1";
-    }
-    // run all the games
-    await runWithPause(runBirdGame);
-    await runWithPause(runTargetGame);
-    await runWithPause(runGemGame);
-    finishGames();
-  };
 
     function runBirdGame() {
       return new Promise((resolve) => {
@@ -484,35 +467,103 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  async function startGazeTracker() {
-    if (!window.webgazer) return;
-    try {
-      await webgazer.setRegression('ridge')
-       .setGazeListener((data) => {
-          if (data) {
-            const x = Math.min(Math.max(data.x, 0), window.innerWidth);
-            const y = Math.min(Math.max(data.y, 0), window.innerHeight);
-
-            gazeDot.style.left = `${x - 10}px`;
-            gazeDot.style.top = `${y - 10}px`;
-            gazeDot.style.display = "block";
-
-            if (pathDrawingEnabled) {
-              pathCtx.fillStyle = "rgba(255,0,0,0.6)";
-              pathCtx.beginPath();
-              pathCtx.arc(x, y, 3, 0, 2 * Math.PI);
-              pathCtx.fill();
-            }
-          }
-        })
-
-        .begin();
-      webgazer.showVideo(true).showFaceOverlay(true);
-      console.log("Gaze tracking started");
-    } catch (err) {
-      console.error("Camera permission denied or error starting WebGazer:", err);
-    }
+// Start WebGazer and wait until camera is ready
+async function startGazeTracker() {
+  if (!window.webgazer) {
+    alert("WebGazer is not loaded!");
+    throw new Error("WebGazer not found");
   }
+
+  try {
+    await webgazer
+      .setRegression('ridge')
+      .setGazeListener(() => {}) 
+      .begin();
+
+    webgazer.showVideo(true).showFaceOverlay(true);
+
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 25; 
+      const checkReady = setInterval(() => {
+        const prediction = webgazer.getCurrentPrediction();
+        attempts++;
+        if (prediction) {
+          clearInterval(checkReady);
+          console.log("Camera ready ✅");
+          startTrackingLoop(); 
+          resolve(true);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkReady);
+          alert("Camera not available. Cannot start calibration games.");
+          reject(new Error("Camera not available"));
+        }
+      }, 200);
+    });
+
+  } catch (err) {
+    console.error("Camera permission denied or error starting WebGazer:", err);
+    alert("Camera access denied. Cannot start calibration games.");
+    throw err;
+  }
+}
+
+// Continuous gaze tracking loop
+function startTrackingLoop() {
+  function loop() {
+    const prediction = webgazer.getCurrentPrediction();
+    if (prediction) {
+      const x = Math.min(Math.max(prediction.x, 0), window.innerWidth);
+      const y = Math.min(Math.max(prediction.y, 0), window.innerHeight);
+
+      gazeDot.style.left = `${x - 10}px`;
+      gazeDot.style.top = `${y - 10}px`;
+      gazeDot.style.display = "block";
+
+      if (pathDrawingEnabled) {
+        pathCtx.fillStyle = "rgba(255,0,0,0.6)";
+        pathCtx.beginPath();
+        pathCtx.arc(x, y, 3, 0, 2 * Math.PI);
+        pathCtx.fill();
+      }
+
+      window.currentGaze = { x, y };
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// Start games only if camera is ready
+startGames = async function () {
+  if (calibrationInProgress) return;
+  calibrationInProgress = true;
+
+  try {
+    // will throw if camera fails
+    await startGazeTracker(); 
+  } catch (err) {
+    // stop execution if camera is not available
+    calibrationInProgress = false;
+    return; 
+  }
+
+  // Blur screen for fewer distractions
+  if (blurOverlay) {
+    blurOverlay.style.display = "block";
+    blurOverlay.style.opacity = "1";
+  }
+
+  // Run mini-games in sequence
+  await runWithPause(runBirdGame);
+  await runWithPause(runTargetGame);
+  await runWithPause(runGemGame);
+
+  finishGames();
+};
+
+
+
 
   function finishGames() {
     calibrationInProgress = false;
