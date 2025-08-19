@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const pathCtx = pathCanvas.getContext("2d");
   let pathDrawingEnabled = false; 
+  
 
   // Start camera as soon as the extension is on
   initGazeTracking();
@@ -411,57 +412,61 @@ function startPostCalibrationGazeTracing() {
 
 
 // Start WebGazer and wait until camera is ready
+// Step 1: Initialize gaze tracking once at the start
 async function startGazeTracker() {
-  if (!window.webgazer) {
-    alert("WebGazer is not loaded!");
-    throw new Error("WebGazer not found");
+  if (!window.webgazer) throw new Error("WebGazer not loaded!");
+  
+  if (!window.dotGaze) {
+    const dot = document.createElement("div");
+    dot.style.position = "fixed";
+    dot.style.width = "20px";
+    dot.style.height = "20px";
+    dot.style.background = "red";
+    dot.style.borderRadius = "50%";
+    dot.style.zIndex = "10002";
+    dot.style.pointerEvents = "none";
+    document.body.appendChild(dot);
+    window.dotGaze = dot;
+    window.dotGaze.style.zIndex = "100000"; 
   }
 
-  try {
-    await webgazer
-      .setRegression('ridge')
-      .setGazeListener((data) => {
-        if (data) {
-          const x = Math.min(Math.max(data.x, 0), window.innerWidth);
-          const y = Math.min(Math.max(data.y, 0), window.innerHeight);
+  window.currentGaze = { x: 0, y: 0 };
+  const gazeHistory = [];
+  const smoothFactor = 0.2;
+  let smoothedGaze = { x: 0, y: 0 };
 
-          // store globally for the games
-          window.currentGaze = { x, y };
-
-          gazeDot.style.left = `${x - 10}px`;
-          gazeDot.style.top = `${y - 10}px`;
-          gazeDot.style.display = "block";
-        }
-      })
-      .begin();
-
-    webgazer.showVideo(true).showFaceOverlay(true);
-
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      const maxAttempts = 25;
-      const checkReady = setInterval(() => {
-        const prediction = webgazer.getCurrentPrediction();
-        attempts++;
-        if (prediction) {
-          clearInterval(checkReady);
-          console.log("Camera ready");
-          startTrackingLoop();
-          resolve(true);
-        } else if (attempts >= maxAttempts) {
-          clearInterval(checkReady);
-          alert("Camera not available. Cannot start calibration games.");
-          reject(new Error("Camera not available"));
-        }
-      }, 200);
-    });
-
-  } catch (err) {
-    console.error("Camera permission denied or error starting WebGazer:", err);
-    alert("Camera access denied. Cannot start calibration games.");
-    throw err;
+  function getSmoothedGaze(raw) {
+    smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + raw.x * smoothFactor;
+    smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + raw.y * smoothFactor;
+    return { ...smoothedGaze };
   }
+
+  await webgazer
+    .setRegression("ridge")
+    .setTracker("clmtrackr")
+    .setGazeListener((data) => {
+      if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
+
+      // smoothing + store globally
+      const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+      window.currentGaze = smoothed;
+
+      // update gaze dot
+      window.dotGaze.style.left = `${smoothed.x - 10}px`;
+      window.dotGaze.style.top = `${smoothed.y - 10}px`;
+    })
+    .begin();
+
+  // hide default webgazer dot
+  const webDot = document.getElementById("webgazerGazeDot");
+  if (webDot) webDot.style.display = "none";
+
+  webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+
+  console.log("Gaze tracking started, dot visible.");
 }
+
+
 
 
 // Continuous gaze tracking loop
@@ -606,6 +611,14 @@ async function initGazeTracking() {
     alert("WebGazer is not loaded!");
     throw new Error("WebGazer not found");
   }
+
+
+  let correctionModel = null;
+  const storedModel = localStorage.getItem("calibrationModel");
+  if (storedModel) {
+    correctionModel = JSON.parse(storedModel); // [a, b, c, d, e, f]
+  }
+
   if (!window.dotGaze) {
     const dotGaze = document.createElement("div");
     dotGaze.style.position = "fixed";
@@ -633,6 +646,7 @@ async function initGazeTracking() {
       if (window.dotGaze) {
         window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
         window.dotGaze.style.top = `${window.currentGaze.y - 10}px`;
+        window.dotGaze.style.zIndex = "100000";
       }
     })
     .begin();
