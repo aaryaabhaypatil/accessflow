@@ -642,6 +642,8 @@ async function initGazeTracking() {
         window.currentGaze = { x: 0, y: 0 };
         return;
       }
+
+
       window.currentGaze = { x: data.x, y: data.y };
       if (window.dotGaze) {
         window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
@@ -780,12 +782,17 @@ if (closeBtn && popupOverlay) {
         let raw = { x: data.x, y: data.y };
 
         // ✅ apply calibration correction if available
+        
         if (correctionModel) {
-            const [a, b, c, d, e, f] = correctionModel;
-            raw = {
-                x: a * raw.x + b * raw.y + c,
-                y: d * raw.x + e * raw.y + f
-            };
+          const [a, b, c, d, e, f] = correctionModel;
+          const corrected = {
+              x: a * raw.x + b * raw.y + c,
+              y: d * raw.x + e * raw.y + f
+          };
+          console.log("Raw gaze:", raw, "Corrected gaze:", corrected); // <-- NEW
+          window.currentGaze = corrected;
+        } else {
+            window.currentGaze = raw;
         }
 
         // ✅ apply smoothing + jump limiting
@@ -911,6 +918,7 @@ if (closeBtn && popupOverlay) {
      function moveDot() {
          if (current >= positions.length) {
              correctionModel = fitAffineModel(calibrationPairs);
+             console.log("Affine correction coefficients:", correctionModel);
              dot.style.display = "none";
              calibrationDone = true;
              alert("Calibration finished!");
@@ -940,6 +948,8 @@ if (closeBtn && popupOverlay) {
 
 
                  samples.forEach(s => {
+                     console.log("Raw gaze sample:", s); // <-- NEW
+                     console.log("Calibration pair (median filtered):", { medianX, medianY, dotX: pos.x, dotY: pos.y });
                      dataset.push({
                          rawX: s.x,
                          rawY: s.y,
