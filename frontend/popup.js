@@ -105,15 +105,16 @@ document.addEventListener("DOMContentLoaded", function () {
 }
 
 
-  async function runBirdGame() {
-    // Wait until gaze is available
-    try {
-      await waitForValidGaze();
-    } catch (err) {
-      alert("Camera not ready or gaze data unavailable. Cannot start bird game.");
-      return;
-    }
+async function runBirdGame() {
+  // Wait until gaze is available
+  try {
+    await waitForValidGaze();
+  } catch (err) {
+    alert("Camera not ready or gaze data unavailable. Cannot start bird game.");
+    return;
+  }
 
+  return new Promise((resolve) => {
     birdDot.style.display = "block";
     const points = Array.from({ length: 15 }, () => ({
       x: Math.random() * window.innerWidth,
@@ -124,6 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function moveToNextPoint() {
       if (index >= points.length) {
         birdDot.style.display = "none";
+        resolve();
         return;
       }
 
@@ -148,9 +150,9 @@ document.addEventListener("DOMContentLoaded", function () {
         birdDot.style.left = `${currentX}px`;
         birdDot.style.top = `${currentY}px`;
 
-        // Collect gaze
+        // Log gaze while moving
         if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-          gameGazeLog.push({
+          const gazeEntry = {
             time: Date.now(),
             gazeX: window.currentGaze.x,
             gazeY: window.currentGaze.y,
@@ -158,7 +160,9 @@ document.addEventListener("DOMContentLoaded", function () {
             targetY: currentY,
             game: "bird",
             pointIndex: index
-          });
+          };
+          gameGazeLog.push(gazeEntry);
+          console.log("Bird game gaze:", gazeEntry);
         }
 
         if (t < 1) {
@@ -168,69 +172,14 @@ document.addEventListener("DOMContentLoaded", function () {
           moveToNextPoint();
         }
       }
+
       requestAnimationFrame(animate);
     }
 
     moveToNextPoint();
+  });
 }
-    
-    async function runBirdGame() {
-      await waitForValidGaze();
-      return new Promise((resolve) => {
-        birdDot.style.display = "block";
-        const points = Array.from({ length: 15 }, () => ({
-          x: Math.random() * window.innerWidth,
-          y: Math.random() * window.innerHeight,
-        }));
-        let index = 0;
-      function moveToNextPoint() {
-        if (index >= points.length) {
-          birdDot.style.display = "none";
-          resolve(); 
-          return;
-        }
-        const startX = parseFloat(birdDot.style.left) || points[index].x;
-        const startY = parseFloat(birdDot.style.top) || points[index].y;
-        const endX = points[index].x;
-        const endY = points[index].y;
-        const duration = 2000;
-        const startTime = performance.now();
-        function animate(time) {
-          if (gamesPaused) {
-            requestAnimationFrame(animate);
-            return;
-          }
-          const elapsed = time - startTime;
-          const t = Math.min(elapsed / duration, 1);
-          const currentX = startX + (endX - startX) * t;
-          const currentY = startY + (endY - startY) * t;
-          birdDot.style.left = `${currentX}px`;
-          birdDot.style.top = `${currentY}px`;
-          if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
-            const gazeEntry = {
-              time: Date.now(),
-              gazeX: window.currentGaze.x,
-              gazeY: window.currentGaze.y,
-              targetX: currentX,
-              targetY: currentY,
-              game: "bird",
-              pointIndex: index
-            };
-            gameGazeLog.push(gazeEntry);
-            console.log("Bird game gaze:", gazeEntry);
-          }
-          if (t < 1) {
-            requestAnimationFrame(animate);
-          } else {
-            index++;
-            moveToNextPoint();
-          }
-        }
-        requestAnimationFrame(animate);
-      }
-      moveToNextPoint();
-      });
-    }
+
 
 
 
@@ -1018,13 +967,4 @@ if (closeBtn && popupOverlay) {
      moveDot();     
      traceGazePath();
  }
-
-
-
-
-
-
-
-
-  
 });
