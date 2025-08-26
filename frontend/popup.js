@@ -414,100 +414,191 @@ function startPostCalibrationGazeTracing() {
 
 // Start WebGazer and wait until camera is ready
 // Step 1: Initialize gaze tracking once at the start
-async function startGazeTracker() {
-  if (!window.webgazer) throw new Error("WebGazer not loaded!");
+// async function startGazeTracker() {
+//   if (!window.webgazer) throw new Error("WebGazer not loaded!");
   
-  if (!window.dotGaze) {
-    const dot = document.createElement("div");
-    dot.style.position = "fixed";
-    dot.style.width = "20px";
-    dot.style.height = "20px";
-    dot.style.background = "red";
-    dot.style.borderRadius = "50%";
-    dot.style.zIndex = "10002";
-    dot.style.pointerEvents = "none";
-    document.body.appendChild(dot);
-    window.dotGaze = dot;
-    window.dotGaze.style.zIndex = "100000"; 
+//   if (!window.dotGaze) {
+//     const dot = document.createElement("div");
+//     dot.style.position = "fixed";
+//     dot.style.width = "20px";
+//     dot.style.height = "20px";
+//     dot.style.background = "red";
+//     dot.style.borderRadius = "50%";
+//     dot.style.zIndex = "10002";
+//     dot.style.pointerEvents = "none";
+//     document.body.appendChild(dot);
+//     window.dotGaze = dot;
+//     window.dotGaze.style.zIndex = "100000"; 
+//   }
+
+//   window.currentGaze = { x: 0, y: 0 };
+//   const gazeHistory = [];
+//   const smoothFactor = 0.2;
+//   let smoothedGaze = { x: 0, y: 0 };
+
+//   function getSmoothedGaze(raw) {
+//     smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + raw.x * smoothFactor;
+//     smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + raw.y * smoothFactor;
+//     return { ...smoothedGaze };
+//   }
+
+//   await webgazer
+//     .setRegression("ridge")
+//     .setTracker("clmtrackr")
+//     .setGazeListener((data) => {
+//       if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
+
+//       // smoothing + store globally
+//       const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+//       window.currentGaze = smoothed;
+
+//       // update gaze dot
+//       window.dotGaze.style.left = `${smoothed.x - 10}px`;
+//       window.dotGaze.style.top = `${smoothed.y - 10}px`;
+//     })
+//     .begin();
+//     async function waitForVideoReady(timeout = 5000) {
+//       const start = Date.now();
+//       while (true) {
+//         const video = webgazer.getVideoElement();
+//         if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+//           console.log("Video ready for processing!");
+//           return video;
+//         }
+//         if (Date.now() - start > timeout) {
+//           throw new Error("Video never became ready");
+//         }
+//         await new Promise(r => setTimeout(r, 100));
+//       }
+//     }
+
+// const video = await waitForVideoReady();
+
+// // Now you can safely call your brightness function
+// calculateBrightness(video);
+//     // Start brightness monitoring after WebGazer video is ready
+//     function calculateBrightness(video) {
+//       if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+//           console.log("Video not ready yet");
+//           return;
+//       }
+
+//       const canvas = document.createElement("canvas");
+//       canvas.width = video.videoWidth;
+//       canvas.height = video.videoHeight;
+//       const ctx = canvas.getContext("2d");
+
+//       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+//       const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+//       const data = frame.data;
+
+//       let sum = 0;
+//       for (let i = 0; i < data.length; i += 4) {
+//           // standard formula for perceived brightness
+//           sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+//       }
+
+//       const avg = sum / (canvas.width * canvas.height);
+//       brightnessDisplay.innerText = `Brightness: ${avg.toFixed(1)}`;
+//     }
+
+//       async function startBrightnessLoop() {
+//   try {
+//     const video = await waitForVideoReady();
+//     function loop() {
+//       calculateBrightness(video);
+//       requestAnimationFrame(loop);
+//     }
+//     loop();
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
+
+// startBrightnessLoop();
+  
+
+
+//   // hide default webgazer dot
+//   const webDot = document.getElementById("webgazerGazeDot");
+//   if (webDot) webDot.style.display = "none";
+
+//   webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
+
+//   console.log("Gaze tracking started, dot visible.");
+// }
+// Start WebGazer and wait until camera is ready
+async function startGazeTracker() {
+  try {
+    console.log("Starting gaze tracker...");
+
+    // First, request camera access
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.playsInline = true;
+
+    // Wait for the video to load metadata (dimensions become valid)
+    await new Promise((resolve) => {
+      video.onloadedmetadata = () => {
+        console.log("Video metadata loaded:", video.videoWidth, video.videoHeight);
+        resolve();
+      };
+    });
+
+    // Now start WebGazer
+    await webgazer
+      .setRegression("ridge")
+      .setTracker("clmtrackr")
+      .setGazeListener((data) => {
+        if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
+
+        const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+        window.currentGaze = smoothed;
+
+        window.dotGaze.style.left = `${smoothed.x - 10}px`;
+        window.dotGaze.style.top = `${smoothed.y - 10}px`;
+      })
+      .begin();
+
+    console.log("WebGazer started ✅");
+
+    // Start brightness loop *after* video is ready
+    startBrightnessLoop(video);
+  } catch (err) {
+    console.error("❌ Failed to start gaze tracker:", err);
   }
+}
 
-  window.currentGaze = { x: 0, y: 0 };
-  const gazeHistory = [];
-  const smoothFactor = 0.2;
-  let smoothedGaze = { x: 0, y: 0 };
+function startBrightnessLoop(video) {
+  const brightnessDisplay = document.getElementById("brightness-display");
+  if (!brightnessDisplay) return;
 
-  function getSmoothedGaze(raw) {
-    smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + raw.x * smoothFactor;
-    smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + raw.y * smoothFactor;
-    return { ...smoothedGaze };
-  }
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
-  await webgazer
-    .setRegression("ridge")
-    .setTracker("clmtrackr")
-    .setGazeListener((data) => {
-      if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
-
-      // smoothing + store globally
-      const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
-      window.currentGaze = smoothed;
-
-      // update gaze dot
-      window.dotGaze.style.left = `${smoothed.x - 10}px`;
-      window.dotGaze.style.top = `${smoothed.y - 10}px`;
-    })
-    .begin();
-    // Start brightness monitoring after WebGazer video is ready
-    function calculateBrightness(video) {
-      if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
-          console.log("Video not ready yet");
-          return;
-      }
-
-      const canvas = document.createElement("canvas");
+  function calcBrightness() {
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
       const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = frame.data;
-
       let sum = 0;
-      for (let i = 0; i < data.length; i += 4) {
-          // standard formula for perceived brightness
-          sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      for (let i = 0; i < frame.data.length; i += 4) {
+        sum += 0.2126 * frame.data[i] + 0.7152 * frame.data[i + 1] + 0.0722 * frame.data[i + 2];
       }
-
-      const avg = sum / (canvas.width * canvas.height);
-      brightnessDisplay.innerText = `Brightness: ${avg.toFixed(1)}`;
+      const avgBrightness = Math.round(sum / (frame.data.length / 4));
+      brightnessDisplay.textContent = `Brightness: ${avgBrightness}`;
     }
-
-      async function startBrightnessLoop() {
-  try {
-    const video = await waitForVideoReady();
-    function loop() {
-      calculateBrightness(video);
-      requestAnimationFrame(loop);
-    }
-    loop();
-  } catch (err) {
-    console.error(err);
+    requestAnimationFrame(calcBrightness);
   }
+
+  calcBrightness();
 }
 
-startBrightnessLoop();
-  
 
-
-  // hide default webgazer dot
-  const webDot = document.getElementById("webgazerGazeDot");
-  if (webDot) webDot.style.display = "none";
-
-  webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
-
-  console.log("Gaze tracking started, dot visible.");
-}
 
 
 
