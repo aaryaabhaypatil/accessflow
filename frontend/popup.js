@@ -79,49 +79,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 }
 
-  function calculateBrightness(video) {
-    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
-        console.log("Video not ready yet");
-        return;
-    }
 
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = frame.data;
-
-    let sum = 0;
-    for (let i = 0; i < data.length; i += 4) {
-        // standard formula for perceived brightness
-        sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    }
-
-    const avg = sum / (canvas.width * canvas.height);
-    brightnessDisplay.innerText = `Brightness: ${avg.toFixed(1)}`;
-}
 
 
   // Start camera as soon as the extension is on
   initGazeTracking();
 
-  async function startBrightnessLoop() {
-  try {
-    const video = await waitForVideoReady();
-    function loop() {
-      calculateBrightness(video);
-      requestAnimationFrame(loop);
-    }
-    loop();
-  } catch (err) {
-    console.error(err);
-  }
-}
 
-// startBrightnessLoop();
 
 
 //   function updateBrightnessLoop() {
@@ -494,24 +458,46 @@ async function startGazeTracker() {
     })
     .begin();
     // Start brightness monitoring after WebGazer video is ready
-function startBrightnessLoop() {
-  const video = document.querySelector('video');
-  if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
-    // retry until video is ready
-    setTimeout(startBrightnessLoop, 200);
-    return;
-  }
+    function calculateBrightness(video) {
+      if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+          console.log("Video not ready yet");
+          return;
+      }
 
-  // brightness calculation loop
-  function updateBrightness() {
-    calculateBrightness(video);
-    requestAnimationFrame(updateBrightness);
-  }
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
 
-  updateBrightness();
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = frame.data;
+
+      let sum = 0;
+      for (let i = 0; i < data.length; i += 4) {
+          // standard formula for perceived brightness
+          sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      }
+
+      const avg = sum / (canvas.width * canvas.height);
+      brightnessDisplay.innerText = `Brightness: ${avg.toFixed(1)}`;
+    }
+
+      async function startBrightnessLoop() {
+  try {
+    const video = await waitForVideoReady();
+    function loop() {
+      calculateBrightness(video);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 startBrightnessLoop();
+  
 
 
   // hide default webgazer dot
