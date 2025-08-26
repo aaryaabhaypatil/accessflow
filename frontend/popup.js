@@ -43,10 +43,98 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const pathCtx = pathCanvas.getContext("2d");
   let pathDrawingEnabled = false; 
-  
+
+  // --- Ambient brightness display ---
+  const brightnessCanvas = document.createElement('canvas');
+  brightnessCanvas.width = 160; // small size for speed
+  brightnessCanvas.height = 120;
+  const brightnessCtx = brightnessCanvas.getContext('2d');
+
+  const brightnessDisplay = document.createElement("div");
+  brightnessDisplay.style.position = "fixed";
+  brightnessDisplay.style.top = "10px";
+  brightnessDisplay.style.right = "10px";
+  brightnessDisplay.style.background = "rgba(0,0,0,0.5)";
+  brightnessDisplay.style.color = "white";
+  brightnessDisplay.style.padding = "5px 10px";
+  brightnessDisplay.style.borderRadius = "5px";
+  brightnessDisplay.style.zIndex = "10001";
+  brightnessDisplay.innerText = "Brightness: calculating...";
+  document.body.appendChild(brightnessDisplay);
+
+  function waitForVideoReady(timeout = 5000) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const check = setInterval(() => {
+      const video = document.querySelector('video');
+      if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+        clearInterval(check);
+        console.log("✅ Video ready:", video.videoWidth, video.videoHeight);
+        resolve(video);
+      } else if (Date.now() - start > timeout) {
+        clearInterval(check);
+        reject("❌ Video never became ready");
+      }
+    }, 100);
+  });
+}
+
+  function calculateBrightness(video) {
+    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+        console.log("Video not ready yet");
+        return;
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = frame.data;
+
+    let sum = 0;
+    for (let i = 0; i < data.length; i += 4) {
+        // standard formula for perceived brightness
+        sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    }
+
+    const avg = sum / (canvas.width * canvas.height);
+    brightnessDisplay.innerText = `Brightness: ${avg.toFixed(1)}`;
+}
+
 
   // Start camera as soon as the extension is on
   initGazeTracking();
+
+  async function startBrightnessLoop() {
+  try {
+    const video = await waitForVideoReady();
+    function loop() {
+      calculateBrightness(video);
+      requestAnimationFrame(loop);
+    }
+    loop();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// startBrightnessLoop();
+
+
+//   function updateBrightnessLoop() {
+//     const video = document.querySelector('video'); // your WebGazer video
+//     if (video) {
+//         calculateBrightness(video);
+//     }
+//     requestAnimationFrame(updateBrightnessLoop);
+// }
+
+//   // Start the loop
+//   setTimeout(updateBrightnessLoop, 1000);
+
 
   // Calibration dot as emojis for the games
   function createDot(id, emoji) {
@@ -90,19 +178,19 @@ document.addEventListener("DOMContentLoaded", function () {
   ];
 
   function waitForValidGaze(timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    const start = Date.now();
-    const check = setInterval(() => {
-      if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-        clearInterval(check);
-        resolve(true);
-      } else if (Date.now() - start > timeout) {
-        clearInterval(check);
-        reject("Gaze not available");
-      }
-    }, 100);
-  });
-}
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      const check = setInterval(() => {
+        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+          clearInterval(check);
+          resolve(true);
+        } else if (Date.now() - start > timeout) {
+          clearInterval(check);
+          reject("Gaze not available");
+        }
+      }, 100);
+    });
+  }
 
 
 async function runBirdGame() {
@@ -405,12 +493,32 @@ async function startGazeTracker() {
       window.dotGaze.style.top = `${smoothed.y - 10}px`;
     })
     .begin();
+    // Start brightness monitoring after WebGazer video is ready
+function startBrightnessLoop() {
+  const video = document.querySelector('video');
+  if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+    // retry until video is ready
+    setTimeout(startBrightnessLoop, 200);
+    return;
+  }
+
+  // brightness calculation loop
+  function updateBrightness() {
+    calculateBrightness(video);
+    requestAnimationFrame(updateBrightness);
+  }
+
+  updateBrightness();
+}
+
+startBrightnessLoop();
+
 
   // hide default webgazer dot
   const webDot = document.getElementById("webgazerGazeDot");
   if (webDot) webDot.style.display = "none";
 
-  webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+  webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
 
   console.log("Gaze tracking started, dot visible.");
 }
@@ -418,31 +526,31 @@ async function startGazeTracker() {
 
 
 
-// Continuous gaze tracking loop
-function startTrackingLoop() {
-  function loop() {
-    const prediction = webgazer.getCurrentPrediction();
-    if (prediction && isFinite(prediction.x) && isFinite(prediction.y)) {
-      const x = Math.min(Math.max(prediction.x, 0), window.innerWidth);
-      const y = Math.min(Math.max(prediction.y, 0), window.innerHeight);
+// // Continuous gaze tracking loop
+// function startTrackingLoop() {
+//   function loop() {
+//     const prediction = webgazer.getCurrentPrediction();
+//     if (prediction && isFinite(prediction.x) && isFinite(prediction.y)) {
+//       const x = Math.min(Math.max(prediction.x, 0), window.innerWidth);
+//       const y = Math.min(Math.max(prediction.y, 0), window.innerHeight);
 
-      gazeDot.style.left = `${x - 10}px`;
-      gazeDot.style.top = `${y - 10}px`;
-      gazeDot.style.display = "block";
+//       gazeDot.style.left = `${x - 10}px`;
+//       gazeDot.style.top = `${y - 10}px`;
+//       gazeDot.style.display = "block";
 
-      window.currentGaze = { x, y }; 
+//       window.currentGaze = { x, y }; 
 
-      if (pathDrawingEnabled) {
-        pathCtx.fillStyle = "rgba(255,0,0,0.6)";
-        pathCtx.beginPath();
-        pathCtx.arc(x, y, 3, 0, 2 * Math.PI);
-        pathCtx.fill();
-      }
-    }
-    requestAnimationFrame(loop);
-  }
-  loop();
-}
+//       if (pathDrawingEnabled) {
+//         pathCtx.fillStyle = "rgba(255,0,0,0.6)";
+//         pathCtx.beginPath();
+//         pathCtx.arc(x, y, 3, 0, 2 * Math.PI);
+//         pathCtx.fill();
+//       }
+//     }
+//     requestAnimationFrame(loop);
+//   }
+//   loop();
+// }
 
 
 // Start games only if camera is ready
@@ -608,7 +716,7 @@ async function initGazeTracking() {
     webgazerDot.style.width = "0px";
     webgazerDot.style.height = "0px";
   }
-  webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+  webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
   console.log("Gaze tracking started, custom dot visible.");
 }
 
@@ -759,7 +867,7 @@ if (closeBtn && popupOverlay) {
 
 
 
-     webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+     webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
 
 
      const dot = document.createElement("div");
