@@ -214,7 +214,7 @@ async function runBirdGame() {
             pointIndex: index
           };
           gameGazeLog.push(gazeEntry);
-          console.log("Bird game gaze:", gazeEntry);
+          // console.log("Bird game gaze:", gazeEntry);
         }
 
         if (t < 1) {
@@ -269,7 +269,7 @@ function runTargetGame() {
           moveIndex: moves
         };
         targetGazeLog.push(gazeEntry);
-        console.log("Target game gaze:", gazeEntry);
+        // console.log("Target game gaze:", gazeEntry);
       }
 
       setTimeout(() => {
@@ -318,7 +318,7 @@ function runGemGame() {
           moveIndex: moves
         };
         gemGazeLog.push(gazeEntry);
-        console.log("Gem game gaze:", gazeEntry);
+        // console.log("Gem game gaze:", gazeEntry);
       }
 
       setTimeout(() => {
@@ -623,6 +623,7 @@ function startBrightnessLoop(video) {
       }
       const avgBrightness = Math.round(sum / (frame.data.length / 4));
       brightnessDisplay.textContent = `Brightness: ${avgBrightness}`;
+      console.log(`Brightness: ${avgBrightness}`);
     }
     requestAnimationFrame(calcBrightness);
   }
