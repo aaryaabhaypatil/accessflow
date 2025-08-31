@@ -568,20 +568,40 @@ async function startGazeTracker() {
     const video = document.createElement("video");
     video.srcObject = stream;
     video.autoplay = true;
+    video.muted = true; // needed for autoplay in some browsers
     video.playsInline = true;
+    document.body.appendChild(video);
 
     // Wait for the video to load metadata (dimensions become valid)
+    // await new Promise((resolve) => {
+    //   video.onloadedmetadata = () => {
+    //     console.log("Video metadata loaded:", video.videoWidth, video.videoHeight);
+    //     if (video.videoWidth > 0 && video.videoHeight > 0) {
+    //       resolve();
+    //     } else {
+    //       video.onplay = () => {
+    //         if (video.videoWidth > 0 && video.videoHeight > 0) resolve();
+    //       };
+    //     }
+    //   };
+    // });
     await new Promise((resolve) => {
-      video.onloadedmetadata = () => {
-        console.log("Video metadata loaded:", video.videoWidth, video.videoHeight);
-        resolve();
-      };
+      function checkVideoReady() {
+        console.log("Checking video readiness...", video.readyState, video.videoWidth, video.videoHeight);
+        if (video.readyState >= 3 && video.videoWidth > 0 && video.videoHeight > 0) {
+          console.log("Video is ready!", video.videoWidth, video.videoHeight);
+          resolve();
+        } else {
+          requestAnimationFrame(checkVideoReady);
+        }
+      }
+      checkVideoReady();
     });
     
     // Now start WebGazer
     await webgazer
       .setRegression("ridge")
-      .setTracker("clmtrackr")
+       .setTracker("TFFacemesh")
       .setGazeListener((data) => {
         if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
         
@@ -611,6 +631,7 @@ function startBrightnessLoop(video) {
   const ctx = canvas.getContext("2d");
 
   function calcBrightness() {
+    // console.log("starting brigness calcualtion");
     if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
