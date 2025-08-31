@@ -527,6 +527,37 @@ function startPostCalibrationGazeTracing() {
 
 //   console.log("Gaze tracking started, dot visible.");
 // }
+
+
+
+// Simple smoothing for gaze coordinates using a moving average
+const gazeHistory = [];
+const SMOOTHING_WINDOW = 5; 
+
+function getSmoothedGaze(newPoint) {
+  gazeHistory.push(newPoint);
+
+  // keeping only the latest n points
+  if (gazeHistory.length > SMOOTHING_WINDOW) {
+    gazeHistory.shift();
+  }
+
+  // average of x and y
+  const avg = gazeHistory.reduce(
+    (acc, point) => {
+      acc.x += point.x;
+      acc.y += point.y;
+      return acc;
+    },
+    { x: 0, y: 0 }
+  );
+
+  return {
+    x: avg.x / gazeHistory.length,
+    y: avg.y / gazeHistory.length,
+  };
+}
+
 // Start WebGazer and wait until camera is ready
 async function startGazeTracker() {
   try {
@@ -546,13 +577,14 @@ async function startGazeTracker() {
         resolve();
       };
     });
-
+    
     // Now start WebGazer
     await webgazer
       .setRegression("ridge")
       .setTracker("clmtrackr")
       .setGazeListener((data) => {
         if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
+        
 
         const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
         window.currentGaze = smoothed;
