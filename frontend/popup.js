@@ -249,8 +249,8 @@ document.addEventListener("DOMContentLoaded", function () {
         birdContainer.style.top = `${currentY}px`;
 
         // Adaptive pulsing based on progress (faster at mid-flight)
-        const pulseSpeed = 0.5 + Math.sin(t * Math.PI); // oscillates 0.5–1.5
-        const scale = 1 + 0.2 * pulseSpeed;             // scale 1–1.3
+        const pulseSpeed = 0.5 + Math.sin(t * Math.PI); 
+        const scale = 0.8 + 0.6 * pulseSpeed;         
         birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
         if (
