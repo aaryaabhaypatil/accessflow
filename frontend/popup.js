@@ -231,7 +231,7 @@ function runTargetGame() {
     let moves = 0;
 
     function move() {
-      if (moves >= 5) {
+      if (moves >= 20) {
         targetDot.style.display = "none";
         resolve();
         return;
@@ -280,7 +280,7 @@ function runGemGame() {
     let moves = 0;
 
     function move() {
-      if (moves >= 5) {
+      if (moves >= 20) {
         gemDot.style.display = "none";
         resolve();
         return;
