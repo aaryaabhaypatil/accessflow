@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
   //Resume calibration
   const resumeBtn = document.getElementById("resumeCalibrationBtn");
 
+  console.log("Screen size:", window.screen.width, window.screen.height);
+  console.log("Viewport size:", window.innerWidth, window.innerHeight);
 
   // tracking calibration
   let calibrationInProgress = false;
@@ -25,7 +27,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Storing gaze data during claibration games
   let gameGazeLog = []
-  
+  function mapGazeToScreen(gaze, video) {
+    // Map from video coordinates to window coordinates
+    return {
+        x: Math.min(Math.max(gaze.x / video.videoWidth * window.innerWidth, 0), window.innerWidth),
+        y: Math.min(Math.max(gaze.y / video.videoHeight * window.innerHeight, 0), window.innerHeight)
+    };
+  }
+
 
 
 
@@ -191,7 +200,7 @@ async function runBirdGame() {
             pointIndex: index
           };
           gameGazeLog.push(gazeEntry);
-          // console.log("Bird game gaze:", gazeEntry);
+          console.log("Bird game gaze:", gazeEntry);
         }
 
         if (t < 1) {
@@ -246,7 +255,7 @@ function runTargetGame() {
           moveIndex: moves
         };
         targetGazeLog.push(gazeEntry);
-        // console.log("Target game gaze:", gazeEntry);
+        console.log("Target game gaze:", gazeEntry);
       }
 
       setTimeout(() => {
@@ -295,7 +304,7 @@ function runGemGame() {
           moveIndex: moves
         };
         gemGazeLog.push(gazeEntry);
-        // console.log("Gem game gaze:", gazeEntry);
+        console.log("Gem game gaze:", gazeEntry);
       }
 
       setTimeout(() => {
@@ -459,7 +468,9 @@ async function startGazeTracker() {
         .setGazeListener((data) => {
           if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
 
-          const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+          const mapped = mapGazeToScreen(data, video);
+
+          const smoothed = getSmoothedGaze({ x: mapped.x, y: mapped.y });
           window.currentGaze = smoothed;
 
           window.dotGaze.style.left = `${smoothed.x - 10}px`;
@@ -505,7 +516,7 @@ function startBrightnessLoop(video) {
       }
       const avgBrightness = Math.round(sum / (frame.data.length / 4));
       brightnessDisplay.textContent = `Brightness: ${avgBrightness}`;
-      console.log(`Brightness: ${avgBrightness}`);
+      // console.log(`Brightness: ${avgBrightness}`);
     } else {
       console.log("Video not ready yet", video.readyState, video.videoWidth, video.videoHeight);
     }
@@ -802,7 +813,7 @@ if (closeBtn && popupOverlay) {
             return;
         }
 
-        let raw = { x: data.x, y: data.y };
+        let raw = mapGazeToScreen(data, video);
 
         // ✅ apply calibration correction if available
         
