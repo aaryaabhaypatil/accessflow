@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 async function runBirdGame() {
+  // Wait until gaze is available
   try {
     await waitForValidGaze();
   } catch (err) {
@@ -154,12 +155,30 @@ async function runBirdGame() {
   return new Promise((resolve) => {
     birdDot.style.display = "block";
 
-    // Create the feedback ring dynamically
+    // Create progress ring if it doesn't exist
     let progressRing = document.getElementById("birdProgressRing");
     if (!progressRing) {
       progressRing = document.createElement("div");
       progressRing.id = "birdProgressRing";
       document.body.appendChild(progressRing);
+      // Style the ring to stay on top
+      Object.assign(progressRing.style, {
+        position: "absolute",
+        width: "60px",
+        height: "60px",
+        borderRadius: "50%",
+        border: "5px solid rgba(0, 0, 0, 0.6)",
+        boxShadow: "0 0 12px rgba(0, 0, 0, 0.8)",
+        zIndex: "999999", // <-- Ensures it's above the blur overlay
+        pointerEvents: "none",
+        transform: "translate(-50%, -50%)",
+      });
+
+      // Use a background gradient to simulate progress
+      progressRing.style.background = `conic-gradient(
+        rgba(0, 150, 255, 1) 0%,
+        rgba(0, 150, 255, 0.3) 0%
+      )`;
     }
 
     const totalPoints = 15;
@@ -167,12 +186,21 @@ async function runBirdGame() {
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
     }));
+
     let index = 0;
+
+    function updateProgressRing(currentIndex) {
+      const percentage = Math.floor(((currentIndex + 1) / totalPoints) * 100);
+      progressRing.style.background = `conic-gradient(
+        rgba(0, 150, 255, 1) ${percentage}%,
+        rgba(0, 150, 255, 0.3) ${percentage}%
+      )`;
+    }
 
     function moveToNextPoint() {
       if (index >= points.length) {
         birdDot.style.display = "none";
-        progressRing.style.display = "none";
+        progressRing.style.display = "none"; // Hide after completion
         resolve();
         return;
       }
@@ -198,20 +226,16 @@ async function runBirdGame() {
         birdDot.style.left = `${currentX}px`;
         birdDot.style.top = `${currentY}px`;
 
-        // Position progress ring around birdDot
-        const birdSize = birdDot.offsetWidth || 20;
-        const ringSize = birdSize + 20;
-        progressRing.style.left = `${currentX - 10}px`;
-        progressRing.style.top = `${currentY - 10}px`;
-        progressRing.style.width = `${ringSize}px`;
-        progressRing.style.height = `${ringSize}px`;
+        // Move the progress ring along with the bird dot
+        progressRing.style.left = `${currentX}px`;
+        progressRing.style.top = `${currentY}px`;
 
-        // Update circular progress dynamically
-        const progressPercent = ((index + t) / totalPoints) * 100;
-        progressRing.style.background = `conic-gradient(#4cafef ${progressPercent}%, #ddd ${progressPercent}%)`;
-
-        // Log gaze
-        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+        // Log gaze while moving
+        if (
+          window.currentGaze &&
+          isFinite(window.currentGaze.x) &&
+          isFinite(window.currentGaze.y)
+        ) {
           const gazeEntry = {
             time: Date.now(),
             gazeX: window.currentGaze.x,
@@ -219,7 +243,7 @@ async function runBirdGame() {
             targetX: currentX,
             targetY: currentY,
             game: "bird",
-            pointIndex: index
+            pointIndex: index,
           };
           gameGazeLog.push(gazeEntry);
           console.log("Bird game gaze:", gazeEntry);
@@ -228,6 +252,7 @@ async function runBirdGame() {
         if (t < 1) {
           requestAnimationFrame(animate);
         } else {
+          updateProgressRing(index);
           index++;
           moveToNextPoint();
         }
@@ -236,10 +261,11 @@ async function runBirdGame() {
       requestAnimationFrame(animate);
     }
 
-    progressRing.style.display = "block";
+    updateProgressRing(0);
     moveToNextPoint();
   });
 }
+
 
 
 

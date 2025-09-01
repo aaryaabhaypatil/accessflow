@@ -969,7 +969,7 @@ body, html {
   position: fixed;
   border-radius: 50%;
   pointer-events: none; /* So clicks pass through */
-  z-index: 99999; /* Ensures it stays on top of blur overlay */
+  z-index: 999999; /* Ensures it stays on top of blur overlay */
   width: 40px;
   height: 40px;
   background: conic-gradient(#4cafef 0%, #ddd 0%);
