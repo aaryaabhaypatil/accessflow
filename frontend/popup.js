@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-async function runBirdGame() {
+ async function runBirdGame() {
   try {
     await waitForValidGaze();
   } catch (err) {
@@ -159,7 +159,7 @@ async function runBirdGame() {
       document.body.appendChild(birdContainer);
       Object.assign(birdContainer.style, {
         position: "absolute",
-        width: "110px",        // container size matches halo
+        width: "110px",
         height: "110px",
         left: "0px",
         top: "0px",
@@ -176,9 +176,10 @@ async function runBirdGame() {
         top: "50%",
         width: "40px",
         height: "40px",
-        transform: "translate(-50%, -50%)",
+        transform: "translate(-50%, -50%) scale(1)", // start scale
         zIndex: "10",
-        display: "block"
+        display: "block",
+        transition: "transform 0.1s linear" // smoother, faster pulsing
       });
 
       // Create progress ring
@@ -199,8 +200,6 @@ async function runBirdGame() {
         transform: "translate(-20%, -20%)"
       });
     }
-
-
 
     birdContainer.style.display = "block";
     const progressRing = document.getElementById("birdProgressRing");
@@ -249,6 +248,11 @@ async function runBirdGame() {
         birdContainer.style.left = `${currentX}px`;
         birdContainer.style.top = `${currentY}px`;
 
+        // Adaptive pulsing based on progress (faster at mid-flight)
+        const pulseSpeed = 0.5 + Math.sin(t * Math.PI); // oscillates 0.5–1.5
+        const scale = 1 + 0.2 * pulseSpeed;             // scale 1–1.3
+        birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
         if (
           window.currentGaze &&
           isFinite(window.currentGaze.x) &&
@@ -293,6 +297,8 @@ async function runBirdGame() {
 
 
 
+
+
 // Separate log for the target game
 const targetGazeLog = []; 
 
@@ -320,6 +326,7 @@ function runTargetGame() {
       targetDot.style.top = `${y}px`;
       targetDot.textContent = "🎯";
 
+      // Log gaze at spawn
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -335,21 +342,21 @@ function runTargetGame() {
       }
 
       setTimeout(async () => {
+        // Explosion animation
         targetDot.textContent = "💥";
-        targetDot.style.transition = "transform 0.3s ease-out, opacity 0.3s ease-out";
-        targetDot.style.transform = "scale(2)";
-        targetDot.style.opacity = "1";
+        targetDot.classList.add("explode");
 
-        setTimeout(() => {
-          targetDot.style.opacity = "0"; 
-          setTimeout(() => {
-            targetDot.style.transform = "scale(1)";
-            targetDot.style.opacity = "1";
-            targetDot.textContent = "🎯";
-            moves++;
-            move();
-          }, 300);
-        }, 200);
+        // Wait for explosion to finish
+        setTimeout(async () => {
+          targetDot.classList.remove("explode");
+
+          // Smoothly shrink back to 🎯
+          targetDot.textContent = "🎯";
+          targetDot.style.transform = "scale(1)";
+          
+          moves++;
+          await move();
+        }, 500);
 
       }, 1000);
     }
@@ -357,6 +364,8 @@ function runTargetGame() {
     move();
   });
 }
+
+
 
 
 
