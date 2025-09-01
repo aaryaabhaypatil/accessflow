@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
- async function runBirdGame() {
+async function runBirdGame() {
   try {
     await waitForValidGaze();
   } catch (err) {
@@ -176,10 +176,10 @@ document.addEventListener("DOMContentLoaded", function () {
         top: "50%",
         width: "40px",
         height: "40px",
-        transform: "translate(-50%, -50%) scale(1)", // start scale
+        transform: "translate(-50%, -50%) scale(1)",
         zIndex: "10",
         display: "block",
-        transition: "transform 0.1s linear" // smoother, faster pulsing
+        transition: "transform 0.2s ease" // smoother pulsing
       });
 
       // Create progress ring
@@ -248,10 +248,8 @@ document.addEventListener("DOMContentLoaded", function () {
         birdContainer.style.left = `${currentX}px`;
         birdContainer.style.top = `${currentY}px`;
 
-        // Adaptive pulsing based on progress (faster at mid-flight)
-        const pulseSpeed = 0.5 + Math.sin(t * Math.PI); 
-        const scale = 0.8 + 0.6 * pulseSpeed;         
-        birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        // Small scale while moving
+        birdDot.style.transform = `translate(-50%, -50%) scale(0.9)`;
 
         if (
           window.currentGaze &&
@@ -274,8 +272,24 @@ document.addEventListener("DOMContentLoaded", function () {
           requestAnimationFrame(animate);
         } else {
           updateProgressRing(index);
-          index++;
-          moveToNextPoint();
+
+          // Pulse bird when it stops
+          const pulseDuration = 500; // ms
+          const pulseStart = performance.now();
+          function pulse(time) {
+            const elapsedPulse = time - pulseStart;
+            const pulseT = Math.min(elapsedPulse / pulseDuration, 1);
+            const scale = 0.9 + 0.4 * Math.sin(pulseT * Math.PI); // 0.9 → 1.3 → 0.9
+            birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+            if (pulseT < 1) {
+              requestAnimationFrame(pulse);
+            } else {
+              index++;
+              moveToNextPoint();
+            }
+          }
+          requestAnimationFrame(pulse);
         }
       }
 
@@ -285,6 +299,7 @@ document.addEventListener("DOMContentLoaded", function () {
     moveToNextPoint();
   });
 }
+
 
 
 
