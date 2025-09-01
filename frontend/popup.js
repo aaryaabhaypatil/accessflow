@@ -200,7 +200,7 @@ async function runBirdGame() {
       });
     }
 
-    
+
 
     birdContainer.style.display = "block";
     const progressRing = document.getElementById("birdProgressRing");
@@ -301,7 +301,13 @@ function runTargetGame() {
     targetDot.style.display = "block";
     let moves = 0;
 
-    function move() {
+    async function move() {
+      while (gamesPaused) {
+        await new Promise((resume) => {
+          currentGameResolver = resume;
+        });
+      }
+
       if (moves >= 20) {
         targetDot.style.display = "none";
         resolve();
@@ -314,7 +320,6 @@ function runTargetGame() {
       targetDot.style.top = `${y}px`;
       targetDot.textContent = "🎯";
 
-      // Log gaze at spawn
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -329,19 +334,23 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-      setTimeout(() => {
+      setTimeout(async () => {
         targetDot.textContent = "💥";
-        setTimeout(() => {
+
+        setTimeout(async () => {
           targetDot.textContent = "🎯";
           moves++;
-          move();
+          await move();
         }, 500);
+
       }, 1000);
     }
 
     move();
   });
 }
+
+
 
  // Separate log for the gem game
 const gemGazeLog = [];
