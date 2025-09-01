@@ -336,12 +336,20 @@ function runTargetGame() {
 
       setTimeout(async () => {
         targetDot.textContent = "💥";
+        targetDot.style.transition = "transform 0.3s ease-out, opacity 0.3s ease-out";
+        targetDot.style.transform = "scale(2)";
+        targetDot.style.opacity = "1";
 
-        setTimeout(async () => {
-          targetDot.textContent = "🎯";
-          moves++;
-          await move();
-        }, 500);
+        setTimeout(() => {
+          targetDot.style.opacity = "0"; 
+          setTimeout(() => {
+            targetDot.style.transform = "scale(1)";
+            targetDot.style.opacity = "1";
+            targetDot.textContent = "🎯";
+            moves++;
+            move();
+          }, 300);
+        }, 200);
 
       }, 1000);
     }
@@ -349,6 +357,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
