@@ -36,3 +36,4 @@ models/            # Ignore models folder if not needed in git
 
 # Ignore assets and media that are not required
 assets/            # Ignore assets folder if not required for version control
+.DS_Store
