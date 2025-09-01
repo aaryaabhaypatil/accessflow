@@ -188,16 +188,18 @@ async function runBirdGame() {
       position: "absolute",
       left: "0",
       top: "0",
-      width: "100%",
-      height: "100%",
+      width: "90px",
+      height: "90px",
       borderRadius: "50%",
       background: "transparent",
-      border: "5px solid rgba(0,150,255,0.8)",
+      border: "6px solid rgba(0,150,255,0.8)",
       boxSizing: "border-box",
       pointerEvents: "none",
       zIndex: "1",
-      transform: "translate(3px, 3px)" 
+      transform: "translate(22px, 22px)"
+      
     });
+
 
 
     }
