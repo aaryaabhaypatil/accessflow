@@ -200,6 +200,8 @@ async function runBirdGame() {
       });
     }
 
+    
+
     birdContainer.style.display = "block";
     const progressRing = document.getElementById("birdProgressRing");
 
