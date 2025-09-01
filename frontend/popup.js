@@ -570,21 +570,14 @@ async function startGazeTracker() {
     video.autoplay = true;
     video.muted = true; // needed for autoplay in some browsers
     video.playsInline = true;
-    document.body.appendChild(video);
+    document.body.appendChild(video);await new Promise((resolve) => {
+    video.onloadeddata = () => {
+        video.play();
+        resolve();
+      };
+    });
 
-    // Wait for the video to load metadata (dimensions become valid)
-    // await new Promise((resolve) => {
-    //   video.onloadedmetadata = () => {
-    //     console.log("Video metadata loaded:", video.videoWidth, video.videoHeight);
-    //     if (video.videoWidth > 0 && video.videoHeight > 0) {
-    //       resolve();
-    //     } else {
-    //       video.onplay = () => {
-    //         if (video.videoWidth > 0 && video.videoHeight > 0) resolve();
-    //       };
-    //     }
-    //   };
-    // });
+
     await new Promise((resolve) => {
       function checkVideoReady() {
         console.log("Checking video readiness...", video.readyState, video.videoWidth, video.videoHeight);
@@ -597,27 +590,34 @@ async function startGazeTracker() {
       }
       checkVideoReady();
     });
-    
-    // Now start WebGazer
-    await webgazer
-      .setRegression("ridge")
-       .setTracker("TFFacemesh")
-      .setGazeListener((data) => {
-        if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
-        
+  
+    try {
+      await webgazer
+        .setRegression("ridge")
+        .setTracker("TFFacemesh")
+        .setGazeListener((data) => {
+          if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
 
-        const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
-        window.currentGaze = smoothed;
+          const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+          window.currentGaze = smoothed;
 
-        window.dotGaze.style.left = `${smoothed.x - 10}px`;
-        window.dotGaze.style.top = `${smoothed.y - 10}px`;
-      })
-      .begin();
+          window.dotGaze.style.left = `${smoothed.x - 10}px`;
+          window.dotGaze.style.top = `${smoothed.y - 10}px`;
+        })
+        .begin();
 
-    console.log("WebGazer started ✅");
+      console.log("WebGazer started ✅");
+      
+      startBrightnessLoop(video);
+    } catch (err) {
+      console.error("WebGazer failed to start:", err);
+      // still call brightness loop so you can debug
+      startBrightnessLoop(video);
+    }
+
 
     // Start brightness loop *after* video is ready
-    startBrightnessLoop(video);
+    
   } catch (err) {
     console.error("❌ Failed to start gaze tracker:", err);
   }
@@ -628,10 +628,10 @@ function startBrightnessLoop(video) {
   if (!brightnessDisplay) return;
 
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  console.log("inside brightness loop");
 
   function calcBrightness() {
-    // console.log("starting brigness calcualtion");
     if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -645,12 +645,16 @@ function startBrightnessLoop(video) {
       const avgBrightness = Math.round(sum / (frame.data.length / 4));
       brightnessDisplay.textContent = `Brightness: ${avgBrightness}`;
       console.log(`Brightness: ${avgBrightness}`);
+    } else {
+      console.log("Video not ready yet", video.readyState, video.videoWidth, video.videoHeight);
     }
+
     requestAnimationFrame(calcBrightness);
   }
 
   calcBrightness();
 }
+
 
 
 
