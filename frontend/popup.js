@@ -50,18 +50,9 @@ document.addEventListener("DOMContentLoaded", function () {
   brightnessCanvas.height = 120;
   const brightnessCtx = brightnessCanvas.getContext('2d');
 
-  const brightnessDisplay = document.createElement("div");
-  brightnessDisplay.style.position = "fixed";
-  brightnessDisplay.style.top = "10px";
-  brightnessDisplay.style.right = "10px";
-  brightnessDisplay.style.background = "rgba(0,0,0,0.5)";
-  brightnessDisplay.style.color = "white";
-  brightnessDisplay.style.padding = "5px 10px";
-  brightnessDisplay.style.borderRadius = "5px";
-  brightnessDisplay.style.zIndex = "10001";
-  brightnessDisplay.innerText = "Brightness: calculating...";
-  document.body.appendChild(brightnessDisplay);
 
+
+  
   function waitForVideoReady(timeout = 5000) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
