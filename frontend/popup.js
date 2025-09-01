@@ -159,49 +159,46 @@ async function runBirdGame() {
       document.body.appendChild(birdContainer);
       Object.assign(birdContainer.style, {
         position: "absolute",
-        width: "60px",
-        height: "60px",
-        left: "0px",   // start at top-left
+        width: "90px",        // container size matches halo
+        height: "90px",
+        left: "0px",
         top: "0px",
         zIndex: "999999",
         pointerEvents: "none",
         transform: "translate(-50%, -50%)",
       });
 
-    birdContainer.appendChild(birdDot);
-    Object.assign(birdDot.style, {
-      position: "absolute",
-      left: "50%",
-      top: "50%",
-      width: "40px",
-      height: "40px",
-      transform: "translate(-50%, -50%)",
-      zIndex: "10",
-      display: "block"
-    });
+      // Add bird to container
+      birdContainer.appendChild(birdDot);
+      Object.assign(birdDot.style, {
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        width: "40px",
+        height: "40px",
+        transform: "translate(-50%, -50%)",
+        zIndex: "10",
+        display: "block"
+      });
 
-    // Create progress ring
-    let progressRing = document.createElement("div");
-    progressRing.id = "birdProgressRing";
-    birdContainer.appendChild(progressRing);
-    Object.assign(progressRing.style, {
-      position: "absolute",
-      left: "0",
-      top: "0",
-      width: "90px",
-      height: "90px",
-      borderRadius: "50%",
-      background: "transparent",
-      border: "6px solid rgba(0,150,255,0.8)",
-      boxSizing: "border-box",
-      pointerEvents: "none",
-      zIndex: "1",
-      transform: "translate(22px, 22px)"
-      
-    });
-
-
-
+      // Create progress ring
+      let progressRing = document.createElement("div");
+      progressRing.id = "birdProgressRing";
+      birdContainer.appendChild(progressRing);
+      Object.assign(progressRing.style, {
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        width: "110px",
+        height: "110px",
+        borderRadius: "50%",
+        background: "transparent",
+        border: "6px solid rgba(0,150,255,0.8)",
+        boxSizing: "border-box",
+        pointerEvents: "none",
+        zIndex: "1",
+        transform: "translate(-20%, -20%)"
+      });
     }
 
     birdContainer.style.display = "block";
@@ -273,6 +270,7 @@ async function runBirdGame() {
     moveToNextPoint();
   });
 }
+
 
 
 
