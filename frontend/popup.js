@@ -142,9 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
 async function runBirdGame() {
-  // Wait until gaze is available
   try {
     await waitForValidGaze();
   } catch (err) {
@@ -153,33 +151,58 @@ async function runBirdGame() {
   }
 
   return new Promise((resolve) => {
-    birdDot.style.display = "block";
-
-    // Create progress ring if it doesn't exist
-    let progressRing = document.getElementById("birdProgressRing");
-    if (!progressRing) {
-      progressRing = document.createElement("div");
-      progressRing.id = "birdProgressRing";
-      document.body.appendChild(progressRing);
-      // Style the ring to stay on top
-      Object.assign(progressRing.style, {
+    // Create container for bird + ring
+    let birdContainer = document.getElementById("birdContainer");
+    if (!birdContainer) {
+      birdContainer = document.createElement("div");
+      birdContainer.id = "birdContainer";
+      document.body.appendChild(birdContainer);
+      Object.assign(birdContainer.style, {
         position: "absolute",
         width: "60px",
         height: "60px",
-        borderRadius: "50%",
-        border: "5px solid rgba(0, 0, 0, 0.6)",
-        boxShadow: "0 0 12px rgba(0, 0, 0, 0.8)",
-        zIndex: "999999", // <-- Ensures it's above the blur overlay
+        left: "0px",   // start at top-left
+        top: "0px",
+        zIndex: "999999",
         pointerEvents: "none",
         transform: "translate(-50%, -50%)",
       });
 
-      // Use a background gradient to simulate progress
-      progressRing.style.background = `conic-gradient(
-        rgba(0, 150, 255, 1) 0%,
-        rgba(0, 150, 255, 0.3) 0%
-      )`;
+    birdContainer.appendChild(birdDot);
+    Object.assign(birdDot.style, {
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      width: "40px",
+      height: "40px",
+      transform: "translate(-50%, -50%)",
+      zIndex: "10",
+      display: "block"
+    });
+
+    // Create progress ring
+    let progressRing = document.createElement("div");
+    progressRing.id = "birdProgressRing";
+    birdContainer.appendChild(progressRing);
+    Object.assign(progressRing.style, {
+      position: "absolute",
+      left: "0",
+      top: "0",
+      width: "100%",
+      height: "100%",
+      borderRadius: "50%",
+      background: "transparent",
+      border: "5px solid rgba(0,150,255,0.8)",
+      boxSizing: "border-box",
+      pointerEvents: "none",
+      zIndex: "1",
+      transform: "translate(3px, 3px)" 
+    });
+
+
     }
+
+    birdContainer.style.display = "block";
 
     const totalPoints = 15;
     const points = Array.from({ length: totalPoints }, () => ({
@@ -189,24 +212,15 @@ async function runBirdGame() {
 
     let index = 0;
 
-    function updateProgressRing(currentIndex) {
-      const percentage = Math.floor(((currentIndex + 1) / totalPoints) * 100);
-      progressRing.style.background = `conic-gradient(
-        rgba(0, 150, 255, 1) ${percentage}%,
-        rgba(0, 150, 255, 0.3) ${percentage}%
-      )`;
-    }
-
     function moveToNextPoint() {
       if (index >= points.length) {
-        birdDot.style.display = "none";
-        progressRing.style.display = "none"; // Hide after completion
+        birdContainer.style.display = "none";
         resolve();
         return;
       }
 
-      const startX = parseFloat(birdDot.style.left) || points[index].x;
-      const startY = parseFloat(birdDot.style.top) || points[index].y;
+      const startX = parseFloat(birdContainer.style.left) || points[index].x;
+      const startY = parseFloat(birdContainer.style.top) || points[index].y;
       const endX = points[index].x;
       const endY = points[index].y;
       const duration = 2000;
@@ -223,14 +237,9 @@ async function runBirdGame() {
         const currentX = startX + (endX - startX) * t;
         const currentY = startY + (endY - startY) * t;
 
-        birdDot.style.left = `${currentX}px`;
-        birdDot.style.top = `${currentY}px`;
+        birdContainer.style.left = `${currentX}px`;
+        birdContainer.style.top = `${currentY}px`;
 
-        // Move the progress ring along with the bird dot
-        progressRing.style.left = `${currentX}px`;
-        progressRing.style.top = `${currentY}px`;
-
-        // Log gaze while moving
         if (
           window.currentGaze &&
           isFinite(window.currentGaze.x) &&
@@ -246,13 +255,11 @@ async function runBirdGame() {
             pointIndex: index,
           };
           gameGazeLog.push(gazeEntry);
-          console.log("Bird game gaze:", gazeEntry);
         }
 
         if (t < 1) {
           requestAnimationFrame(animate);
         } else {
-          updateProgressRing(index);
           index++;
           moveToNextPoint();
         }
@@ -261,10 +268,13 @@ async function runBirdGame() {
       requestAnimationFrame(animate);
     }
 
-    updateProgressRing(0);
     moveToNextPoint();
   });
 }
+
+
+
+
 
 
 
