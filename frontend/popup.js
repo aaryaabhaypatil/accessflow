@@ -359,7 +359,10 @@ function runGemGame() {
     gemDot.style.display = "block";
     let moves = 0;
 
-    function move() {
+    async function move() {
+
+      await runWithPause(async () => {});
+
       if (moves >= 20) {
         gemDot.style.display = "none";
         resolve();
@@ -370,9 +373,9 @@ function runGemGame() {
       const y = Math.random() * (window.innerHeight - 100);
       gemDot.style.left = `${x}px`;
       gemDot.style.top = `${y}px`;
-      gemDot.textContent = "💎"; 
+      gemDot.textContent = "💎";
 
-      // Log gaze at spawn
+
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -381,18 +384,18 @@ function runGemGame() {
           targetX: x,
           targetY: y,
           game: "gem",
-          moveIndex: moves
+          moveIndex: moves,
         };
         gemGazeLog.push(gazeEntry);
         console.log("Gem game gaze:", gazeEntry);
       }
 
-      setTimeout(() => {
-        gemDot.textContent = "✨"; 
-        setTimeout(() => {
+      setTimeout(async () => {
+        gemDot.textContent = "✨";
+        setTimeout(async () => {
           gemDot.textContent = "💎";
           moves++;
-          move();
+          await move();
         }, 500);
       }, 1000);
     }
@@ -400,6 +403,7 @@ function runGemGame() {
     move();
   });
 }
+
 
 
 const postCalibrationGazePath = []; // Separate path for after calibration
