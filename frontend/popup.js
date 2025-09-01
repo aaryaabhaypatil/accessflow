@@ -144,7 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 async function runBirdGame() {
-  // Wait until gaze is available
   try {
     await waitForValidGaze();
   } catch (err) {
@@ -154,7 +153,17 @@ async function runBirdGame() {
 
   return new Promise((resolve) => {
     birdDot.style.display = "block";
-    const points = Array.from({ length: 15 }, () => ({
+
+    // Create the feedback ring dynamically
+    let progressRing = document.getElementById("birdProgressRing");
+    if (!progressRing) {
+      progressRing = document.createElement("div");
+      progressRing.id = "birdProgressRing";
+      document.body.appendChild(progressRing);
+    }
+
+    const totalPoints = 15;
+    const points = Array.from({ length: totalPoints }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
     }));
@@ -163,6 +172,7 @@ async function runBirdGame() {
     function moveToNextPoint() {
       if (index >= points.length) {
         birdDot.style.display = "none";
+        progressRing.style.display = "none";
         resolve();
         return;
       }
@@ -188,7 +198,19 @@ async function runBirdGame() {
         birdDot.style.left = `${currentX}px`;
         birdDot.style.top = `${currentY}px`;
 
-        // Log gaze while moving
+        // Position progress ring around birdDot
+        const birdSize = birdDot.offsetWidth || 20;
+        const ringSize = birdSize + 20;
+        progressRing.style.left = `${currentX - 10}px`;
+        progressRing.style.top = `${currentY - 10}px`;
+        progressRing.style.width = `${ringSize}px`;
+        progressRing.style.height = `${ringSize}px`;
+
+        // Update circular progress dynamically
+        const progressPercent = ((index + t) / totalPoints) * 100;
+        progressRing.style.background = `conic-gradient(#4cafef ${progressPercent}%, #ddd ${progressPercent}%)`;
+
+        // Log gaze
         if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
           const gazeEntry = {
             time: Date.now(),
@@ -214,6 +236,7 @@ async function runBirdGame() {
       requestAnimationFrame(animate);
     }
 
+    progressRing.style.display = "block";
     moveToNextPoint();
   });
 }
