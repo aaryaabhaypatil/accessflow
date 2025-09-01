@@ -159,8 +159,8 @@ async function runBirdGame() {
       document.body.appendChild(birdContainer);
       Object.assign(birdContainer.style, {
         position: "absolute",
-        width: "90px",        // container size matches halo
-        height: "90px",
+        width: "110px",        // container size matches halo
+        height: "110px",
         left: "0px",
         top: "0px",
         zIndex: "999999",
@@ -192,8 +192,7 @@ async function runBirdGame() {
         width: "110px",
         height: "110px",
         borderRadius: "50%",
-        background: "transparent",
-        border: "6px solid rgba(0,150,255,0.8)",
+        background: "conic-gradient(rgba(0,150,255,0.8) 0%, rgba(0,150,255,0.3) 0%)",
         boxSizing: "border-box",
         pointerEvents: "none",
         zIndex: "1",
@@ -202,6 +201,7 @@ async function runBirdGame() {
     }
 
     birdContainer.style.display = "block";
+    const progressRing = document.getElementById("birdProgressRing");
 
     const totalPoints = 15;
     const points = Array.from({ length: totalPoints }, () => ({
@@ -210,6 +210,14 @@ async function runBirdGame() {
     }));
 
     let index = 0;
+
+    function updateProgressRing(currentIndex) {
+      const percentage = ((currentIndex + 1) / totalPoints) * 100;
+      progressRing.style.background = `conic-gradient(
+        rgba(0,150,255,0.8) ${percentage}%,
+        rgba(0,150,255,0.3) ${percentage}%
+      )`;
+    }
 
     function moveToNextPoint() {
       if (index >= points.length) {
@@ -259,6 +267,7 @@ async function runBirdGame() {
         if (t < 1) {
           requestAnimationFrame(animate);
         } else {
+          updateProgressRing(index);
           index++;
           moveToNextPoint();
         }
@@ -270,6 +279,7 @@ async function runBirdGame() {
     moveToNextPoint();
   });
 }
+
 
 
 
