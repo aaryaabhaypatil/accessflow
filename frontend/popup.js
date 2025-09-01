@@ -44,15 +44,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const pathCtx = pathCanvas.getContext("2d");
   let pathDrawingEnabled = false; 
 
-  // --- Ambient brightness display ---
   const brightnessCanvas = document.createElement('canvas');
-  brightnessCanvas.width = 160; // small size for speed
+  brightnessCanvas.width = 160; 
   brightnessCanvas.height = 120;
   const brightnessCtx = brightnessCanvas.getContext('2d');
 
 
 
-  
+
   function waitForVideoReady(timeout = 5000) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
@@ -76,19 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Start camera as soon as the extension is on
   initGazeTracking();
 
-
-
-
-//   function updateBrightnessLoop() {
-//     const video = document.querySelector('video'); // your WebGazer video
-//     if (video) {
-//         calculateBrightness(video);
-//     }
-//     requestAnimationFrame(updateBrightnessLoop);
-// }
-
-//   // Start the loop
-//   setTimeout(updateBrightnessLoop, 1000);
 
 
   // Calibration dot as emojis for the games
@@ -403,122 +389,6 @@ function startPostCalibrationGazeTracing() {
 }
 
 
-// Start WebGazer and wait until camera is ready
-// Step 1: Initialize gaze tracking once at the start
-// async function startGazeTracker() {
-//   if (!window.webgazer) throw new Error("WebGazer not loaded!");
-  
-//   if (!window.dotGaze) {
-//     const dot = document.createElement("div");
-//     dot.style.position = "fixed";
-//     dot.style.width = "20px";
-//     dot.style.height = "20px";
-//     dot.style.background = "red";
-//     dot.style.borderRadius = "50%";
-//     dot.style.zIndex = "10002";
-//     dot.style.pointerEvents = "none";
-//     document.body.appendChild(dot);
-//     window.dotGaze = dot;
-//     window.dotGaze.style.zIndex = "100000"; 
-//   }
-
-//   window.currentGaze = { x: 0, y: 0 };
-//   const gazeHistory = [];
-//   const smoothFactor = 0.2;
-//   let smoothedGaze = { x: 0, y: 0 };
-
-//   function getSmoothedGaze(raw) {
-//     smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + raw.x * smoothFactor;
-//     smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + raw.y * smoothFactor;
-//     return { ...smoothedGaze };
-//   }
-
-//   await webgazer
-//     .setRegression("ridge")
-//     .setTracker("clmtrackr")
-//     .setGazeListener((data) => {
-//       if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
-
-//       // smoothing + store globally
-//       const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
-//       window.currentGaze = smoothed;
-
-//       // update gaze dot
-//       window.dotGaze.style.left = `${smoothed.x - 10}px`;
-//       window.dotGaze.style.top = `${smoothed.y - 10}px`;
-//     })
-//     .begin();
-//     async function waitForVideoReady(timeout = 5000) {
-//       const start = Date.now();
-//       while (true) {
-//         const video = webgazer.getVideoElement();
-//         if (video && video.videoWidth > 0 && video.videoHeight > 0) {
-//           console.log("Video ready for processing!");
-//           return video;
-//         }
-//         if (Date.now() - start > timeout) {
-//           throw new Error("Video never became ready");
-//         }
-//         await new Promise(r => setTimeout(r, 100));
-//       }
-//     }
-
-// const video = await waitForVideoReady();
-
-// // Now you can safely call your brightness function
-// calculateBrightness(video);
-//     // Start brightness monitoring after WebGazer video is ready
-//     function calculateBrightness(video) {
-//       if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
-//           console.log("Video not ready yet");
-//           return;
-//       }
-
-//       const canvas = document.createElement("canvas");
-//       canvas.width = video.videoWidth;
-//       canvas.height = video.videoHeight;
-//       const ctx = canvas.getContext("2d");
-
-//       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-//       const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-//       const data = frame.data;
-
-//       let sum = 0;
-//       for (let i = 0; i < data.length; i += 4) {
-//           // standard formula for perceived brightness
-//           sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-//       }
-
-//       const avg = sum / (canvas.width * canvas.height);
-//       brightnessDisplay.innerText = `Brightness: ${avg.toFixed(1)}`;
-//     }
-
-//       async function startBrightnessLoop() {
-//   try {
-//     const video = await waitForVideoReady();
-//     function loop() {
-//       calculateBrightness(video);
-//       requestAnimationFrame(loop);
-//     }
-//     loop();
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
-
-// startBrightnessLoop();
-  
-
-
-//   // hide default webgazer dot
-//   const webDot = document.getElementById("webgazerGazeDot");
-//   if (webDot) webDot.style.display = "none";
-
-//   webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
-
-//   console.log("Gaze tracking started, dot visible.");
-// }
-
 
 
 // Simple smoothing for gaze coordinates using a moving average
@@ -647,36 +517,6 @@ function startBrightnessLoop(video) {
 }
 
 
-
-
-
-
-
-// // Continuous gaze tracking loop
-// function startTrackingLoop() {
-//   function loop() {
-//     const prediction = webgazer.getCurrentPrediction();
-//     if (prediction && isFinite(prediction.x) && isFinite(prediction.y)) {
-//       const x = Math.min(Math.max(prediction.x, 0), window.innerWidth);
-//       const y = Math.min(Math.max(prediction.y, 0), window.innerHeight);
-
-//       gazeDot.style.left = `${x - 10}px`;
-//       gazeDot.style.top = `${y - 10}px`;
-//       gazeDot.style.display = "block";
-
-//       window.currentGaze = { x, y }; 
-
-//       if (pathDrawingEnabled) {
-//         pathCtx.fillStyle = "rgba(255,0,0,0.6)";
-//         pathCtx.beginPath();
-//         pathCtx.arc(x, y, 3, 0, 2 * Math.PI);
-//         pathCtx.fill();
-//       }
-//     }
-//     requestAnimationFrame(loop);
-//   }
-//   loop();
-// }
 
 
 // Start games only if camera is ready
