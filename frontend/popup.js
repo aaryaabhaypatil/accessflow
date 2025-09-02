@@ -336,7 +336,7 @@ function runTargetGame() {
 
      
       targetDot.style.transform = `scale(${baseScale})`;
-      targetDot.style.transition = "transform 1s linear";
+      targetDot.style.transition = "transform 0.3s ease-out";
 
    
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
