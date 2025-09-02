@@ -309,8 +309,8 @@ function runTargetGame() {
   return new Promise((resolve) => {
     targetDot.style.display = "block";
     let moves = 0;
-    let baseScale = 0.6; 
-    const maxScale = 1.5; 
+    let baseScale = 0.7; 
+    const maxScale = 2; 
 
     async function move() {
     
@@ -355,7 +355,7 @@ function runTargetGame() {
 
      
       setTimeout(() => {
-        targetDot.style.transform = `scale(${baseScale * 0.9})`; 
+        targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
       
@@ -367,7 +367,6 @@ function runTargetGame() {
           targetDot.classList.remove("explode");
           targetDot.textContent = "🎯";
 
-         
           baseScale = Math.min(baseScale * 1.1, maxScale);
           moves++;
           await move();
