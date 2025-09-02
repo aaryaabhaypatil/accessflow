@@ -151,7 +151,6 @@ async function runBirdGame() {
   }
 
   return new Promise((resolve) => {
-    // Create container for bird + ring
     let birdContainer = document.getElementById("birdContainer");
     if (!birdContainer) {
       birdContainer = document.createElement("div");
@@ -168,7 +167,6 @@ async function runBirdGame() {
         transform: "translate(-50%, -50%)",
       });
 
-      // Add bird to container
       birdContainer.appendChild(birdDot);
       Object.assign(birdDot.style, {
         position: "absolute",
@@ -179,10 +177,9 @@ async function runBirdGame() {
         transform: "translate(-50%, -50%) scale(1)",
         zIndex: "10",
         display: "block",
-        transition: "transform 0.2s ease" // smoother pulsing
+        transition: "transform 0.1s linear"
       });
 
-      // Create progress ring
       let progressRing = document.createElement("div");
       progressRing.id = "birdProgressRing";
       birdContainer.appendChild(progressRing);
@@ -248,8 +245,9 @@ async function runBirdGame() {
         birdContainer.style.left = `${currentX}px`;
         birdContainer.style.top = `${currentY}px`;
 
-        // Small scale while moving
-        birdDot.style.transform = `translate(-50%, -50%) scale(0.9)`;
+        // Continuously shrink while moving
+        const scaleMoving = 1 - 0.3 * t; // starts at 1, shrinks to 0.7 at end
+        birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
         if (
           window.currentGaze &&
@@ -274,12 +272,12 @@ async function runBirdGame() {
           updateProgressRing(index);
 
           // Pulse bird when it stops
-          const pulseDuration = 500; // ms
+          const pulseDuration = 500; 
           const pulseStart = performance.now();
           function pulse(time) {
             const elapsedPulse = time - pulseStart;
             const pulseT = Math.min(elapsedPulse / pulseDuration, 1);
-            const scale = 0.9 + 0.4 * Math.sin(pulseT * Math.PI); // 0.9 → 1.3 → 0.9
+            const scale = 0.7 + 0.6 * Math.sin(pulseT * Math.PI); // 0.7 → 1.3 → 0.7
             birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
             if (pulseT < 1) {
@@ -302,7 +300,7 @@ async function runBirdGame() {
 
 
 
-// Separate log for the target game
+
 const targetGazeLog = []; 
 
 function runTargetGame() {
