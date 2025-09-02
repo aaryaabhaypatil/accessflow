@@ -664,9 +664,9 @@ startGames = async function () {
 
   // Blur screen for fewer distractions
   if (blurOverlay) {
-    blurOverlay.style.display = "block";
-    blurOverlay.style.opacity = "1";
+    blurOverlay.classList.add("active");
   }
+
 
   // Run mini-games in sequence
   await runWithPause(runBirdGame);
@@ -681,10 +681,12 @@ startGames = async function () {
 
 
   function finishGames() {
+    
     calibrationInProgress = false;
     birdDot.style.display = "none";
     targetDot.style.display = "none";
     gemDot.style.display = "none";
+     blurOverlay.classList.remove("active");
     if (blurOverlay) blurOverlay.style.display = "none";
     pathDrawingEnabled = true;
     alert("Calibration complete! Red dot now shows your real-time gaze with path.");
@@ -867,12 +869,12 @@ if (closeBtn && popupOverlay) {
   // Visual feedback when settings are saved
   function showFeedbackBox() {
     if (!feedbackBox) return;
-    if (blurOverlay) blurOverlay.style.display = 'block';
+    // if (blurOverlay) blurOverlay.style.display = 'block';
     feedbackBox.textContent = "Preferences saved!";
     feedbackBox.style.display = "block";
     setTimeout(() => {
       feedbackBox.style.display = "none";
-      if (blurOverlay) blurOverlay.style.display = "none";
+      // if (blurOverlay) blurOverlay.style.display = "none";
       if (popupOverlay) popupOverlay.style.display = "none";
     }, 1000);
   }
