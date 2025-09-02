@@ -302,18 +302,6 @@ async function runBirdGame() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Separate log for the target game
 const targetGazeLog = []; 
 
@@ -321,10 +309,10 @@ function runTargetGame() {
   return new Promise((resolve) => {
     targetDot.style.display = "block";
     let moves = 0;
-    let baseScale = 1.5; 
+    let baseScale = 0.6; 
 
     async function move() {
-     
+      
       while (gamesPaused) {
         await new Promise((resume) => {
           currentGameResolver = resume;
@@ -338,14 +326,14 @@ function runTargetGame() {
         return;
       }
 
-      
+ 
       const x = Math.random() * (window.innerWidth - 100);
       const y = Math.random() * (window.innerHeight - 100);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
       targetDot.textContent = "🎯";
 
-      
+  
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 1s linear";
 
@@ -364,9 +352,9 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
- 
+      
       setTimeout(() => {
-        targetDot.style.transform = `scale(${baseScale * 0.6})`; 
+        targetDot.style.transform = `scale(${baseScale * 0.9})`; 
       }, 50);
 
       
@@ -378,8 +366,8 @@ function runTargetGame() {
           targetDot.classList.remove("explode");
           targetDot.textContent = "🎯";
 
-         
-          baseScale *= 0.9; 
+          
+          baseScale *= 1.1; 
           moves++;
           await move();
         }, 500);
@@ -389,6 +377,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
