@@ -310,34 +310,35 @@ function runTargetGame() {
     targetDot.style.display = "block";
     let moves = 0;
     let baseScale = 0.6; 
+    const maxScale = 1.5; 
 
     async function move() {
-      
+    
       while (gamesPaused) {
         await new Promise((resume) => {
           currentGameResolver = resume;
         });
       }
 
-      
+    
       if (moves >= 20) {
         targetDot.style.display = "none";
         resolve();
         return;
       }
 
- 
+      
       const x = Math.random() * (window.innerWidth - 100);
       const y = Math.random() * (window.innerHeight - 100);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
       targetDot.textContent = "🎯";
 
-  
+     
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 1s linear";
 
-      
+   
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -352,7 +353,7 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-      
+     
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.9})`; 
       }, 50);
@@ -366,8 +367,8 @@ function runTargetGame() {
           targetDot.classList.remove("explode");
           targetDot.textContent = "🎯";
 
-          
-          baseScale *= 1.1; 
+         
+          baseScale = Math.min(baseScale * 1.1, maxScale);
           moves++;
           await move();
         }, 500);
@@ -377,6 +378,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
