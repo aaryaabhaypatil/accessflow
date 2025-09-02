@@ -377,15 +377,6 @@ function runTargetGame() {
 }
 
 
-
-
-
-
-
-
-
-
- // Separate log for the gem game
 const gemGazeLog = [];
 function runGemGame() {
   return new Promise((resolve) => {
