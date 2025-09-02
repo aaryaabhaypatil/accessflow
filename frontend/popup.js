@@ -382,12 +382,12 @@ function runGemGame() {
   return new Promise((resolve) => {
     gemDot.style.display = "block";
     let moves = 0;
+    const totalMoves = 20;
 
     async function move() {
-
       await runWithPause(async () => {});
 
-      if (moves >= 20) {
+      if (moves >= totalMoves) {
         gemDot.style.display = "none";
         resolve();
         return;
@@ -399,7 +399,15 @@ function runGemGame() {
       gemDot.style.top = `${y}px`;
       gemDot.textContent = "💎";
 
+      
+      const progress = moves / totalMoves;
 
+
+      const glowStrength = Math.floor(10 + progress * 40);
+      gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
+      gemDot.style.transition = "filter 0.4s ease";
+
+     
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -414,6 +422,7 @@ function runGemGame() {
         console.log("Gem game gaze:", gazeEntry);
       }
 
+     
       setTimeout(async () => {
         gemDot.textContent = "✨";
         setTimeout(async () => {
@@ -427,6 +436,7 @@ function runGemGame() {
     move();
   });
 }
+
 
 
 
