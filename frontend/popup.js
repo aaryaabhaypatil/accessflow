@@ -403,9 +403,9 @@ function runGemGame() {
       const progress = moves / totalMoves;
 
 
-      const glowStrength = Math.floor(10 + progress * 40);
+      const glowStrength = Math.floor(10 + progress * 40); 
       gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
-      gemDot.style.transition = "filter 0.4s ease";
+      gemDot.style.transition = "filter 0.4s ease"; 
 
      
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
