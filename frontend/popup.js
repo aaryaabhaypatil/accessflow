@@ -309,9 +309,9 @@ function runTargetGame() {
     let moves = 0;
     let baseScale = 0.7; 
     const maxScale = 2; 
-    const totalPoints = 20; // starting points
+    const totalPoints = 20;
 
-    // Function to render the target with countdown number
+
     function renderTarget(remainingPoints) {
       targetDot.innerHTML = `
         <div style="position: relative; display: inline-block;">
@@ -321,12 +321,23 @@ function runTargetGame() {
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 16px;
+            font-size: 40px;
             font-weight: bold;
             color: white;
+            text-shadow: -2px -2px 4px black, 2px -2px 4px black,
+                         -2px 2px 4px black, 2px 2px 4px black;
           ">
             ${remainingPoints}
           </span>
+        </div>
+      `;
+    }
+
+
+    function renderExplosion() {
+      targetDot.innerHTML = `
+        <div style="position: relative; display: inline-block;">
+          <span style="font-size: 200px;">💥</span>
         </div>
       `;
     }
@@ -344,20 +355,20 @@ function runTargetGame() {
         return;
       }
 
-      // Random position
-      const x = Math.random() * (window.innerWidth - 100);
-      const y = Math.random() * (window.innerHeight - 100);
+
+      const x = Math.random() * (window.innerWidth - 200);
+      const y = Math.random() * (window.innerHeight - 200);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
 
-      // Remaining points
+
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
 
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 0.3s ease-out";
 
-      // Gaze logging (unchanged)
+
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -372,23 +383,22 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-      // Shrink animation
+
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
-      // Explosion
+
       setTimeout(async () => {
-        targetDot.innerHTML = "💥"; // temporarily explosion
+        renderExplosion();
 
         setTimeout(async () => {
           moves++;
           const nextRemaining = totalPoints - moves;
           if (nextRemaining > 0) {
-            renderTarget(nextRemaining); // redraw 🎯 with countdown
+            renderTarget(nextRemaining);
           }
 
-          // Scale up gradually
           baseScale = Math.min(baseScale * 1.1, maxScale);
           await move();
         }, 500);
@@ -398,6 +408,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
