@@ -309,34 +309,35 @@ function runTargetGame() {
     let moves = 0;
     let baseScale = 0.7; 
     const maxScale = 2; 
+    const totalPoints = 20;
 
     async function move() {
-    
       while (gamesPaused) {
         await new Promise((resume) => {
           currentGameResolver = resume;
         });
       }
 
-    
-      if (moves >= 20) {
+      if (moves >= totalPoints) {
         targetDot.style.display = "none";
         resolve();
         return;
       }
 
-      
+      // Random position for target
       const x = Math.random() * (window.innerWidth - 100);
       const y = Math.random() * (window.innerHeight - 100);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
-      targetDot.textContent = "🎯";
 
-     
+      // Show countdown number instead of 🎯
+      const remainingPoints = totalPoints - moves;
+      targetDot.textContent = remainingPoints;
+
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 0.3s ease-out";
 
-   
+ 
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -351,20 +352,25 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-     
+      // Shrink animation
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
-      
+      // Explosion animation
       setTimeout(async () => {
         targetDot.textContent = "💥";
         targetDot.classList.add("explode");
 
         setTimeout(async () => {
           targetDot.classList.remove("explode");
-          targetDot.textContent = "🎯";
+          // Restore to number instead of 🎯
+          const nextRemaining = totalPoints - (moves + 1);
+          if (nextRemaining > 0) {
+            targetDot.textContent = nextRemaining;
+          }
 
+          // Scale up gradually
           baseScale = Math.min(baseScale * 1.1, maxScale);
           moves++;
           await move();
@@ -375,6 +381,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 const gemGazeLog = [];
