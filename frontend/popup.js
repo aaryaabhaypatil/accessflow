@@ -307,8 +307,7 @@ function runTargetGame() {
   return new Promise((resolve) => {
     targetDot.style.display = "block";
     let moves = 0;
-    let baseScale = 0.7; 
-    const maxScale = 2; 
+    const baseScale = 0.7; // fixed size
     const totalPoints = 20;
 
     // Render target with number circle and pop animation
@@ -347,7 +346,6 @@ function runTargetGame() {
         numberCircle.style.transform = "translate(-50%, -50%) scale(1)";
       });
 
-      // Ensure targetDot is positioned relative for absolute children
       targetDot.style.position = "absolute";
       targetDot.style.textAlign = "center";
     }
@@ -402,7 +400,7 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-      // Shrink animation
+      // Shrink animation (optional)
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
@@ -418,8 +416,7 @@ function runTargetGame() {
             renderTarget(nextRemaining); // redraw next target with pop animation
           }
 
-          // Gradually increase scale
-          baseScale = Math.min(baseScale * 1.1, maxScale);
+          // Do NOT change baseScale anymore — keeps size fixed
           await move();
         }, 500);
       }, 1000); 
@@ -428,6 +425,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
