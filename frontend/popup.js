@@ -267,6 +267,7 @@ async function runBirdGame() {
           requestAnimationFrame(animate);
           return;
         }
+        
 
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
