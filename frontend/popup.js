@@ -314,7 +314,7 @@ function runTargetGame() {
     function renderTarget(remainingPoints) {
     targetDot.innerHTML = `
       <!-- Big target emoji -->
-      <span style="font-size: 200px; display: block;">⌖</span>
+      <span style="font-size: 200px; display: block; color: white;">⌖</span>
 
       <!-- Circle in center (absolute to targetDot) -->
       <div style="
