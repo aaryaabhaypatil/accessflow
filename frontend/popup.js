@@ -311,41 +311,48 @@ function runTargetGame() {
     const maxScale = 2; 
     const totalPoints = 20;
 
+    // Render target with number circle and pop animation
     function renderTarget(remainingPoints) {
-    targetDot.innerHTML = `
-      <!-- Big target emoji -->
-      <span style="font-size: 200px; display: block; color: white;">⌖</span>
+      targetDot.innerHTML = `
+        <!-- Big white target emoji -->
+        <span style="font-size: 200px; display: block; color: white;">⌖</span>
 
-      <!-- Circle in center (absolute to targetDot) -->
-      <div style="
-        position: absolute;
-        top: 60%;
-        left: 50%;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        color: black;
-        transform: translate(-50%, -50%);
-        box-shadow: 0 0 6px rgba(0,0,0,0.5);
-        pointer-events: none;
-      ">
-        ${remainingPoints}
-      </div>
-    `;
+        <!-- Circle at top 60% with number -->
+        <div style="
+          position: absolute;
+          top: 60%;
+          left: 50%;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 24px;
+          font-weight: bold;
+          color: black;
+          transform: translate(-50%, -50%) scale(0); /* start small for pop */
+          box-shadow: 0 0 6px rgba(0,0,0,0.5);
+          pointer-events: none;
+          transition: transform 0.3s ease-out;
+        ">
+          ${remainingPoints}
+        </div>
+      `;
 
+      // Trigger pop animation
+      const numberCircle = targetDot.querySelector("div");
+      requestAnimationFrame(() => {
+        numberCircle.style.transform = "translate(-50%, -50%) scale(1)";
+      });
 
-    targetDot.style.position = "absolute";
-    targetDot.style.textAlign = "center";
-  }
+      // Ensure targetDot is positioned relative for absolute children
+      targetDot.style.position = "absolute";
+      targetDot.style.textAlign = "center";
+    }
 
-
-
+    // Render explosion in the same spot
     function renderExplosion() {
       targetDot.innerHTML = `
         <div style="position: relative; display: inline-block;">
@@ -367,20 +374,20 @@ function runTargetGame() {
         return;
       }
 
-
+      // Random position (account for target size)
       const x = Math.random() * (window.innerWidth - 200);
       const y = Math.random() * (window.innerHeight - 200);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
 
- 
+      // Render target with current points
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
 
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 0.3s ease-out";
 
-
+      // Gaze logging
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -395,12 +402,12 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-
+      // Shrink animation
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
-
+      // Explosion
       setTimeout(async () => {
         renderExplosion();
 
@@ -408,10 +415,10 @@ function runTargetGame() {
           moves++;
           const nextRemaining = totalPoints - moves;
           if (nextRemaining > 0) {
-            renderTarget(nextRemaining); 
+            renderTarget(nextRemaining); // redraw next target with pop animation
           }
 
-
+          // Gradually increase scale
           baseScale = Math.min(baseScale * 1.1, maxScale);
           await move();
         }, 500);
@@ -421,6 +428,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
