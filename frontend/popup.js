@@ -437,62 +437,122 @@ function runTargetGame() {
 const gemGazeLog = [];
 function runGemGame() {
   return new Promise((resolve) => {
-    gemDot.style.display = "block";
-    let moves = 0;
-    const totalMoves = 20;
 
-    async function move() {
-      await runWithPause(async () => {});
+    let storyMessage = document.createElement("div");
+    storyMessage.style.position = "absolute";
+    storyMessage.style.top = "10%";
+    storyMessage.style.left = "50%";
+    storyMessage.style.transform = "translateX(-50%)";
+    storyMessage.style.fontSize = "24px";
+    storyMessage.style.color = "gold";
+    storyMessage.style.fontWeight = "bold";
+    storyMessage.style.textAlign = "center";
+    storyMessage.style.zIndex = "20001";
+    document.body.appendChild(storyMessage);
 
-      if (moves >= totalMoves) {
-        gemDot.style.display = "none";
-        resolve();
-        return;
+
+    let caveOverlay = document.createElement("div");
+    caveOverlay.style.position = "fixed";
+    caveOverlay.style.top = "0";
+    caveOverlay.style.left = "0";
+    caveOverlay.style.width = "100%";
+    caveOverlay.style.height = "100%";
+    caveOverlay.style.backgroundColor = "black";
+    caveOverlay.style.zIndex = "20000";
+    caveOverlay.style.opacity = "0.9";
+    caveOverlay.style.transition = "opacity 1s ease";
+    document.body.appendChild(caveOverlay);
+
+
+    const storyLines = [
+      "You enter a dark cave...",
+      "The gems sparkle faintly...",
+      "As you gaze at them, the cave grows brighter...",
+      "Finally, the entrance opens!"
+    ];
+
+    async function showStoryLines() {
+      for (let i = 0; i < storyLines.length; i++) {
+        storyMessage.textContent = storyLines[i];
+
+        
+        caveOverlay.style.opacity = String(0.9 - i * 0.2);
+
+        await new Promise((resolve) => setTimeout(resolve, 2500));
       }
 
-      const x = Math.random() * (window.innerWidth - 100);
-      const y = Math.random() * (window.innerHeight - 100);
-      gemDot.style.left = `${x}px`;
-      gemDot.style.top = `${y}px`;
-      gemDot.textContent = "💎";
-
-      
-      const progress = moves / totalMoves;
-
-
-      const glowStrength = Math.floor(10 + progress * 40); 
-      gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
-      gemDot.style.transition = "filter 0.4s ease"; 
+     
+      caveOverlay.style.opacity = "0";
+      setTimeout(() => {
+        if (caveOverlay.parentNode) caveOverlay.remove();
+        if (storyMessage.parentNode) storyMessage.remove();
 
      
-      if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
-        const gazeEntry = {
-          time: Date.now(),
-          gazeX: window.currentGaze.x,
-          gazeY: window.currentGaze.y,
-          targetX: x,
-          targetY: y,
-          game: "gem",
-          moveIndex: moves,
-        };
-        gemGazeLog.push(gazeEntry);
-        console.log("Gem game gaze:", gazeEntry);
-      }
-
-     
-      setTimeout(async () => {
-        gemDot.textContent = "✨";
-        setTimeout(async () => {
-          gemDot.textContent = "💎";
-          moves++;
-          await move();
-        }, 500);
+        startGemGame(resolve);
       }, 1000);
     }
 
-    move();
+
+    function startGemGame(done) {
+      let moves = 0;
+      const totalMoves = 20;
+      gemDot.style.display = "block";
+
+      async function move() {
+        if (moves >= totalMoves) {
+          gemDot.style.display = "none";
+          done();
+          return;
+        }
+
+        const x = Math.random() * (window.innerWidth - 100);
+        const y = Math.random() * (window.innerHeight - 100);
+        gemDot.style.left = `${x}px`;
+        gemDot.style.top = `${y}px`;
+        gemDot.textContent = "💎";
+
+        const progress = moves / totalMoves;
+        const glowStrength = Math.floor(10 + progress * 40);
+        gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
+        gemDot.style.transition = "filter 0.4s ease";
+
+
+        if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+          const gazeEntry = {
+            time: Date.now(),
+            gazeX: window.currentGaze.x,
+            gazeY: window.currentGaze.y,
+            targetX: x,
+            targetY: y,
+            game: "gem",
+            moveIndex: moves,
+          };
+          gemGazeLog.push(gazeEntry);
+          console.log("Gem game gaze:", gazeEntry);
+        }
+
+   
+        setTimeout(async () => {
+          gemDot.textContent = "✨";
+          setTimeout(async () => {
+            gemDot.textContent = "💎";
+            moves++;
+            await move();
+          }, 500);
+        }, 1000);
+      }
+
+      move();
+    }
+
+
+    showStoryLines();
   });
 }
+
+
+
+
 
 
 
@@ -727,7 +787,7 @@ startGames = async function () {
 
   // Run mini-games in sequence
   // await runWithPause(runBirdGame);
-  await runWithPause(runTargetGame);
+  // await runWithPause(runTargetGame);
   await runWithPause(runGemGame);
 
   finishGames();
