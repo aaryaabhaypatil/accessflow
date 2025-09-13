@@ -435,8 +435,6 @@ function runTargetGame() {
 
 
 const gemGazeLog = [];
-
-
 function runGemGame() {
   return new Promise((resolve) => {
 
@@ -467,7 +465,7 @@ function runGemGame() {
 
 
     let caveEmoji = document.createElement("div");
-    caveEmoji.textContent = "🕳️"; 
+    caveEmoji.textContent = "🚪"; 
     caveEmoji.style.position = "absolute";
     caveEmoji.style.top = "50%";
     caveEmoji.style.left = "50%";
