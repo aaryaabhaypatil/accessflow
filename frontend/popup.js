@@ -150,7 +150,38 @@ async function runBirdGame() {
     return;
   }
 
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+
+    let storyMessage = document.createElement("div");
+    Object.assign(storyMessage.style, {
+      position: "absolute",
+      top: "10%",
+      left: "50%",
+      transform: "translateX(-50%)",
+      fontSize: "24px",
+      color: "gold",
+      fontWeight: "bold",
+      textAlign: "center",
+      zIndex: "20001",
+    });
+    document.body.appendChild(storyMessage);
+
+    const storyLines = [
+      "A gentle breeze flows through the forest…",
+      "A mysterious bird flutters into view.",
+      "Follow the bird carefully — it knows the way forward."
+    ];
+
+
+    for (let i = 0; i < storyLines.length; i++) {
+      storyMessage.textContent = storyLines[i];
+      await new Promise((res) => setTimeout(res, 2500));
+    }
+
+
+    if (storyMessage.parentNode) storyMessage.remove();
+
+
     let birdContainer = document.getElementById("birdContainer");
     if (!birdContainer) {
       birdContainer = document.createElement("div");
@@ -245,7 +276,6 @@ async function runBirdGame() {
         birdContainer.style.left = `${currentX}px`;
         birdContainer.style.top = `${currentY}px`;
 
-
         const scaleMoving = 1 - 0.3 * t; 
         birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
@@ -270,7 +300,6 @@ async function runBirdGame() {
           requestAnimationFrame(animate);
         } else {
           updateProgressRing(index);
-
 
           const pulseDuration = 500; 
           const pulseStart = performance.now();
@@ -297,6 +326,9 @@ async function runBirdGame() {
     moveToNextPoint();
   });
 }
+
+
+
 
 
 
@@ -830,9 +862,9 @@ startGames = async function () {
 
 
   // Run mini-games in sequence
-  // await runWithPause(runBirdGame);
+  await runWithPause(runBirdGame);
   // await runWithPause(runTargetGame);
-  await runWithPause(runGemGame);
+  //  await runWithPause(runGemGame);
 
   finishGames();
   startPostCalibrationGazeTracing();
