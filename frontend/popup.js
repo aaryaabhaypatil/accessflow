@@ -245,8 +245,8 @@ async function runBirdGame() {
         birdContainer.style.left = `${currentX}px`;
         birdContainer.style.top = `${currentY}px`;
 
-        // Continuously shrink while moving
-        const scaleMoving = 1 - 0.3 * t; // starts at 1, shrinks to 0.7 at end
+
+        const scaleMoving = 1 - 0.3 * t; 
         birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
         if (
@@ -271,13 +271,13 @@ async function runBirdGame() {
         } else {
           updateProgressRing(index);
 
-          // Pulse bird when it stops
+
           const pulseDuration = 500; 
           const pulseStart = performance.now();
           function pulse(time) {
             const elapsedPulse = time - pulseStart;
             const pulseT = Math.min(elapsedPulse / pulseDuration, 1);
-            const scale = 0.7 + 0.6 * Math.sin(pulseT * Math.PI); // 0.7 → 1.3 → 0.7
+            const scale = 0.7 + 0.6 * Math.sin(pulseT * Math.PI); 
             birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
             if (pulseT < 1) {
@@ -307,28 +307,28 @@ function runTargetGame() {
   return new Promise((resolve) => {
     targetDot.style.display = "block";
     let moves = 0;
-    const baseScale = 0.7; // fixed size
+    const baseScale = 0.7; 
     const totalPoints = 20;
 
-    // Render target with number circle and pop animation
+
     function renderTarget(remainingPoints) {
       targetDot.innerHTML = `
         <!-- Big white target emoji -->
-        <span style="font-size: 200px; display: block; color: white;">⌖</span>
+        <span style="font-size: 300px; display: block; color: white;">⌖</span>
 
         <!-- Circle at top 60% with number -->
         <div style="
           position: absolute;
           top: 60%;
           left: 50%;
-          width: 60px;
-          height: 60px;
+          width: 90px;
+          height: 90px;
           border-radius: 50%;
-          background: white;
+          background: #e24319;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 24px;
+          font-size: 48px;
           font-weight: bold;
           color: black;
           transform: translate(-50%, -50%) scale(0); /* start small for pop */
@@ -340,7 +340,7 @@ function runTargetGame() {
         </div>
       `;
 
-      // Trigger pop animation
+
       const numberCircle = targetDot.querySelector("div");
       requestAnimationFrame(() => {
         numberCircle.style.transform = "translate(-50%, -50%) scale(1)";
@@ -350,11 +350,11 @@ function runTargetGame() {
       targetDot.style.textAlign = "center";
     }
 
-    // Render explosion in the same spot
+
     function renderExplosion() {
       targetDot.innerHTML = `
         <div style="position: relative; display: inline-block;">
-          <span style="font-size: 200px; display: block;">💥</span>
+          <span style="font-size: 300px; display: block;">💥</span>
         </div>
       `;
     }
@@ -372,20 +372,20 @@ function runTargetGame() {
         return;
       }
 
-      // Random position (account for target size)
+
       const x = Math.random() * (window.innerWidth - 200);
       const y = Math.random() * (window.innerHeight - 200);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
 
-      // Render target with current points
+
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
 
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 0.3s ease-out";
 
-      // Gaze logging
+
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -400,12 +400,12 @@ function runTargetGame() {
         console.log("Target game gaze:", gazeEntry);
       }
 
-      // Shrink animation (optional)
+
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
-      // Explosion
+
       setTimeout(async () => {
         renderExplosion();
 
@@ -413,10 +413,10 @@ function runTargetGame() {
           moves++;
           const nextRemaining = totalPoints - moves;
           if (nextRemaining > 0) {
-            renderTarget(nextRemaining); // redraw next target with pop animation
+            renderTarget(nextRemaining);
           }
 
-          // Do NOT change baseScale anymore — keeps size fixed
+
           await move();
         }, 500);
       }, 1000); 
