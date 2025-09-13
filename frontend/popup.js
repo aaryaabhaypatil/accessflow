@@ -482,69 +482,81 @@ function runGemGame() {
 
     // Story message
     let storyMessage = document.createElement("div");
-    storyMessage.style.position = "absolute";
-    storyMessage.style.top = "10%";
-    storyMessage.style.left = "50%";
-    storyMessage.style.transform = "translateX(-50%)";
-    storyMessage.style.fontSize = "24px";
-    storyMessage.style.color = "gold";
-    storyMessage.style.fontWeight = "bold";
-    storyMessage.style.textAlign = "center";
-    storyMessage.style.zIndex = "20001";
+    Object.assign(storyMessage.style, {
+      position: "absolute",
+      top: "10%",
+      left: "50%",
+      transform: "translateX(-50%)",
+      fontSize: "24px",
+      color: "gold",
+      fontWeight: "bold",
+      textAlign: "center",
+      zIndex: "20001",
+    });
     document.body.appendChild(storyMessage);
 
     // Cave overlay
     let caveOverlay = document.createElement("div");
-    caveOverlay.style.position = "fixed";
-    caveOverlay.style.top = "0";
-    caveOverlay.style.left = "0";
-    caveOverlay.style.width = "100%";
-    caveOverlay.style.height = "100%";
-    caveOverlay.style.backgroundColor = "black";
-    caveOverlay.style.zIndex = "20000";
-    caveOverlay.style.opacity = "0.9";
-    caveOverlay.style.transition = "opacity 1s ease";
+    Object.assign(caveOverlay.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100%",
+      backgroundColor: "black",
+      zIndex: "20000",
+      opacity: "0.9",
+      transition: "opacity 1s ease",
+    });
     document.body.appendChild(caveOverlay);
 
     // Cave door emoji
     let caveEmoji = document.createElement("div");
     caveEmoji.textContent = "🚪"; 
-    caveEmoji.style.position = "absolute";
-    caveEmoji.style.top = "50%";
-    caveEmoji.style.left = "50%";
-    caveEmoji.style.transform = "translate(-50%, -50%)";
-    caveEmoji.style.fontSize = "200px";
-    caveEmoji.style.opacity = "0.2";
-    caveEmoji.style.filter = "blur(3px)";
-    caveEmoji.style.transition = "opacity 1s ease, filter 1s ease";
-    caveEmoji.style.zIndex = "20002";
+    Object.assign(caveEmoji.style, {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      fontSize: "200px",
+      opacity: "0.2",
+      filter: "blur(3px)",
+      transition: "opacity 1s ease, filter 1s ease",
+      zIndex: "20002",
+    });
     document.body.appendChild(caveEmoji);
 
     // Achievement emoji
     let achievement = document.createElement("div");
     achievement.textContent = "🏆";
-    achievement.style.position = "absolute";
-    achievement.style.top = "55%";
-    achievement.style.left = "50%";
-    achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
-    achievement.style.fontSize = "80px";
-    achievement.style.opacity = "0";
-    achievement.style.transition = "opacity 1s, transform 1s";
-    achievement.style.zIndex = "20003";
+    Object.assign(achievement.style, {
+      position: "absolute",
+      top: "55%",
+      left: "50%",
+      transform: "translate(-50%, -50%) scale(0.5)",
+      fontSize: "80px",
+      opacity: "0",
+      transition: "opacity 1s, transform 1s",
+      zIndex: "20003",
+    });
     document.body.appendChild(achievement);
 
+    // Updated story lines
     const storyLines = [
-      "You enter a dark cave...",
-      "The gems sparkle faintly...",
-      "As you gaze at them, the cave grows brighter...",
-      "Finally, the entrance opens!"
+      "Well done! You’ve unlocked the path to a hidden cave…",
+      "Gems glimmer faintly in the darkness.",
+      "Keep your eyes on them, and watch as the cave slowly brightens.",
+      "The entrance finally opens, revealing the treasure within!"
     ];
 
     async function showStoryLines() {
+      // Wait 2 seconds before showing instructions
+      await new Promise(r => setTimeout(r, 2000));
+
       for (let i = 0; i < storyLines.length; i++) {
         storyMessage.textContent = storyLines[i];
         caveOverlay.style.opacity = String(0.9 - i * 0.2);
-        await new Promise((r) => setTimeout(r, 2500));
+        await new Promise(r => setTimeout(r, 2500));
       }
 
       caveOverlay.style.opacity = "0";
@@ -564,23 +576,14 @@ function runGemGame() {
       async function move() {
         if (moves >= totalMoves) {
           gemDot.style.display = "none";
-
-          // Remove cave door first
           if (caveEmoji.parentNode) caveEmoji.remove();
-
-          // Show achievement briefly
           achievement.style.opacity = "1";
           achievement.style.transform = "translate(-50%, -50%) scale(1)";
-
-         
-            // Hide achievement
+          setTimeout(() => {
             achievement.style.opacity = "0";
             achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
-
-            // Signal game end
-            done(); // place alert("Game ended!") here if needed
-       
-
+            done();
+          }, 1500);
           return;
         }
 
@@ -599,7 +602,7 @@ function runGemGame() {
         caveEmoji.style.filter = `blur(${3 - progress * 3}px)`;
 
         if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
-          const gazeEntry = {
+          gemGazeLog.push({
             time: Date.now(),
             gazeX: window.currentGaze.x,
             gazeY: window.currentGaze.y,
@@ -607,9 +610,7 @@ function runGemGame() {
             targetY: y,
             game: "gem",
             moveIndex: moves,
-          };
-          gemGazeLog.push(gazeEntry);
-          console.log("Gem game gaze:", gazeEntry);
+          });
         }
 
         setTimeout(async () => {
@@ -628,6 +629,7 @@ function runGemGame() {
     showStoryLines();
   });
 }
+
 
 
 
@@ -874,7 +876,7 @@ startGames = async function () {
   // Run mini-games in sequence
   await runWithPause(runBirdGame);
   await runWithPause(runTargetGame);
-  //  await runWithPause(runGemGame);
+  await runWithPause(runGemGame);
 
   finishGames();
   startPostCalibrationGazeTracing();
