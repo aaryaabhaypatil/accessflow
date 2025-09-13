@@ -311,33 +311,45 @@ function runTargetGame() {
     const maxScale = 2; 
     const totalPoints = 20;
 
-
     function renderTarget(remainingPoints) {
-      targetDot.innerHTML = `
-        <div style="position: relative; display: inline-block;">
-          <span style="font-size: 200px;">⌖</span>
-          <span style="
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 40px;
-            font-weight: bold;
-            color: white;
-            text-shadow: -2px -2px 4px black, 2px -2px 4px black,
-                         -2px 2px 4px black, 2px 2px 4px black;
-          ">
-            ${remainingPoints}
-          </span>
-        </div>
-      `;
-    }
+    targetDot.innerHTML = `
+      <!-- Big target emoji -->
+      <span style="font-size: 200px; display: block;">⌖</span>
+
+      <!-- Circle in center (absolute to targetDot) -->
+      <div style="
+        position: absolute;
+        top: 60%;
+        left: 50%;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: black;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 6px rgba(0,0,0,0.5);
+        pointer-events: none;
+      ">
+        ${remainingPoints}
+      </div>
+    `;
+
+
+    targetDot.style.position = "absolute";
+    targetDot.style.textAlign = "center";
+  }
+
 
 
     function renderExplosion() {
       targetDot.innerHTML = `
         <div style="position: relative; display: inline-block;">
-          <span style="font-size: 200px;">💥</span>
+          <span style="font-size: 200px; display: block;">💥</span>
         </div>
       `;
     }
@@ -361,7 +373,7 @@ function runTargetGame() {
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
 
-
+ 
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
 
@@ -396,8 +408,9 @@ function runTargetGame() {
           moves++;
           const nextRemaining = totalPoints - moves;
           if (nextRemaining > 0) {
-            renderTarget(nextRemaining);
+            renderTarget(nextRemaining); 
           }
+
 
           baseScale = Math.min(baseScale * 1.1, maxScale);
           await move();
@@ -408,6 +421,7 @@ function runTargetGame() {
     move();
   });
 }
+
 
 
 
