@@ -309,7 +309,27 @@ function runTargetGame() {
     let moves = 0;
     let baseScale = 0.7; 
     const maxScale = 2; 
-    const totalPoints = 20;
+    const totalPoints = 20; // starting points
+
+    // Function to render the target with countdown number
+    function renderTarget(remainingPoints) {
+      targetDot.innerHTML = `
+        <div style="position: relative; display: inline-block;">
+          <span style="font-size: 200px;">⌖</span>
+          <span style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+          ">
+            ${remainingPoints}
+          </span>
+        </div>
+      `;
+    }
 
     async function move() {
       while (gamesPaused) {
@@ -324,20 +344,20 @@ function runTargetGame() {
         return;
       }
 
-      // Random position for target
+      // Random position
       const x = Math.random() * (window.innerWidth - 100);
       const y = Math.random() * (window.innerHeight - 100);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
 
-      // Show countdown number instead of 🎯
+      // Remaining points
       const remainingPoints = totalPoints - moves;
-      targetDot.textContent = remainingPoints;
+      renderTarget(remainingPoints);
 
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 0.3s ease-out";
 
- 
+      // Gaze logging (unchanged)
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
           time: Date.now(),
@@ -357,22 +377,19 @@ function runTargetGame() {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
-      // Explosion animation
+      // Explosion
       setTimeout(async () => {
-        targetDot.textContent = "💥";
-        targetDot.classList.add("explode");
+        targetDot.innerHTML = "💥"; // temporarily explosion
 
         setTimeout(async () => {
-          targetDot.classList.remove("explode");
-          // Restore to number instead of 🎯
-          const nextRemaining = totalPoints - (moves + 1);
+          moves++;
+          const nextRemaining = totalPoints - moves;
           if (nextRemaining > 0) {
-            targetDot.textContent = nextRemaining;
+            renderTarget(nextRemaining); // redraw 🎯 with countdown
           }
 
           // Scale up gradually
           baseScale = Math.min(baseScale * 1.1, maxScale);
-          moves++;
           await move();
         }, 500);
       }, 1000); 
@@ -381,6 +398,8 @@ function runTargetGame() {
     move();
   });
 }
+
+
 
 
 
@@ -676,7 +695,7 @@ startGames = async function () {
 
 
   // Run mini-games in sequence
-  await runWithPause(runBirdGame);
+  // await runWithPause(runBirdGame);
   await runWithPause(runTargetGame);
   await runWithPause(runGemGame);
 
