@@ -435,9 +435,10 @@ function runTargetGame() {
 
 
 const gemGazeLog = [];
+
 function runGemGame() {
   return new Promise((resolve) => {
-
+    // --- Story Message ---
     let storyMessage = document.createElement("div");
     storyMessage.style.position = "absolute";
     storyMessage.style.top = "10%";
@@ -450,7 +451,7 @@ function runGemGame() {
     storyMessage.style.zIndex = "20001";
     document.body.appendChild(storyMessage);
 
-
+    // --- Cave Overlay (darkness) ---
     let caveOverlay = document.createElement("div");
     caveOverlay.style.position = "fixed";
     caveOverlay.style.top = "0";
@@ -463,7 +464,21 @@ function runGemGame() {
     caveOverlay.style.transition = "opacity 1s ease";
     document.body.appendChild(caveOverlay);
 
+    // --- Cave Emoji ---
+    let caveEmoji = document.createElement("div");
+    caveEmoji.textContent = "🕳️"; // cave-like emoji
+    caveEmoji.style.position = "absolute";
+    caveEmoji.style.top = "50%";
+    caveEmoji.style.left = "50%";
+    caveEmoji.style.transform = "translate(-50%, -50%)";
+    caveEmoji.style.fontSize = "200px";
+    caveEmoji.style.opacity = "0.2"; // very faint at first
+    caveEmoji.style.filter = "blur(3px)";
+    caveEmoji.style.transition = "opacity 1s ease, filter 1s ease";
+    caveEmoji.style.zIndex = "20002";
+    document.body.appendChild(caveEmoji);
 
+    // --- Storylines ---
     const storyLines = [
       "You enter a dark cave...",
       "The gems sparkle faintly...",
@@ -475,24 +490,24 @@ function runGemGame() {
       for (let i = 0; i < storyLines.length; i++) {
         storyMessage.textContent = storyLines[i];
 
-        
+        // Brighten cave slightly each line
         caveOverlay.style.opacity = String(0.9 - i * 0.2);
 
         await new Promise((resolve) => setTimeout(resolve, 2500));
       }
 
-     
+      // Fade out and remove cave overlay
       caveOverlay.style.opacity = "0";
       setTimeout(() => {
         if (caveOverlay.parentNode) caveOverlay.remove();
         if (storyMessage.parentNode) storyMessage.remove();
 
-     
+        // --- Now start the gem game ---
         startGemGame(resolve);
       }, 1000);
     }
 
-
+    // --- Actual Gem Game ---
     function startGemGame(done) {
       let moves = 0;
       const totalMoves = 20;
@@ -501,6 +516,11 @@ function runGemGame() {
       async function move() {
         if (moves >= totalMoves) {
           gemDot.style.display = "none";
+
+          // Cave fully revealed at end
+          caveEmoji.style.opacity = "1";
+          caveEmoji.style.filter = "blur(0px)";
+
           done();
           return;
         }
@@ -516,7 +536,11 @@ function runGemGame() {
         gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
         gemDot.style.transition = "filter 0.4s ease";
 
+        // Brighten cave gradually as gems are collected
+        caveEmoji.style.opacity = String(0.2 + progress * 0.8);
+        caveEmoji.style.filter = `blur(${3 - progress * 3}px)`;
 
+        // Log gaze
         if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
           const gazeEntry = {
             time: Date.now(),
@@ -531,7 +555,7 @@ function runGemGame() {
           console.log("Gem game gaze:", gazeEntry);
         }
 
-   
+        // Small sparkle animation
         setTimeout(async () => {
           gemDot.textContent = "✨";
           setTimeout(async () => {
@@ -545,10 +569,12 @@ function runGemGame() {
       move();
     }
 
-
+    // Start story sequence first
     showStoryLines();
   });
 }
+
+
 
 
 
