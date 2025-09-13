@@ -173,11 +173,13 @@ async function runBirdGame() {
     ];
 
 
+    await new Promise(res => setTimeout(res, 2000));
+
+
     for (let i = 0; i < storyLines.length; i++) {
       storyMessage.textContent = storyLines[i];
-      await new Promise((res) => setTimeout(res, 2500));
+      await new Promise(res => setTimeout(res, 2500));
     }
-
 
     if (storyMessage.parentNode) storyMessage.remove();
 
@@ -267,7 +269,6 @@ async function runBirdGame() {
           requestAnimationFrame(animate);
           return;
         }
-        
 
         const elapsed = time - startTime;
         const t = Math.min(elapsed / duration, 1);
@@ -280,11 +281,7 @@ async function runBirdGame() {
         const scaleMoving = 1 - 0.3 * t; 
         birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
-        if (
-          window.currentGaze &&
-          isFinite(window.currentGaze.x) &&
-          isFinite(window.currentGaze.y)
-        ) {
+        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
           const gazeEntry = {
             time: Date.now(),
             gazeX: window.currentGaze.x,
@@ -334,22 +331,52 @@ async function runBirdGame() {
 
 
 
+
 const targetGazeLog = []; 
 
 function runTargetGame() {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+    // Story message container
+    let storyMessage = document.createElement("div");
+    Object.assign(storyMessage.style, {
+      position: "absolute",
+      top: "10%",
+      left: "50%",
+      transform: "translateX(-50%)",
+      fontSize: "24px",
+      color: "gold",
+      fontWeight: "bold",
+      textAlign: "center",
+      zIndex: "20001",
+    });
+    document.body.appendChild(storyMessage);
+
+    const storyLines = [
+      "The bird vanishes into the shadows, leaving an unsettling silence in the clearing…",
+      "Targets suddenly appear around you — can you hit them all before they disappear?",
+      "Strike carefully — your focus guides the way to the hidden gems beyond."
+    ];
+
+
+    await new Promise(res => setTimeout(res, 2000));
+
+
+    for (let i = 0; i < storyLines.length; i++) {
+      storyMessage.textContent = storyLines[i];
+      await new Promise(res => setTimeout(res, 2500));
+    }
+
+    if (storyMessage.parentNode) storyMessage.remove();
+
+
     targetDot.style.display = "block";
     let moves = 0;
     const baseScale = 0.7; 
     const totalPoints = 20;
 
-
     function renderTarget(remainingPoints) {
       targetDot.innerHTML = `
-        <!-- Big white target emoji -->
         <span style="font-size: 300px; display: block; color: white;">⌖</span>
-
-        <!-- Circle at top 60% with number -->
         <div style="
           position: absolute;
           top: 60%;
@@ -364,7 +391,7 @@ function runTargetGame() {
           font-size: 48px;
           font-weight: bold;
           color: black;
-          transform: translate(-50%, -50%) scale(0); /* start small for pop */
+          transform: translate(-50%, -50%) scale(0);
           box-shadow: 0 0 6px rgba(0,0,0,0.5);
           pointer-events: none;
           transition: transform 0.3s ease-out;
@@ -372,31 +399,23 @@ function runTargetGame() {
           ${remainingPoints}
         </div>
       `;
-
-
       const numberCircle = targetDot.querySelector("div");
       requestAnimationFrame(() => {
         numberCircle.style.transform = "translate(-50%, -50%) scale(1)";
       });
-
       targetDot.style.position = "absolute";
       targetDot.style.textAlign = "center";
     }
 
-
     function renderExplosion() {
-      targetDot.innerHTML = `
-        <div style="position: relative; display: inline-block;">
-          <span style="font-size: 300px; display: block;">💥</span>
-        </div>
-      `;
+      targetDot.innerHTML = `<div style="position: relative; display: inline-block;">
+        <span style="font-size: 300px; display: block;">💥</span>
+      </div>`;
     }
 
     async function move() {
       while (gamesPaused) {
-        await new Promise((resume) => {
-          currentGameResolver = resume;
-        });
+        await new Promise(resume => currentGameResolver = resume);
       }
 
       if (moves >= totalPoints) {
@@ -405,19 +424,16 @@ function runTargetGame() {
         return;
       }
 
-
       const x = Math.random() * (window.innerWidth - 200);
       const y = Math.random() * (window.innerHeight - 200);
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
-
 
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
 
       targetDot.style.transform = `scale(${baseScale})`;
       targetDot.style.transition = "transform 0.3s ease-out";
-
 
       if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
         const gazeEntry = {
@@ -430,34 +446,27 @@ function runTargetGame() {
           moveIndex: moves
         };
         targetGazeLog.push(gazeEntry);
-        console.log("Target game gaze:", gazeEntry);
       }
-
 
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
       }, 50);
 
-
       setTimeout(async () => {
         renderExplosion();
-
         setTimeout(async () => {
           moves++;
-          const nextRemaining = totalPoints - moves;
-          if (nextRemaining > 0) {
-            renderTarget(nextRemaining);
-          }
-
-
+          if (moves < totalPoints) renderTarget(totalPoints - moves);
           await move();
         }, 500);
-      }, 1000); 
+      }, 1000);
     }
 
     move();
   });
 }
+
+
 
 
 
@@ -864,7 +873,7 @@ startGames = async function () {
 
   // Run mini-games in sequence
   await runWithPause(runBirdGame);
-  // await runWithPause(runTargetGame);
+  await runWithPause(runTargetGame);
   //  await runWithPause(runGemGame);
 
   finishGames();
