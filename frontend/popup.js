@@ -438,6 +438,7 @@ const gemGazeLog = [];
 function runGemGame() {
   return new Promise((resolve) => {
 
+    // Story message
     let storyMessage = document.createElement("div");
     storyMessage.style.position = "absolute";
     storyMessage.style.top = "10%";
@@ -450,7 +451,7 @@ function runGemGame() {
     storyMessage.style.zIndex = "20001";
     document.body.appendChild(storyMessage);
 
-
+    // Cave overlay
     let caveOverlay = document.createElement("div");
     caveOverlay.style.position = "fixed";
     caveOverlay.style.top = "0";
@@ -463,7 +464,7 @@ function runGemGame() {
     caveOverlay.style.transition = "opacity 1s ease";
     document.body.appendChild(caveOverlay);
 
-
+    // Cave door emoji
     let caveEmoji = document.createElement("div");
     caveEmoji.textContent = "🚪"; 
     caveEmoji.style.position = "absolute";
@@ -477,6 +478,18 @@ function runGemGame() {
     caveEmoji.style.zIndex = "20002";
     document.body.appendChild(caveEmoji);
 
+    // Achievement emoji
+    let achievement = document.createElement("div");
+    achievement.textContent = "🏆";
+    achievement.style.position = "absolute";
+    achievement.style.top = "55%";
+    achievement.style.left = "50%";
+    achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
+    achievement.style.fontSize = "80px";
+    achievement.style.opacity = "0";
+    achievement.style.transition = "opacity 1s, transform 1s";
+    achievement.style.zIndex = "20003";
+    document.body.appendChild(achievement);
 
     const storyLines = [
       "You enter a dark cave...",
@@ -488,24 +501,18 @@ function runGemGame() {
     async function showStoryLines() {
       for (let i = 0; i < storyLines.length; i++) {
         storyMessage.textContent = storyLines[i];
-
-
         caveOverlay.style.opacity = String(0.9 - i * 0.2);
-
-        await new Promise((resolve) => setTimeout(resolve, 2500));
+        await new Promise((r) => setTimeout(r, 2500));
       }
-
 
       caveOverlay.style.opacity = "0";
       setTimeout(() => {
         if (caveOverlay.parentNode) caveOverlay.remove();
         if (storyMessage.parentNode) storyMessage.remove();
 
-
         startGemGame(resolve);
       }, 1000);
     }
-
 
     function startGemGame(done) {
       let moves = 0;
@@ -516,14 +523,22 @@ function runGemGame() {
         if (moves >= totalMoves) {
           gemDot.style.display = "none";
 
+          // Remove cave door first
+          if (caveEmoji.parentNode) caveEmoji.remove();
 
-          caveEmoji.style.opacity = "1";
-          caveEmoji.style.filter = "blur(0px)";
-          setTimeout(() => {
-            if (caveEmoji.parentNode) caveEmoji.remove(); 
-          }, 1500);
+          // Show achievement briefly
+          achievement.style.opacity = "1";
+          achievement.style.transform = "translate(-50%, -50%) scale(1)";
 
-          done();
+         
+            // Hide achievement
+            achievement.style.opacity = "0";
+            achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
+
+            // Signal game end
+            done(); // place alert("Game ended!") here if needed
+       
+
           return;
         }
 
@@ -538,10 +553,8 @@ function runGemGame() {
         gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
         gemDot.style.transition = "filter 0.4s ease";
 
-
         caveEmoji.style.opacity = String(0.2 + progress * 0.8);
         caveEmoji.style.filter = `blur(${3 - progress * 3}px)`;
-
 
         if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
           const gazeEntry = {
@@ -570,10 +583,12 @@ function runGemGame() {
       move();
     }
 
-
     showStoryLines();
   });
 }
+
+
+
 
 
 
