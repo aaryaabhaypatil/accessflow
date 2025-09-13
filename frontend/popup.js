@@ -873,9 +873,8 @@ startGames = async function () {
   }
 
 
-  // Run mini-games in sequence
-  await runWithPause(runBirdGame);
-  await runWithPause(runTargetGame);
+  // await runWithPause(runBirdGame);
+  // await runWithPause(runTargetGame);
   await runWithPause(runGemGame);
 
   finishGames();
@@ -885,17 +884,75 @@ startGames = async function () {
 
 
 
-  function finishGames() {
-    
-    calibrationInProgress = false;
-    birdDot.style.display = "none";
-    targetDot.style.display = "none";
-    gemDot.style.display = "none";
-     blurOverlay.classList.remove("active");
-    if (blurOverlay) blurOverlay.style.display = "none";
-    pathDrawingEnabled = true;
-    alert("Calibration complete! Red dot now shows your real-time gaze with path.");
+function finishGames() {
+  calibrationInProgress = false;
+  birdDot.style.display = "none";
+  targetDot.style.display = "none";
+  gemDot.style.display = "none";
+  blurOverlay.classList.remove("active");
+  if (blurOverlay) blurOverlay.style.display = "none";
+  pathDrawingEnabled = true;
+
+
+  let popupOverlay = document.createElement("div");
+  Object.assign(popupOverlay.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    background: "rgba(0,0,0,0.6)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: "30000"
+  });
+  document.body.appendChild(popupOverlay);
+
+
+  let popupBox = document.createElement("div");
+  Object.assign(popupBox.style, {
+    background: "white",
+    padding: "20px 30px",
+    borderRadius: "12px",
+    textAlign: "center",
+    maxWidth: "400px",
+    fontSize: "20px",
+    fontWeight: "bold",
+    color: "#333",
+    boxShadow: "0 6px 20px rgba(0,0,0,0.3)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
+  });
+  popupOverlay.appendChild(popupBox);
+
+
+  let message = document.createElement("div");
+  message.textContent = "Calibration complete! The red dot now shows your real-time gaze with path.";
+  popupBox.appendChild(message);
+
+
+  let closeButton = document.createElement("button");
+  closeButton.textContent = "OK";
+  Object.assign(closeButton.style, {
+    marginTop: "15px",
+    padding: "8px 16px",
+    fontSize: "16px",
+    background: "#3E3F29",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer"
+  });
+  popupBox.appendChild(closeButton);
+
+  closeButton.onclick = () => {
+    if (popupOverlay.parentNode) popupOverlay.remove();
+  };
 }
+
+
 
 
 const toggleSwitch = document.getElementById("toggle-switch-popup");
