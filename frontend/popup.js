@@ -143,12 +143,63 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 async function runBirdGame() {
+// Reusable popup function
+  function showErrorPopup(message) {
+    let overlay = document.createElement("div");
+    Object.assign(overlay.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100%",
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: "99999"
+    });
+
+    let popup = document.createElement("div");
+    Object.assign(popup.style, {
+      background: "white",
+      padding: "20px 30px",
+      borderRadius: "10px",
+      textAlign: "center",
+      boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+    });
+
+    let text = document.createElement("p");
+    text.textContent = message;
+    text.style.marginBottom = "15px";
+    text.style.fontSize = "16px";
+    text.style.color = "black";
+
+    let button = document.createElement("button");
+    button.textContent = "OK";
+    Object.assign(button.style, {
+      padding: "8px 16px",
+      background: "#3E3F29",
+      color: "white",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer"
+    });
+
+    button.onclick = () => document.body.removeChild(overlay);
+
+    popup.appendChild(text);
+    popup.appendChild(button);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+  }
+
   try {
     await waitForValidGaze();
   } catch (err) {
-    alert("Camera not ready or gaze data unavailable. Cannot start bird game.");
+    showErrorPopup("Camera not ready or gaze data unavailable. Cannot start bird game.");
     return;
   }
+
 
   return new Promise(async (resolve) => {
 
