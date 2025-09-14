@@ -286,12 +286,16 @@ async function runBirdGame() {
     const progressRing = document.getElementById("birdProgressRing");
 
     const totalPoints = 30;
-    const dotSize = 110; // size of birdContainer
+    const dotSize = 110;
+    const margin = 20; 
 
     const points = Array.from({ length: totalPoints }, () => ({
-      x: Math.random() * (window.innerWidth - dotSize),
-      y: Math.random() * (window.innerHeight - dotSize),
+      x: margin + Math.random() * (window.innerWidth - dotSize - margin * 2),
+      y: margin + Math.random() * (window.innerHeight - dotSize - margin * 2),
     }));
+
+
+
 
 
     let index = 0;
