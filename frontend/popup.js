@@ -873,8 +873,8 @@ startGames = async function () {
   }
 
 
-  // await runWithPause(runBirdGame);
-  // await runWithPause(runTargetGame);
+  await runWithPause(runBirdGame);
+  await runWithPause(runTargetGame);
   await runWithPause(runGemGame);
 
   finishGames();

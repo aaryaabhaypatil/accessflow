@@ -30,7 +30,7 @@ html, body {
   z-index: 1;
 }
 
-/* Buttons */
+
 .button {
   position: absolute;
   background-color: #3E3F29;
@@ -47,6 +47,12 @@ html, body {
   border-radius: 10px;
   box-sizing: border-box;
 }
+.instruction-text {
+  display: inline-block;
+  position: relative;
+  left: 130px;
+}
+
 
 /* Position buttons */
 .open-popup {
@@ -61,13 +67,33 @@ html, body {
   line-height: 1; /* prevents weird vertical offset */
 
 }
-.calibrate-small {
-  top: 6.8vh;
-  left: 50vw;
-  width: 20vw;
-  height: 3.2vh;
-  align-items: center;
+.button.calibrate-small {
+  display: inline-block;
+  padding: 6px 14px;
+  font-size: 20px;
+  border-radius: 6px;
+  border: none;
+  background: #3E3F29;
+  color: white;
+  cursor: pointer;
+  vertical-align: middle;
+
+  /* 👇 this adds space before the button */
+  margin-left: 8px; 
+  left: 417px;
 }
+
+/* 👇 hover effect */
+.button.calibrate-small:hover {
+  background: #5A5C3C;       /* lighter shade */
+  background-color: #BCA88D;
+  color: #3E3F29;
+  transform: scale(1.05);    /* slight zoom */
+  transition: all 0.2s ease; /* smooth effect */
+}
+
+
+
 
 /* Top section wrapper for horizontal layout */
 .top-section {
