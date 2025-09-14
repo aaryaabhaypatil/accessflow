@@ -434,7 +434,7 @@ function runTargetGame() {
 
     for (let i = 0; i < storyLines.length; i++) {
       storyMessage.textContent = storyLines[i];
-      await new Promise(res => setTimeout(res, 5000));
+      await new Promise(res => setTimeout(res, 6000));
     }
 
     if (storyMessage.parentNode) storyMessage.remove();
