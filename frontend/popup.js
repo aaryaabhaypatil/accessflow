@@ -286,10 +286,13 @@ async function runBirdGame() {
     const progressRing = document.getElementById("birdProgressRing");
 
     const totalPoints = 15;
+    const dotSize = 110; // size of birdContainer
+
     const points = Array.from({ length: totalPoints }, () => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
+      x: Math.random() * (window.innerWidth - dotSize),
+      y: Math.random() * (window.innerHeight - dotSize),
     }));
+
 
     let index = 0;
 
@@ -423,7 +426,7 @@ function runTargetGame() {
     targetDot.style.display = "block";
     let moves = 0;
     const baseScale = 0.7; 
-    const totalPoints = 20;
+    const totalPoints = 30;
 
     function renderTarget(remainingPoints) {
       targetDot.innerHTML = `
@@ -621,7 +624,7 @@ function runGemGame() {
 
     function startGemGame(done) {
       let moves = 0;
-      const totalMoves = 20;
+      const totalMoves = 30;
       gemDot.style.display = "block";
 
       async function move() {
