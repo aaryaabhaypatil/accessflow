@@ -298,6 +298,8 @@ async function runBirdGame() {
 
 
 
+
+
     let index = 0;
 
     function updateProgressRing(currentIndex) {
@@ -650,11 +652,16 @@ function runGemGame() {
           return;
         }
 
-        const x = Math.random() * (window.innerWidth - 100);
-        const y = Math.random() * (window.innerHeight - 100);
+        const dotSize = 100; 
+        const margin = 10;
+
+        const x = margin + Math.random() * (window.innerWidth - dotSize - margin * 2);
+        const y = margin + Math.random() * (window.innerHeight - dotSize - margin * 2);
+
         gemDot.style.left = `${x}px`;
         gemDot.style.top = `${y}px`;
         gemDot.textContent = "💎";
+
 
         const progress = moves / totalMoves;
         const glowStrength = Math.floor(10 + progress * 40);
