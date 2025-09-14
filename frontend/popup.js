@@ -240,7 +240,7 @@ async function runBirdGame() {
 
     for (let i = 0; i < storyLines.length; i++) {
       storyMessage.textContent = storyLines[i];
-      await new Promise(res => setTimeout(res, 2500));
+      await new Promise(res => setTimeout(res, 5000));
     }
 
     if (storyMessage.parentNode) storyMessage.remove();
@@ -580,11 +580,12 @@ function runGemGame() {
       width: "100%",
       height: "100%",
       backgroundColor: "black",
-      zIndex: "20000",
       opacity: "0.9",
       transition: "opacity 1s ease",
+      zIndex: "1000", // lower than other interactive elements
     });
     document.body.appendChild(caveOverlay);
+
 
     // Cave door emoji
     let caveEmoji = document.createElement("div");
