@@ -285,7 +285,7 @@ async function runBirdGame() {
     birdContainer.style.display = "block";
     const progressRing = document.getElementById("birdProgressRing");
 
-    const totalPoints = 15;
+    const totalPoints = 30;
     const dotSize = 110; // size of birdContainer
 
     const points = Array.from({ length: totalPoints }, () => ({
@@ -478,10 +478,15 @@ function runTargetGame() {
         return;
       }
 
-      const x = Math.random() * (window.innerWidth - 200);
-      const y = Math.random() * (window.innerHeight - 200);
+      const targetWidth = targetDot.offsetWidth || 200;  
+      const targetHeight = targetDot.offsetHeight || 200;  
+
+      const x = Math.random() * (window.innerWidth - targetWidth);
+      const y = Math.random() * (window.innerHeight - targetHeight);
+
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
+
 
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
