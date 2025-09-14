@@ -434,7 +434,7 @@ function runTargetGame() {
 
     for (let i = 0; i < storyLines.length; i++) {
       storyMessage.textContent = storyLines[i];
-      await new Promise(res => setTimeout(res, 2500));
+      await new Promise(res => setTimeout(res, 5000));
     }
 
     if (storyMessage.parentNode) storyMessage.remove();
@@ -633,7 +633,7 @@ function runGemGame() {
       for (let i = 0; i < storyLines.length; i++) {
         storyMessage.textContent = storyLines[i];
         caveOverlay.style.opacity = String(0.9 - i * 0.2);
-        await new Promise(r => setTimeout(r, 2500));
+        await new Promise(r => setTimeout(r, 5000));
       }
 
       caveOverlay.style.opacity = "0";
