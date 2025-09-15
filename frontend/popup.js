@@ -742,8 +742,8 @@ function startPostCalibrationGazeTracing() {
   const ctx = canvas.getContext("2d");
 
   const gazeHistory = [];
-  const historyLength = 5;
-  const smoothFactor = 0.2;
+  const historyLength = 12;  
+  const smoothFactor = 0.08;  
   let smoothedGaze = { x: 0, y: 0 };
 
   function getMedianGaze(rawGaze) {
@@ -751,7 +751,10 @@ function startPostCalibrationGazeTracing() {
     if (gazeHistory.length > historyLength) gazeHistory.shift();
     const xs = gazeHistory.map(p => p.x).sort((a, b) => a - b);
     const ys = gazeHistory.map(p => p.y).sort((a, b) => a - b);
-    return { x: xs[Math.floor(xs.length / 2)], y: ys[Math.floor(ys.length / 2)] };
+    return {
+      x: xs[Math.floor(xs.length / 2)],
+      y: ys[Math.floor(ys.length / 2)]
+    };
   }
 
   function getSmoothedGaze(rawGaze) {
@@ -772,35 +775,40 @@ function startPostCalibrationGazeTracing() {
     return newPoint;
   }
 
-  function trace() {
-    if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
-      let last = postCalibrationGazePath[postCalibrationGazePath.length - 1];
-      const filtered = getMedianGaze(window.currentGaze);
-      const smooth = getSmoothedGaze(filtered);
-      const limited = limitJump(last, smooth);
+  let lastTime = 0; 
 
+  function trace(timestamp) {
+    if (timestamp - lastTime > 50) { 
+      if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+        let last = postCalibrationGazePath[postCalibrationGazePath.length - 1];
+        const filtered = getMedianGaze(window.currentGaze);
+        const smooth = getSmoothedGaze(filtered);
+        const limited = limitJump(last, smooth);
 
-      ctx.fillStyle = "cyan";
-      ctx.beginPath();
-      ctx.arc(limited.x, limited.y, 3, 0, 2 * Math.PI);
-      ctx.fill();
-
-      if (last) {
+        ctx.fillStyle = "cyan";
         ctx.beginPath();
-        ctx.strokeStyle = "cyan";
-        ctx.lineWidth = 2;
-        ctx.moveTo(last.x, last.y);
-        ctx.lineTo(limited.x, limited.y);
-        ctx.stroke();
-      }
+        ctx.arc(limited.x, limited.y, 3, 0, 2 * Math.PI);
+        ctx.fill();
 
-      postCalibrationGazePath.push({ x: limited.x, y: limited.y });
+        if (last) {
+          ctx.beginPath();
+          ctx.strokeStyle = "cyan";
+          ctx.lineWidth = 2;
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(limited.x, limited.y);
+          ctx.stroke();
+        }
+
+        postCalibrationGazePath.push({ x: limited.x, y: limited.y });
+      }
+      lastTime = timestamp;
     }
     requestAnimationFrame(trace);
   }
 
   trace();
 }
+
 
 
 
@@ -862,7 +870,7 @@ async function startGazeTracker() {
     console.log("Starting gaze tracker...");
 
  
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: false });
     const video = document.createElement("video");
     video.srcObject = stream;
     video.autoplay = true;
@@ -1006,7 +1014,7 @@ async function startGames() {
   finishGames();
   startPostCalibrationGazeTracing();
 
-  showGazeDots(); // Show dots after games
+  showGazeDots(); 
 }
 
 
