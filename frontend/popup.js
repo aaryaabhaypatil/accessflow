@@ -1232,12 +1232,33 @@ async function initGazeTracking() {
 
 
 if (openPopupBtn && popupOverlay) {
-  openPopupBtn.addEventListener("click", () => popupOverlay.style.display = "flex");
+  // Click event (existing)
+  openPopupBtn.addEventListener("click", () => {
+    popupOverlay.style.display = "flex";
+  });
+
+
+  let dwellTimer = null;
+
+  openPopupBtn.addEventListener("mouseenter", () => {
+    dwellTimer = setTimeout(() => {
+      popupOverlay.style.display = "flex";
+    }, 5000); 
+  });
+
+  openPopupBtn.addEventListener("mouseleave", () => {
+    if (dwellTimer) {
+      clearTimeout(dwellTimer);
+      dwellTimer = null;
+    }
+  });
 }
 if (closeBtn && popupOverlay) {
   closeBtn.addEventListener("click", () => popupOverlay.style.display = "none");
 }
-  // Settings values
+
+
+
   const scrollLeftSelect = document.getElementById("scrollLeftSelect");
   const scrollRightSelect = document.getElementById("scrollRightSelect");
   const scrollUpSelect = document.getElementById("scrollUpSelect");
