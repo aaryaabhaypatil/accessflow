@@ -504,7 +504,6 @@ function runTargetGame() {
       targetDot.style.left = `${x}px`;
       targetDot.style.top = `${y}px`;
 
-
       const remainingPoints = totalPoints - moves;
       renderTarget(remainingPoints);
 
@@ -746,7 +745,7 @@ function startPostCalibrationGazeTracing() {
   const smoothFactor = 0.12;   
   let smoothedGaze = null;     
 
-  // Keep track of points with timestamp
+
   const postCalibrationGazePath = [];
 
   function getMedianGaze(rawGaze) {
@@ -789,19 +788,18 @@ function startPostCalibrationGazeTracing() {
         const last = postCalibrationGazePath[postCalibrationGazePath.length - 1];
         const limited = limitJump(last, smooth);
 
-        // Save point with timestamp
         postCalibrationGazePath.push({ x: limited.x, y: limited.y, time: Date.now() });
 
-        // Remove points older than 5 seconds
+       
         const cutoff = Date.now() - 5000;
         while (postCalibrationGazePath.length && postCalibrationGazePath[0].time < cutoff) {
           postCalibrationGazePath.shift();
         }
 
-        // Clear canvas
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw all points in buffer
+
         for (let i = 1; i < postCalibrationGazePath.length; i++) {
           const p1 = postCalibrationGazePath[i - 1];
           const p2 = postCalibrationGazePath[i];
