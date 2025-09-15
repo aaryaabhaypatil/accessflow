@@ -727,7 +727,7 @@ function runGemGame() {
 
 
 
-const postCalibrationGazePath = []; // Separate path for after calibration
+const postCalibrationGazePath = []; 
 
 function startPostCalibrationGazeTracing() {
   const canvas = document.createElement("canvas");
@@ -742,9 +742,9 @@ function startPostCalibrationGazeTracing() {
   const ctx = canvas.getContext("2d");
 
   const gazeHistory = [];
-  const historyLength = 12;  
-  const smoothFactor = 0.08;  
-  let smoothedGaze = { x: 0, y: 0 };
+  const historyLength = 12;    
+  const smoothFactor = 0.12;   
+  let smoothedGaze = null;     
 
   function getMedianGaze(rawGaze) {
     gazeHistory.push(rawGaze);
@@ -758,6 +758,9 @@ function startPostCalibrationGazeTracing() {
   }
 
   function getSmoothedGaze(rawGaze) {
+    if (!smoothedGaze) {
+      smoothedGaze = { ...rawGaze }; 
+    }
     smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + rawGaze.x * smoothFactor;
     smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + rawGaze.y * smoothFactor;
     return { ...smoothedGaze };
@@ -775,7 +778,7 @@ function startPostCalibrationGazeTracing() {
     return newPoint;
   }
 
-  let lastTime = 0; 
+  let lastTime = 0;
 
   function trace(timestamp) {
     if (timestamp - lastTime > 50) { 
@@ -808,6 +811,7 @@ function startPostCalibrationGazeTracing() {
 
   trace();
 }
+
 
 
 
