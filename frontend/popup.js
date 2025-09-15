@@ -332,7 +332,7 @@ async function runBirdGame() {
       const startY = parseFloat(birdContainer.style.top) || points[index].y;
       const endX = points[index].x;
       const endY = points[index].y;
-      const duration = 2000;
+      const duration = 4000;
       const startTime = performance.now();
 
       function animate(time) {
@@ -370,7 +370,7 @@ async function runBirdGame() {
         } else {
           updateProgressRing(index);
 
-          const pulseDuration = 500; 
+          const pulseDuration = 1000; 
           const pulseStart = performance.now();
           function pulse(time) {
             const elapsedPulse = time - pulseStart;
