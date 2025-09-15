@@ -746,6 +746,9 @@ function startPostCalibrationGazeTracing() {
   const smoothFactor = 0.12;   
   let smoothedGaze = null;     
 
+  // Keep track of points with timestamp
+  const postCalibrationGazePath = [];
+
   function getMedianGaze(rawGaze) {
     gazeHistory.push(rawGaze);
     if (gazeHistory.length > historyLength) gazeHistory.shift();
@@ -758,9 +761,7 @@ function startPostCalibrationGazeTracing() {
   }
 
   function getSmoothedGaze(rawGaze) {
-    if (!smoothedGaze) {
-      smoothedGaze = { ...rawGaze }; 
-    }
+    if (!smoothedGaze) smoothedGaze = { ...rawGaze }; 
     smoothedGaze.x = smoothedGaze.x * (1 - smoothFactor) + rawGaze.x * smoothFactor;
     smoothedGaze.y = smoothedGaze.y * (1 - smoothFactor) + rawGaze.y * smoothFactor;
     return { ...smoothedGaze };
@@ -782,27 +783,41 @@ function startPostCalibrationGazeTracing() {
 
   function trace(timestamp) {
     if (timestamp - lastTime > 50) { 
-      if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
-        let last = postCalibrationGazePath[postCalibrationGazePath.length - 1];
+      if (window.currentGaze && window.currentGaze.x != null && window.currentGaze.y != null) {
         const filtered = getMedianGaze(window.currentGaze);
         const smooth = getSmoothedGaze(filtered);
+        const last = postCalibrationGazePath[postCalibrationGazePath.length - 1];
         const limited = limitJump(last, smooth);
 
-        ctx.fillStyle = "cyan";
-        ctx.beginPath();
-        ctx.arc(limited.x, limited.y, 3, 0, 2 * Math.PI);
-        ctx.fill();
+        // Save point with timestamp
+        postCalibrationGazePath.push({ x: limited.x, y: limited.y, time: Date.now() });
 
-        if (last) {
+        // Remove points older than 5 seconds
+        const cutoff = Date.now() - 5000;
+        while (postCalibrationGazePath.length && postCalibrationGazePath[0].time < cutoff) {
+          postCalibrationGazePath.shift();
+        }
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw all points in buffer
+        for (let i = 1; i < postCalibrationGazePath.length; i++) {
+          const p1 = postCalibrationGazePath[i - 1];
+          const p2 = postCalibrationGazePath[i];
+
+          ctx.fillStyle = "cyan";
+          ctx.beginPath();
+          ctx.arc(p2.x, p2.y, 3, 0, 2 * Math.PI);
+          ctx.fill();
+
           ctx.beginPath();
           ctx.strokeStyle = "cyan";
           ctx.lineWidth = 2;
-          ctx.moveTo(last.x, last.y);
-          ctx.lineTo(limited.x, limited.y);
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
         }
-
-        postCalibrationGazePath.push({ x: limited.x, y: limited.y });
       }
       lastTime = timestamp;
     }
@@ -811,6 +826,7 @@ function startPostCalibrationGazeTracing() {
 
   trace();
 }
+
 
 
 
