@@ -526,7 +526,7 @@ function runTargetGame() {
 
       setTimeout(() => {
         targetDot.style.transform = `scale(${baseScale * 0.6})`; 
-      }, 50);
+      }, 100);
 
       setTimeout(async () => {
         renderExplosion();
@@ -534,7 +534,7 @@ function runTargetGame() {
           moves++;
           if (moves < totalPoints) renderTarget(totalPoints - moves);
           await move();
-        }, 500);
+        }, 800);
       }, 1000);
     }
 
