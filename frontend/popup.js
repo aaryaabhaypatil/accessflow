@@ -1255,7 +1255,19 @@ if (openPopupBtn && popupOverlay) {
 }
 if (closeBtn && popupOverlay) {
   closeBtn.addEventListener("click", () => popupOverlay.style.display = "none");
+
+  let dwellTimer;
+  closeBtn.addEventListener("mouseenter", () => {
+    dwellTimer = setTimeout(() => {
+      popupOverlay.style.display = "none";
+    }, 5000);
+  });
+
+  closeBtn.addEventListener("mouseleave", () => {
+    clearTimeout(dwellTimer);
+  });
 }
+
 
 
 
