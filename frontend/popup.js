@@ -1345,18 +1345,34 @@ if (closeBtn && popupOverlay) {
       addDwellOpen(triggerSelect);
     });
   }
-  // Visual feedback when settings are saved
+  
   function showFeedbackBox() {
     if (!feedbackBox) return;
-    // if (blurOverlay) blurOverlay.style.display = 'block';
     feedbackBox.textContent = "Preferences saved!";
     feedbackBox.style.display = "block";
-    setTimeout(() => {
+    document.body.appendChild(feedbackBox);
+    feedbackBox.style.position = "fixed";
+    feedbackBox.style.zIndex = "99999";
+    const popupContent = document.getElementById("popupContent");
+
+    if (!popupContent) return;
+    popupContent.style.filter = "blur(3px)";
+    let popupBlurTimer = setTimeout(() => {
+
       feedbackBox.style.display = "none";
-      // if (blurOverlay) blurOverlay.style.display = "none";
+      popupContent.style.filter = "none";
+      clearTimeout(popupBlurTimer);
       if (popupOverlay) popupOverlay.style.display = "none";
     }, 1000);
   }
+
+
+
+
+
+
+
+
 
 
 //    async function startCalibration() {
