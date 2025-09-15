@@ -1289,6 +1289,34 @@ if (closeBtn && popupOverlay) {
         if (scrollDownSelect) scrollDownSelect.value = data.gazePreferences["Scroll Down"] || "";
         if (triggerSelect) triggerSelect.value = data.gazePreferences["Trigger or choose"] || "";
       }
+
+      function addDwellOpen(selectElement) {
+        if (!selectElement) return;
+        let dwellTimer;
+
+        selectElement.addEventListener("mouseenter", () => {
+          dwellTimer = setTimeout(() => {
+            selectElement.focus();
+            selectElement.size = selectElement.options.length;
+          }, 7000); 
+        });
+
+        selectElement.addEventListener("mouseleave", () => {
+          clearTimeout(dwellTimer);
+          selectElement.size = 0; 
+        });
+
+        selectElement.addEventListener("change", () => {
+          selectElement.size = 0; 
+        });
+      }
+
+
+      addDwellOpen(scrollLeftSelect);
+      addDwellOpen(scrollRightSelect);
+      addDwellOpen(scrollUpSelect);
+      addDwellOpen(scrollDownSelect);
+      addDwellOpen(triggerSelect);
     });
   }
   // Visual feedback when settings are saved
