@@ -1,4 +1,11 @@
+  window.alert = (msg) => {
+    if (typeof msg === "string" && msg.includes("WebGazer works only over https")) {
+      return;
+    }
+    console.log("Alert suppressed:", msg);
+  };
 document.addEventListener("DOMContentLoaded", function () {
+
   // To open up the setting
   const openPopupBtn = document.getElementById("openPopupBtn");
   const popupOverlay = document.getElementById("popupOverlay");
