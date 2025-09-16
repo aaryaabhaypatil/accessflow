@@ -1,9 +1,36 @@
-  window.alert = (msg) => {
-    if (typeof msg === "string" && msg.includes("WebGazer works only over https")) {
-      return;
-    }
-    console.log("Alert suppressed:", msg);
-  };
+
+const removeWebgazerDebug = () => {
+  const video = document.getElementById('webgazerVideoFeed');
+  if (video) video.remove();
+
+  const overlay = document.getElementById('webgazerFaceOverlay');
+  if (overlay) overlay.remove();
+
+  const faceFeedback = document.getElementById('webgazerFaceFeedbackBox');
+  if (faceFeedback) faceFeedback.remove();
+};
+
+const interval = setInterval(removeWebgazerDebug, 100);
+setTimeout(() => clearInterval(interval), 5000);
+
+
+window.onload = () => {
+  webgazer.setRegression('ridge')
+    .setTracker('clmtrackr')
+    .begin();
+};
+
+// 3. Your other code (like document.addEventListener)
+document.addEventListener("DOMContentLoaded", () => {
+  // your calibration / UI setup here
+});
+
+window.alert = (msg) => {
+  if (typeof msg === "string" && msg.includes("WebGazer works only over https")) {
+    return;
+  }
+  console.log("Alert suppressed:", msg);
+};
 document.addEventListener("DOMContentLoaded", function () {
 
   // To open up the setting
@@ -33,19 +60,29 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentCalibrationPoint = null;
 
   // Storing gaze data during claibration games
-  let gameGazeLog = []
-  function mapGazeToScreen(gaze) {
-    if (!gaze) return { x: 0, y: 0 };
+//   let gameGazeLog = []
+//  function mapGazeToScreen(gaze, video) {
+//     if (!video || video.videoWidth === 0 || video.videoHeight === 0) return { x: 0, y: 0 };
+//     const videoAR = video.videoWidth / video.videoHeight;
+//     const screenAR = window.innerWidth / window.innerHeight;
+//     let scale, offsetX = 0, offsetY = 0;
 
+//     if (screenAR > videoAR) {
+//         // Screen is wider than video
+//         scale = window.innerHeight / video.videoHeight;
+//         offsetX = (window.innerWidth - video.videoWidth * scale) / 2;
+//     } else {
+//         // Screen is taller than video
+//         scale = window.innerWidth / video.videoWidth;
+//         offsetY = (window.innerHeight - video.videoHeight * scale) / 2;
+//     }
 
-    const offsetX = 0; 
-    const offsetY = 0;
+//     return {
+//         x: Math.min(Math.max(gaze.x * scale + offsetX, 0), window.innerWidth),
+//         y: Math.min(Math.max(gaze.y * scale + offsetY, 0), window.innerHeight)
+//     };
+// }
 
-    return {
-      x: Math.min(Math.max(gaze.x + offsetX, 0), window.innerWidth),
-      y: Math.min(Math.max(gaze.y + offsetY, 0), window.innerHeight)
-    };
-  }
 
 
 
@@ -166,253 +203,265 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-async function runBirdGame() {
-// Reusable popup function
-  function showErrorPopup(message) {
-    let overlay = document.createElement("div");
-    Object.assign(overlay.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: "99999"
-    });
+let gameGazeLog = [];
 
-    let popup = document.createElement("div");
-    Object.assign(popup.style, {
-      background: "white",
-      padding: "20px 30px",
-      borderRadius: "10px",
-      textAlign: "center",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
-    });
-
-    let text = document.createElement("p");
-    text.textContent = message;
-    text.style.marginBottom = "15px";
-    text.style.fontSize = "16px";
-    text.style.color = "black";
-
-    let button = document.createElement("button");
-    button.textContent = "OK";
-    Object.assign(button.style, {
-      padding: "8px 16px",
-      background: "#3E3F29",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer"
-    });
-
-    button.onclick = () => document.body.removeChild(overlay);
-
-    popup.appendChild(text);
-    popup.appendChild(button);
-    overlay.appendChild(popup);
-    document.body.appendChild(overlay);
-  }
-
-  try {
-    await waitForValidGaze();
-  } catch (err) {
-    showErrorPopup("Camera not ready or gaze data unavailable. Cannot start bird game.");
-    return;
-  }
-
-
-  return new Promise(async (resolve) => {
-
-    let storyMessage = document.createElement("div");
-    Object.assign(storyMessage.style, {
-      position: "absolute",
-      top: "10%",
-      left: "50%",
-      transform: "translateX(-50%)",
-      fontSize: "24px",
-      color: "gold",
-      fontWeight: "bold",
-      textAlign: "center",
-      zIndex: "20001",
-    });
-    document.body.appendChild(storyMessage);
-
-    const storyLines = [
-      "A gentle breeze flows through the forest…",
-      "A mysterious bird flutters into view.",
-      "Follow the bird carefully — it knows the way forward."
-    ];
-
-
-    await new Promise(res => setTimeout(res, 2000));
-
-
-    for (let i = 0; i < storyLines.length; i++) {
-      storyMessage.textContent = storyLines[i];
-      await new Promise(res => setTimeout(res, 5000));
+function mapGazeToScreen(gaze, video) {
+    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+        return { x: 0, y: 0 };
     }
 
-    if (storyMessage.parentNode) storyMessage.remove();
+    // Flip X if video is mirrored
+    const rawX = video.mirror ? video.videoWidth - gaze.x : gaze.x;
+    const rawY = gaze.y;
 
+    // Scale to actual displayed video size
+    const scaleX = video.clientWidth / video.videoWidth;
+    const scaleY = video.clientHeight / video.videoHeight;
 
-    let birdContainer = document.getElementById("birdContainer");
-    if (!birdContainer) {
-      birdContainer = document.createElement("div");
-      birdContainer.id = "birdContainer";
-      document.body.appendChild(birdContainer);
-      Object.assign(birdContainer.style, {
-        position: "absolute",
-        width: "110px",
-        height: "110px",
-        left: "0px",
-        top: "0px",
-        zIndex: "999999",
-        pointerEvents: "none",
-        transform: "translate(-50%, -50%)",
-      });
+    // Get video element position on page
+    const rect = video.getBoundingClientRect();
 
-      birdContainer.appendChild(birdDot);
-      Object.assign(birdDot.style, {
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        width: "40px",
-        height: "40px",
-        transform: "translate(-50%, -50%) scale(1)",
-        zIndex: "10",
-        display: "block",
-        transition: "transform 0.1s linear"
-      });
-
-      let progressRing = document.createElement("div");
-      progressRing.id = "birdProgressRing";
-      birdContainer.appendChild(progressRing);
-      Object.assign(progressRing.style, {
-        position: "absolute",
-        left: "50%",
-        top: "50%",
-        width: "110px",
-        height: "110px",
-        borderRadius: "50%",
-        background: "conic-gradient(rgba(0,150,255,0.8) 0%, rgba(0,150,255,0.3) 0%)",
-        boxSizing: "border-box",
-        pointerEvents: "none",
-        zIndex: "1",
-        transform: "translate(-20%, -20%)"
-      });
-    }
-
-    birdContainer.style.display = "block";
-    const progressRing = document.getElementById("birdProgressRing");
-
-    const totalPoints = 30;
-    const dotSize = 110;
-    const margin = 20; 
-
-    const points = Array.from({ length: totalPoints }, () => ({
-      x: margin + Math.random() * (window.innerWidth - dotSize - margin * 2),
-      y: margin + Math.random() * (window.innerHeight - dotSize - margin * 2),
-    }));
-
-
-
-
-
-
-
-    let index = 0;
-
-    function updateProgressRing(currentIndex) {
-      const percentage = ((currentIndex + 1) / totalPoints) * 100;
-      progressRing.style.background = `conic-gradient(
-        rgba(0,150,255,0.8) ${percentage}%,
-        rgba(0,150,255,0.3) ${percentage}%
-      )`;
-    }
-
-    function moveToNextPoint() {
-      if (index >= points.length) {
-        birdContainer.style.display = "none";
-        console.log("Collected gaze coordinates:", gameGazeLog);
-        resolve();
-        return;
-      }
-
-      const startX = parseFloat(birdContainer.style.left) || points[index].x;
-      const startY = parseFloat(birdContainer.style.top) || points[index].y;
-      const endX = points[index].x;
-      const endY = points[index].y;
-      const duration = 4000;
-      const startTime = performance.now();
-
-      function animate(time) {
-        if (gamesPaused) {
-          requestAnimationFrame(animate);
-          return;
-        }
-
-        const elapsed = time - startTime;
-        const t = Math.min(elapsed / duration, 1);
-        const currentX = startX + (endX - startX) * t;
-        const currentY = startY + (endY - startY) * t;
-
-        birdContainer.style.left = `${currentX}px`;
-        birdContainer.style.top = `${currentY}px`;
-
-        const scaleMoving = 1 - 0.3 * t; 
-        birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
-
-        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-          // Map gaze to screen coordinates using your mapGazeToScreen function
-          const mappedGaze = mapGazeToScreen(window.currentGaze, window.videoElement); 
-          const gazeEntry = {
-            time: Date.now(),
-            gazeX: mappedGaze.x,
-            gazeY: mappedGaze.y,
-            targetX: currentX,
-            targetY: currentY,
-            game: "bird",
-            pointIndex: index,
-          };
-          gameGazeLog.push(gazeEntry);
-          console.log("Gaze at point", index, ":", gazeEntry);
-        }
-
-
-        if (t < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          updateProgressRing(index);
-
-          const pulseDuration = 1000; 
-          const pulseStart = performance.now();
-          function pulse(time) {
-            const elapsedPulse = time - pulseStart;
-            const pulseT = Math.min(elapsedPulse / pulseDuration, 1);
-            const scale = 0.7 + 0.6 * Math.sin(pulseT * Math.PI); 
-            birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
-
-            if (pulseT < 1) {
-              requestAnimationFrame(pulse);
-            } else {
-              index++;
-              moveToNextPoint();
-            }
-          }
-          requestAnimationFrame(pulse);
-        }
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    moveToNextPoint();
-  });
+    return {
+        x: Math.min(Math.max(rawX * scaleX + rect.left, 0), window.innerWidth),
+        y: Math.min(Math.max(rawY * scaleY + rect.top, 0), window.innerHeight)
+    };
 }
+
+async function runBirdGame() {
+    function showErrorPopup(message) {
+        let overlay = document.createElement("div");
+        Object.assign(overlay.style, {
+            position: "fixed",
+            top: "0",
+            left: "0",
+            width: "100%",
+            height: "100%",
+            background: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: "99999"
+        });
+
+        let popup = document.createElement("div");
+        Object.assign(popup.style, {
+            background: "white",
+            padding: "20px 30px",
+            borderRadius: "10px",
+            textAlign: "center",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.3)"
+        });
+
+        let text = document.createElement("p");
+        text.textContent = message;
+        text.style.marginBottom = "15px";
+        text.style.fontSize = "16px";
+        text.style.color = "black";
+
+        let button = document.createElement("button");
+        button.textContent = "OK";
+        Object.assign(button.style, {
+            padding: "8px 16px",
+            background: "#3E3F29",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer"
+        });
+
+        button.onclick = () => document.body.removeChild(overlay);
+
+        popup.appendChild(text);
+        popup.appendChild(button);
+        overlay.appendChild(popup);
+        document.body.appendChild(overlay);
+    }
+
+    try {
+        await waitForValidGaze();
+    } catch (err) {
+        showErrorPopup("Camera not ready or gaze data unavailable. Cannot start bird game.");
+        return;
+    }
+
+    return new Promise(async (resolve) => {
+        let storyMessage = document.createElement("div");
+        Object.assign(storyMessage.style, {
+            position: "absolute",
+            top: "10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            fontSize: "24px",
+            color: "gold",
+            fontWeight: "bold",
+            textAlign: "center",
+            zIndex: "20001",
+        });
+        document.body.appendChild(storyMessage);
+
+        const storyLines = [
+            "A gentle breeze flows through the forest…",
+            "A mysterious bird flutters into view.",
+            "Follow the bird carefully — it knows the way forward."
+        ];
+
+        await new Promise(res => setTimeout(res, 2000));
+
+        for (let i = 0; i < storyLines.length; i++) {
+            storyMessage.textContent = storyLines[i];
+            await new Promise(res => setTimeout(res, 5000));
+        }
+
+        if (storyMessage.parentNode) storyMessage.remove();
+
+        let birdContainer = document.getElementById("birdContainer");
+        if (!birdContainer) {
+            birdContainer = document.createElement("div");
+            birdContainer.id = "birdContainer";
+            document.body.appendChild(birdContainer);
+            Object.assign(birdContainer.style, {
+                position: "absolute",
+                width: "110px",
+                height: "110px",
+                left: "0px",
+                top: "0px",
+                zIndex: "999999",
+                pointerEvents: "none",
+                transform: "translate(-50%, -50%)",
+            });
+
+            birdContainer.appendChild(birdDot);
+            Object.assign(birdDot.style, {
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "40px",
+                height: "40px",
+                transform: "translate(-50%, -50%) scale(1)",
+                zIndex: "10",
+                display: "block",
+                transition: "transform 0.1s linear"
+            });
+
+            let progressRing = document.createElement("div");
+            progressRing.id = "birdProgressRing";
+            birdContainer.appendChild(progressRing);
+            Object.assign(progressRing.style, {
+                position: "absolute",
+                left: "50%",
+                top: "50%",
+                width: "110px",
+                height: "110px",
+                borderRadius: "50%",
+                background: "conic-gradient(rgba(0,150,255,0.8) 0%, rgba(0,150,255,0.3) 0%)",
+                boxSizing: "border-box",
+                pointerEvents: "none",
+                zIndex: "1",
+                transform: "translate(-20%, -20%)"
+            });
+        }
+
+        birdContainer.style.display = "block";
+        const progressRing = document.getElementById("birdProgressRing");
+
+        const totalPoints = 30;
+        const dotSize = 110;
+        const margin = 20; 
+
+        const points = Array.from({ length: totalPoints }, () => ({
+            x: margin + Math.random() * (window.innerWidth - dotSize - margin * 2),
+            y: margin + Math.random() * (window.innerHeight - dotSize - margin * 2),
+        }));
+
+        let index = 0;
+
+        function updateProgressRing(currentIndex) {
+            const percentage = ((currentIndex + 1) / totalPoints) * 100;
+            progressRing.style.background = `conic-gradient(
+                rgba(0,150,255,0.8) ${percentage}%,
+                rgba(0,150,255,0.3) ${percentage}%
+            )`;
+        }
+
+        function moveToNextPoint() {
+            if (index >= points.length) {
+                birdContainer.style.display = "none";
+                console.log("Collected gaze coordinates:", gameGazeLog);
+                resolve();
+                return;
+            }
+
+            const startX = parseFloat(birdContainer.style.left) || points[index].x;
+            const startY = parseFloat(birdContainer.style.top) || points[index].y;
+            const endX = points[index].x;
+            const endY = points[index].y;
+            const duration = 4000;
+            const startTime = performance.now();
+
+            function animate(time) {
+                if (gamesPaused) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+
+                const elapsed = time - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                const currentX = startX + (endX - startX) * t;
+                const currentY = startY + (endY - startY) * t;
+
+                birdContainer.style.left = `${currentX}px`;
+                birdContainer.style.top = `${currentY}px`;
+
+                const scaleMoving = 1 - 0.3 * t; 
+                birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
+
+                if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+                    // Use the corrected mapping function
+                    const mappedGaze = mapGazeToScreen(window.currentGaze, window.videoElement); 
+                    const gazeEntry = {
+                        time: Date.now(),
+                        gazeX: mappedGaze.x,
+                        gazeY: mappedGaze.y,
+                        targetX: currentX,
+                        targetY: currentY,
+                        game: "bird",
+                        pointIndex: index,
+                    };
+                    gameGazeLog.push(gazeEntry);
+                    console.log("GazeX:", gazeEntry.gazeX, "GazeY: ",gazeEntry.gazeY, "TargetX: ", gazeEntry.targetX, "TargetY: ", gazeEntry.targetY);
+                }
+
+                if (t < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    updateProgressRing(index);
+
+                    const pulseDuration = 1000; 
+                    const pulseStart = performance.now();
+                    function pulse(time) {
+                        const elapsedPulse = time - pulseStart;
+                        const pulseT = Math.min(elapsedPulse / pulseDuration, 1);
+                        const scale = 0.7 + 0.6 * Math.sin(pulseT * Math.PI); 
+                        birdDot.style.transform = `translate(-50%, -50%) scale(${scale})`;
+
+                        if (pulseT < 1) {
+                            requestAnimationFrame(pulse);
+                        } else {
+                            index++;
+                            moveToNextPoint();
+                        }
+                    }
+                    requestAnimationFrame(pulse);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        moveToNextPoint();
+    });
+}
+
 
 
 
