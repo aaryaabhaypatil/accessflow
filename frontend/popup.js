@@ -27,13 +27,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Storing gaze data during claibration games
   let gameGazeLog = []
-  function mapGazeToScreen(gaze, video) {
-    // Map from video coordinates to window coordinates
+  function mapGazeToScreen(gaze) {
+    if (!gaze) return { x: 0, y: 0 };
+
+
+    const offsetX = 0; 
+    const offsetY = 0;
+
     return {
-        x: Math.min(Math.max(gaze.x / video.videoWidth * window.innerWidth, 0), window.innerWidth),
-        y: Math.min(Math.max(gaze.y / video.videoHeight * window.innerHeight, 0), window.innerHeight)
+      x: Math.min(Math.max(gaze.x + offsetX, 0), window.innerWidth),
+      y: Math.min(Math.max(gaze.y + offsetY, 0), window.innerHeight)
     };
   }
+
 
 
 
@@ -324,6 +330,7 @@ async function runBirdGame() {
     function moveToNextPoint() {
       if (index >= points.length) {
         birdContainer.style.display = "none";
+        console.log("Collected gaze coordinates:", gameGazeLog);
         resolve();
         return;
       }
@@ -353,17 +360,21 @@ async function runBirdGame() {
         birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
         if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+          // Map gaze to screen coordinates using your mapGazeToScreen function
+          const mappedGaze = mapGazeToScreen(window.currentGaze, window.videoElement); 
           const gazeEntry = {
             time: Date.now(),
-            gazeX: window.currentGaze.x,
-            gazeY: window.currentGaze.y,
+            gazeX: mappedGaze.x,
+            gazeY: mappedGaze.y,
             targetX: currentX,
             targetY: currentY,
             game: "bird",
             pointIndex: index,
           };
           gameGazeLog.push(gazeEntry);
+          console.log("Gaze at point", index, ":", gazeEntry);
         }
+
 
         if (t < 1) {
           requestAnimationFrame(animate);
@@ -443,7 +454,7 @@ function runTargetGame() {
     targetDot.style.display = "block";
     let moves = 0;
     const baseScale = 0.7; 
-    const totalPoints = 30;
+    const totalPoints = 35;
 
     function renderTarget(remainingPoints) {
       targetDot.innerHTML = `
@@ -888,8 +899,9 @@ async function startGazeTracker() {
     console.log("Starting gaze tracker...");
 
  
-    const stream = await navigator.mediaDevices.getUserMedia({ video: false });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     const video = document.createElement("video");
+    window.videoElement = video;
     video.srcObject = stream;
     video.autoplay = true;
     video.muted = true;
@@ -1345,7 +1357,7 @@ if (closeBtn && popupOverlay) {
       addDwellOpen(triggerSelect);
     });
   }
-  
+
   function showFeedbackBox() {
     if (!feedbackBox) return;
     feedbackBox.textContent = "Preferences saved!";
