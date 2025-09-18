@@ -1103,8 +1103,8 @@ async function startGames() {
 
   if (blurOverlay) blurOverlay.classList.add("active");
 
-  // await runWithPause(runBirdGame);
-  // await runWithPause(runTargetGame);
+  await runWithPause(runBirdGame);
+  await runWithPause(runTargetGame);
   await runWithPause(runGemGame);
 
   finishGames();
