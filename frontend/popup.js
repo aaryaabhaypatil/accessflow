@@ -350,7 +350,7 @@ async function runBirdGame() {
                 width: "110px",
                 height: "110px",
                 borderRadius: "50%",
-                background: "conic-gradient(rgba(0,150,255,0.8) 0%, rgba(0,150,255,0.3) 0%)",
+                background: "conic-gradient(rgb(255, 255, 255) 0%, rgb(141, 92, 41) 0%)",
                 boxSizing: "border-box",
                 pointerEvents: "none",
                 zIndex: "1",
@@ -375,8 +375,8 @@ async function runBirdGame() {
         function updateProgressRing(currentIndex) {
             const percentage = ((currentIndex + 1) / totalPoints) * 100;
             progressRing.style.background = `conic-gradient(
-                rgba(0,150,255,0.8) ${percentage}%,
-                rgba(0,150,255,0.3) ${percentage}%
+                rgb(255, 255, 255) ${percentage}%,
+                rgb(141, 92, 41) ${percentage}%
             )`;
         }
 
