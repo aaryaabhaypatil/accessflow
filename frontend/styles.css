@@ -949,8 +949,8 @@ body, html {
   position: absolute; 
   top: 20px;
   border-radius: 10px;
-  left: 3vw;
-  width: 15vw;
+  left: 42vw;
+  width: 5vw;
   height: 4.2vh;
   align-items: center;
   background-color: #3E3F29;
@@ -967,8 +967,8 @@ body, html {
   position: absolute; 
   top: 20px;
   border-radius: 10px;
-  left: 20vw;
-  width: 15vw;
+  left: 48vw;
+  width: 5vw;
   height: 4.2vh;
   align-items: center;
   background-color: #3E3F29;
