@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return dot;
   }
 
-  const birdDot = createDot("birdDot", "🐦");
+  const birdDot = createDot("birdDot", "🦅");
   const targetDot = createDot("targetDot", "🎯");
   const gemDot = createDot("gemDot", "💎");
 
