@@ -618,13 +618,18 @@ function renderExplosion() {
     left: `${targetRect.left + targetRect.width / 2}px`,
     top: `${targetRect.top + targetRect.height / 2}px`,
     transform: "translate(-50%, -50%) scale(0.3)",
-    fontSize: "120px", // smaller size
+    fontSize: "120px",
     animation: "explode 0.8s ease-out forwards",
     pointerEvents: "none",
     zIndex: "999999",
   });
 
   document.body.appendChild(explosion);
+
+  // 🔊 Play explosion sound
+  const explosionSound = new Audio("explosion-fx-343683.mp3");
+  explosionSound.volume = 0.3; // optional - set volume between 0.0 and 1.0
+  explosionSound.play().catch(err => console.log("Sound playback blocked:", err));
 
   // Add explosion animation if missing
   if (!document.getElementById("explosionStyles")) {
@@ -659,6 +664,7 @@ function renderExplosion() {
     targetDot.style.visibility = "visible";
   }, 800);
 }
+
 
 
 
@@ -1240,13 +1246,13 @@ async function startGames() {
 
   // Run all three games in sequence with start buttons before each
   await showStartButton("Bird Game");
-  await runWithPause(runBirdGame);
+  // await runWithPause(runBirdGame);
   
   await showStartButton("Target Game");
   await runWithPause(runTargetGame);
   
   await showStartButton("Gem Game");
-  await runWithPause(runGemGame);
+  // await runWithPause(runGemGame);
 
   finishGames();
   startPostCalibrationGazeTracing();
