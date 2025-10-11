@@ -773,7 +773,7 @@ function runGemGame() {
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        zIndex: "999999",
+        zIndex: "9999999",
         border: "4px solid gold",
         boxShadow: "0 0 30px rgba(255,215,0,0.5)",
         borderRadius: "10px"
@@ -797,7 +797,7 @@ function runGemGame() {
           visited: false
         }));
         
-        // Create copies for each cell
+
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             maze[r][c] = { top: true, right: true, bottom: true, left: true, visited: false };
@@ -969,7 +969,7 @@ function runGemGame() {
       gemDot.style.display = "block";
       gemDot.textContent = "💎";
       gemDot.style.fontSize = "40px";
-      gemDot.style.zIndex = "99999999";
+      gemDot.style.zIndex = "999999999";
 
       let achievement = document.createElement("div");
       achievement.textContent = "🏆";
@@ -1024,7 +1024,7 @@ function runGemGame() {
           score++;
           scoreDisplay.textContent = `💎 Score: ${score}`;
 
-          await new Promise(r => setTimeout(r, 150));
+          await new Promise(r => setTimeout(r, 400));
         }
 
         gemDot.style.display = "none";
