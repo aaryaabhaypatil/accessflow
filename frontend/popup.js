@@ -773,21 +773,21 @@ function runGemGame() {
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        zIndex: "9999999",
+        zIndex: "999999",
         border: "4px solid gold",
         boxShadow: "0 0 30px rgba(255,215,0,0.5)",
         borderRadius: "10px"
       });
       
-      const mazeSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 600);
+      const mazeSize = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9, 900);
       mazeCanvas.width = mazeSize;
       mazeCanvas.height = mazeSize;
       document.body.appendChild(mazeCanvas);
       
       const ctx = mazeCanvas.getContext("2d");
-      const cellSize = mazeSize / 15;
+      const cellSize = mazeSize / 15; // 15x15 maze
 
-
+      // Generate maze using recursive backtracking
       function generateMaze(cols, rows) {
         const maze = Array(rows).fill().map(() => Array(cols).fill({
           top: true,
@@ -797,7 +797,7 @@ function runGemGame() {
           visited: false
         }));
         
-
+        // Create copies for each cell
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             maze[r][c] = { top: true, right: true, bottom: true, left: true, visited: false };
@@ -850,11 +850,11 @@ function runGemGame() {
       const maze = generateMaze(15, 15);
 
       function drawMaze(highlightPath = null) {
-
+        // Clear canvas
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, mazeSize, mazeSize);
 
-
+        // Draw the solution path first (if provided)
         if (highlightPath && highlightPath.length > 0) {
           ctx.strokeStyle = "rgba(255, 215, 0, 0.3)";
           ctx.lineWidth = cellSize * 0.5;
@@ -876,7 +876,7 @@ function runGemGame() {
           ctx.stroke();
         }
 
-
+        // Draw maze walls
         ctx.strokeStyle = "#8B4513";
         ctx.lineWidth = 3;
         ctx.shadowColor = "#654321";
@@ -911,14 +911,14 @@ function runGemGame() {
 
         ctx.shadowBlur = 0;
 
-
-        // ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        // Draw entrance (top-left)
+        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
         ctx.fillRect(2, 2, cellSize - 4, cellSize - 4);
         ctx.font = `${cellSize * 0.6}px Arial`;
         ctx.fillText("🚪", cellSize * 0.2, cellSize * 0.7);
 
-
-        // ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
+        // Draw exit (bottom-right)
+        ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
         ctx.fillRect(14 * cellSize + 2, 14 * cellSize + 2, cellSize - 4, cellSize - 4);
         ctx.font = `${cellSize * 0.6}px Arial`;
         ctx.fillText("🏆", 14 * cellSize + cellSize * 0.2, 14 * cellSize + cellSize * 0.7);
@@ -926,6 +926,7 @@ function runGemGame() {
 
       drawMaze();
 
+      // Create path through maze using BFS
       function findPath() {
         const queue = [{ row: 0, col: 0, path: [{ row: 0, col: 0 }] }];
         const visited = Array(15).fill().map(() => Array(15).fill(false));
@@ -962,7 +963,7 @@ function runGemGame() {
 
       const pathPoints = findPath();
       
-
+      // Redraw maze with the path highlighted
       drawMaze(pathPoints);
       
       gemDot.style.display = "block";
@@ -996,8 +997,11 @@ function runGemGame() {
           const screenX = canvasRect.left + point.col * cellSize + cellSize / 2;
           const screenY = canvasRect.top + point.row * cellSize + cellSize / 2;
 
+          // Center the gem perfectly on the path point
+          const gemSize = 40; // gem font size
           gemDot.style.left = `${screenX}px`;
           gemDot.style.top = `${screenY}px`;
+          gemDot.style.transform = "translate(-50%, -50%)"; // Center it on the coordinates
 
           const progress = i / pathPoints.length;
           const glowStrength = Math.floor(10 + progress * 50);
@@ -1326,26 +1330,26 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    await showGameIntro(
-      "Bird Game",
-      [
-        "A gentle breeze flows through the forest…",
-        "A mysterious bird flutters into view.",
-        "Follow the bird carefully — it knows the way forward."
-      ],
-      "🦅"
-    );
+    // await showGameIntro(
+    //   "Bird Game",
+    //   [
+    //     "A gentle breeze flows through the forest…",
+    //     "A mysterious bird flutters into view.",
+    //     "Follow the bird carefully — it knows the way forward."
+    //   ],
+    //   "🦅"
+    // );
     // await runWithPause(runBirdGame);
 
-    await showGameIntro(
-      "Target Game",
-      [
-        "The bird vanishes into the shadows…",
-        "Targets suddenly appear around you.",
-        "Strike carefully — your focus guides the way."
-      ],
-      "🎯"
-    );
+    // await showGameIntro(
+    //   "Target Game",
+    //   [
+    //     "The bird vanishes into the shadows…",
+    //     "Targets suddenly appear around you.",
+    //     "Strike carefully — your focus guides the way."
+    //   ],
+    //   "🎯"
+    // );
     // await runWithPause(runTargetGame);
 
     await showGameIntro(
