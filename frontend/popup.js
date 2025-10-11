@@ -102,6 +102,16 @@ document.addEventListener("DOMContentLoaded", function () {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
           }
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
         `;
         document.head.appendChild(style);
       }
@@ -119,28 +129,19 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       introOverlay.appendChild(gameTitle);
 
-      // Story container
+      // Story container - will hold all lines stacked vertically
       let storyContainer = document.createElement("div");
       Object.assign(storyContainer.style, {
-        maxWidth: "700px",
+        maxWidth: "800px",
         padding: "0 30px",
         textAlign: "center",
-        marginBottom: "50px"
+        marginBottom: "50px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        minHeight: "200px"
       });
       introOverlay.appendChild(storyContainer);
-
-      // Story text element
-      let storyText = document.createElement("div");
-      Object.assign(storyText.style, {
-        fontSize: "22px",
-        color: "#e0e0e0",
-        lineHeight: "1.6",
-        minHeight: "80px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center"
-      });
-      storyContainer.appendChild(storyText);
 
       // Play button (initially hidden)
       let playButton = document.createElement("button");
@@ -151,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fontWeight: "bold",
         background: "linear-gradient(135deg, #3E3F29, #5a5b3d)",
         color: "#fff",
-        border: "3px solid gold",
+        // border: "3px solid gold",
         borderRadius: "15px",
         cursor: "pointer",
         boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
@@ -172,23 +173,31 @@ document.addEventListener("DOMContentLoaded", function () {
         playButton.style.boxShadow = "0 6px 20px rgba(0,0,0,0.5)";
       });
 
-      // Function to cycle through story lines
+      // Function to add story lines one by one
       let currentLine = 0;
       function showNextStoryLine() {
         if (currentLine < storyLines.length) {
-          storyText.style.opacity = "0";
-          setTimeout(() => {
-            storyText.textContent = storyLines[currentLine];
-            storyText.style.opacity = "1";
-            storyText.style.transition = "opacity 0.8s ease";
-            currentLine++;
-            setTimeout(showNextStoryLine, 4000);
-          }, 500);
+          // Create a new line element
+          let lineElement = document.createElement("div");
+          lineElement.textContent = storyLines[currentLine];
+          Object.assign(lineElement.style, {
+            fontSize: "22px",
+            color: "#e0e0e0",
+            lineHeight: "1.6",
+            opacity: "0",
+            animation: "fadeInUp 0.8s ease forwards"
+          });
+          storyContainer.appendChild(lineElement);
+          
+          currentLine++;
+          setTimeout(showNextStoryLine, 3000);
         } else {
-          // Story finished, show play button
-          playButton.style.opacity = "1";
-          playButton.style.transform = "scale(1)";
-          playButton.style.pointerEvents = "auto";
+          // All story lines shown, show play button
+          setTimeout(() => {
+            playButton.style.opacity = "1";
+            playButton.style.transform = "scale(1)";
+            playButton.style.pointerEvents = "auto";
+          }, 500);
         }
       }
 
@@ -1130,7 +1139,7 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     await runWithPause(runBirdGame);
 
-
+    // Target Game with intro
     await showGameIntro(
       "Target Game",
       [
