@@ -736,7 +736,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function runGemGame() {
+function runGemGame() {
     return new Promise((resolve) => {
       let scoreDisplay = document.getElementById("gemScoreDisplay");
       if (!scoreDisplay) {
@@ -765,130 +765,282 @@ document.addEventListener("DOMContentLoaded", function () {
       scoreDisplay.textContent = `💎 Score: ${score}`;
       console.log("Gem game score display shown");
 
-      let caveOverlay = document.createElement("div");
-      Object.assign(caveOverlay.style, {
+      // Create maze canvas
+      let mazeCanvas = document.createElement("canvas");
+      mazeCanvas.id = "mazeCanvas";
+      Object.assign(mazeCanvas.style, {
         position: "fixed",
-        top: "0",
-        left: "0",
-        width: "100%",
-        height: "100%",
-        backgroundColor: "black",
-        opacity: "0.9",
-        transition: "opacity 1s ease",
-        zIndex: "1000",
-      });
-      document.body.appendChild(caveOverlay);
-
-      let caveEmoji = document.createElement("div");
-      caveEmoji.textContent = "🚪"; 
-      Object.assign(caveEmoji.style, {
-        position: "absolute",
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        fontSize: "200px",
-        opacity: "0.2",
-        filter: "blur(3px)",
-        transition: "opacity 1s ease, filter 1s ease",
-        zIndex: "20002",
+        zIndex: "9999999",
+        border: "4px solid gold",
+        boxShadow: "0 0 30px rgba(255,215,0,0.5)",
+        borderRadius: "10px"
       });
-      document.body.appendChild(caveEmoji);
+      
+      const mazeSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 600);
+      mazeCanvas.width = mazeSize;
+      mazeCanvas.height = mazeSize;
+      document.body.appendChild(mazeCanvas);
+      
+      const ctx = mazeCanvas.getContext("2d");
+      const cellSize = mazeSize / 15;
+
+
+      function generateMaze(cols, rows) {
+        const maze = Array(rows).fill().map(() => Array(cols).fill({
+          top: true,
+          right: true,
+          bottom: true,
+          left: true,
+          visited: false
+        }));
+        
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            maze[r][c] = { top: true, right: true, bottom: true, left: true, visited: false };
+          }
+        }
+
+        const stack = [];
+        let current = { row: 0, col: 0 };
+        maze[0][0].visited = true;
+
+        while (true) {
+          const neighbors = [];
+          const { row, col } = current;
+
+          if (row > 0 && !maze[row - 1][col].visited) neighbors.push({ row: row - 1, col, dir: 'top' });
+          if (col < cols - 1 && !maze[row][col + 1].visited) neighbors.push({ row, col: col + 1, dir: 'right' });
+          if (row < rows - 1 && !maze[row + 1][col].visited) neighbors.push({ row: row + 1, col, dir: 'bottom' });
+          if (col > 0 && !maze[row][col - 1].visited) neighbors.push({ row, col: col - 1, dir: 'left' });
+
+          if (neighbors.length > 0) {
+            const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+            
+            if (next.dir === 'top') {
+              maze[row][col].top = false;
+              maze[next.row][next.col].bottom = false;
+            } else if (next.dir === 'right') {
+              maze[row][col].right = false;
+              maze[next.row][next.col].left = false;
+            } else if (next.dir === 'bottom') {
+              maze[row][col].bottom = false;
+              maze[next.row][next.col].top = false;
+            } else if (next.dir === 'left') {
+              maze[row][col].left = false;
+              maze[next.row][next.col].right = false;
+            }
+
+            maze[next.row][next.col].visited = true;
+            stack.push(current);
+            current = { row: next.row, col: next.col };
+          } else if (stack.length > 0) {
+            current = stack.pop();
+          } else {
+            break;
+          }
+        }
+
+        return maze;
+      }
+
+      const maze = generateMaze(15, 15);
+
+      function drawMaze(highlightPath = null) {
+
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(0, 0, mazeSize, mazeSize);
+
+
+        if (highlightPath && highlightPath.length > 0) {
+          ctx.strokeStyle = "rgba(255, 215, 0, 0.3)";
+          ctx.lineWidth = cellSize * 0.5;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(
+            highlightPath[0].col * cellSize + cellSize / 2,
+            highlightPath[0].row * cellSize + cellSize / 2
+          );
+
+          for (let i = 1; i < highlightPath.length; i++) {
+            ctx.lineTo(
+              highlightPath[i].col * cellSize + cellSize / 2,
+              highlightPath[i].row * cellSize + cellSize / 2
+            );
+          }
+          ctx.stroke();
+        }
+
+
+        ctx.strokeStyle = "#8B4513";
+        ctx.lineWidth = 3;
+        ctx.shadowColor = "#654321";
+        ctx.shadowBlur = 5;
+
+        for (let r = 0; r < 15; r++) {
+          for (let c = 0; c < 15; c++) {
+            const x = c * cellSize;
+            const y = r * cellSize;
+            const cell = maze[r][c];
+
+            ctx.beginPath();
+            if (cell.top) {
+              ctx.moveTo(x, y);
+              ctx.lineTo(x + cellSize, y);
+            }
+            if (cell.right) {
+              ctx.moveTo(x + cellSize, y);
+              ctx.lineTo(x + cellSize, y + cellSize);
+            }
+            if (cell.bottom) {
+              ctx.moveTo(x, y + cellSize);
+              ctx.lineTo(x + cellSize, y + cellSize);
+            }
+            if (cell.left) {
+              ctx.moveTo(x, y);
+              ctx.lineTo(x, y + cellSize);
+            }
+            ctx.stroke();
+          }
+        }
+
+        ctx.shadowBlur = 0;
+
+
+        // ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+        ctx.fillRect(2, 2, cellSize - 4, cellSize - 4);
+        ctx.font = `${cellSize * 0.6}px Arial`;
+        ctx.fillText("🚪", cellSize * 0.2, cellSize * 0.7);
+
+
+        // ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
+        ctx.fillRect(14 * cellSize + 2, 14 * cellSize + 2, cellSize - 4, cellSize - 4);
+        ctx.font = `${cellSize * 0.6}px Arial`;
+        ctx.fillText("🏆", 14 * cellSize + cellSize * 0.2, 14 * cellSize + cellSize * 0.7);
+      }
+
+      drawMaze();
+
+      function findPath() {
+        const queue = [{ row: 0, col: 0, path: [{ row: 0, col: 0 }] }];
+        const visited = Array(15).fill().map(() => Array(15).fill(false));
+        visited[0][0] = true;
+
+        while (queue.length > 0) {
+          const { row, col, path } = queue.shift();
+
+          if (row === 14 && col === 14) {
+            return path;
+          }
+
+          const moves = [];
+          if (!maze[row][col].top && row > 0 && !visited[row - 1][col]) 
+            moves.push({ row: row - 1, col });
+          if (!maze[row][col].right && col < 14 && !visited[row][col + 1]) 
+            moves.push({ row, col: col + 1 });
+          if (!maze[row][col].bottom && row < 14 && !visited[row + 1][col]) 
+            moves.push({ row: row + 1, col });
+          if (!maze[row][col].left && col > 0 && !visited[row][col - 1]) 
+            moves.push({ row, col: col - 1 });
+
+          for (const move of moves) {
+            visited[move.row][move.col] = true;
+            queue.push({ 
+              row: move.row, 
+              col: move.col, 
+              path: [...path, move] 
+            });
+          }
+        }
+        return [];
+      }
+
+      const pathPoints = findPath();
+      
+
+      drawMaze(pathPoints);
+      
+      gemDot.style.display = "block";
+      gemDot.textContent = "💎";
+      gemDot.style.fontSize = "40px";
+      gemDot.style.zIndex = "99999999";
 
       let achievement = document.createElement("div");
       achievement.textContent = "🏆";
       Object.assign(achievement.style, {
-        position: "absolute",
-        top: "55%",
+        position: "fixed",
+        top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%) scale(0.5)",
-        fontSize: "80px",
+        fontSize: "100px",
         opacity: "0",
         transition: "opacity 1s, transform 1s",
-        zIndex: "20003",
+        zIndex: "999999",
       });
       document.body.appendChild(achievement);
 
-      async function startGemGame(done) {
-        let moves = 0;
-        const totalMoves = 30;
-        gemDot.style.display = "block";
-
-        for (let i = 1; i <= 5; i++) {
-          await new Promise(r => setTimeout(r, 1000));
-          caveOverlay.style.opacity = String(0.9 - i * 0.15);
-        }
-
-        async function move() {
+      async function animateThroughMaze() {
+        const canvasRect = mazeCanvas.getBoundingClientRect();
+        
+        for (let i = 0; i < pathPoints.length; i++) {
           while (gamesPaused) {
             await new Promise(resume => currentGameResolver = resume);
           }
 
-          if (moves >= totalMoves) {
-            gemDot.style.display = "none";
-            if (caveOverlay.parentNode) caveOverlay.remove();
-            if (caveEmoji.parentNode) caveEmoji.remove();
-            achievement.style.opacity = "1";
-            achievement.style.transform = "translate(-50%, -50%) scale(1)";
-            setTimeout(() => {
-              achievement.style.opacity = "0";
-              achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
-              scoreDisplay.style.display = "none";
-              done();
-            }, 1500);
-            return;
-          }
+          const point = pathPoints[i];
+          const screenX = canvasRect.left + point.col * cellSize + cellSize / 2;
+          const screenY = canvasRect.top + point.row * cellSize + cellSize / 2;
 
-          const dotSize = 100; 
-          const margin = 10;
+          gemDot.style.left = `${screenX}px`;
+          gemDot.style.top = `${screenY}px`;
 
-          const x = margin + Math.random() * (window.innerWidth - dotSize - margin * 2);
-          const y = margin + Math.random() * (window.innerHeight - dotSize - margin * 2);
-
-          gemDot.style.left = `${x}px`;
-          gemDot.style.top = `${y}px`;
-          gemDot.textContent = "💎";
-
-          const progress = moves / totalMoves;
-          const glowStrength = Math.floor(10 + progress * 40);
+          const progress = i / pathPoints.length;
+          const glowStrength = Math.floor(10 + progress * 50);
           gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
-          gemDot.style.transition = "filter 0.4s ease";
-
-          caveEmoji.style.opacity = String(0.2 + progress * 0.8);
-          caveEmoji.style.filter = `blur(${3 - progress * 3}px)`;
 
           if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
             const gazeEntry = {
               time: Date.now(),
               gazeX: window.currentGaze.x,
               gazeY: window.currentGaze.y,
-              targetX: x,
-              targetY: y,
+              targetX: screenX,
+              targetY: screenY,
               game: "gem",
-              moveIndex: moves,
+              moveIndex: i,
+              mazeProgress: progress
             };
             allGamesGazeLog.push(gazeEntry);
           }
 
-          setTimeout(async () => {
-            gemDot.textContent = "✨";
-            setTimeout(async () => {
-              gemDot.textContent = "💎";
-              
-              score++;
-              scoreDisplay.textContent = `💎 Score: ${score}`;
-              
-              moves++;
-              await move();
-            }, 500);
-          }, 1000);
+          score++;
+          scoreDisplay.textContent = `💎 Score: ${score}`;
+
+          await new Promise(r => setTimeout(r, 150));
         }
 
-        await move();
+        gemDot.style.display = "none";
+        mazeCanvas.remove();
+        
+        achievement.style.opacity = "1";
+        achievement.style.transform = "translate(-50%, -50%) scale(1.5)";
+        
+        setTimeout(() => {
+          achievement.style.opacity = "0";
+          achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
+          scoreDisplay.style.display = "none";
+          setTimeout(() => {
+            if (achievement.parentNode) achievement.remove();
+            resolve();
+          }, 1000);
+        }, 2000);
       }
 
-      startGemGame(() => {
-        resolve();
-      });
+      animateThroughMaze();
     });
   }
 
@@ -1183,7 +1335,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ],
       "🦅"
     );
-    await runWithPause(runBirdGame);
+    // await runWithPause(runBirdGame);
 
     await showGameIntro(
       "Target Game",
@@ -1194,7 +1346,7 @@ document.addEventListener("DOMContentLoaded", function () {
       ],
       "🎯"
     );
-    await runWithPause(runTargetGame);
+    // await runWithPause(runTargetGame);
 
     await showGameIntro(
       "Gem Game",
