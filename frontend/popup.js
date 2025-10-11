@@ -611,11 +611,66 @@ function runTargetGame() {
       targetDot.style.textAlign = "center";
     }
 
-    function renderExplosion() {
-      targetDot.innerHTML = `<div style="position: relative; display: inline-block;">
-        <span style="font-size: 300px; display: block;">💥</span>
-      </div>`;
-    }
+function renderExplosion() {
+  // Get target position before hiding
+  const targetRect = targetDot.getBoundingClientRect();
+
+  // Hide target
+  targetDot.style.visibility = "hidden";
+
+  // Create explosion element
+  const explosion = document.createElement("span");
+  explosion.textContent = "💥";
+  Object.assign(explosion.style, {
+    position: "fixed",
+    left: `${targetRect.left + targetRect.width / 2}px`,
+    top: `${targetRect.top + targetRect.height / 2}px`,
+    transform: "translate(-50%, -50%) scale(0.3)",
+    fontSize: "120px", // smaller size
+    animation: "explode 0.8s ease-out forwards",
+    pointerEvents: "none",
+    zIndex: "999999",
+  });
+
+  document.body.appendChild(explosion);
+
+  // Add explosion animation if missing
+  if (!document.getElementById("explosionStyles")) {
+    const style = document.createElement("style");
+    style.id = "explosionStyles";
+    style.textContent = `
+      @keyframes explode {
+        0% {
+          transform: translate(-50%, -50%) scale(0.3);
+          opacity: 0;
+        }
+        30% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        60% {
+          transform: translate(-50%, -50%) scale(1.2) rotate(8deg);
+          opacity: 0.9;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1.3) rotate(15deg);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Remove explosion and restore target
+  setTimeout(() => {
+    explosion.remove();
+    targetDot.style.visibility = "visible";
+  }, 800);
+}
+
+
+
+
 
     async function move() {
       while (gamesPaused) {
@@ -1046,6 +1101,7 @@ async function startGazeTracker() {
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
+    video.style.display = "none"; // Hide the video element
     document.body.appendChild(video);
 
     await new Promise((resolve) => {
@@ -1077,7 +1133,17 @@ async function startGazeTracker() {
       });
     }
 
-
+    // Hide all webgazer elements continuously
+    function hideAllWebgazerElements() {
+      const elements = document.querySelectorAll("[id*='webgazer'], [class*='webgazer']");
+      elements.forEach(el => {
+        if (el.id !== 'webgazerGazeDot') { // Don't hide our custom dot if it has this ID
+          el.style.display = "none";
+          el.style.opacity = "0";
+          el.style.visibility = "hidden";
+        }
+      });
+    }
 
     try {
       await webgazer
@@ -1098,6 +1164,9 @@ async function startGazeTracker() {
 
 
       debugWebGazerDot();
+
+      // Continuously hide webgazer elements
+      setInterval(hideAllWebgazerElements, 100);
 
       console.log("WebGazer started ✅");
       startBrightnessLoop(video);
@@ -1178,14 +1247,14 @@ async function startGames() {
   if (blurOverlay) blurOverlay.classList.add("active");
 
   // Run all three games in sequence with start buttons before each
-  await showStartButton("Bird Game");
-  // await runWithPause(runBirdGame);
+  await showStartButton("🦅 Bird Game - Follow the Bird");
+  await runWithPause(runBirdGame);
   
-  await showStartButton("Target Game");
+  await showStartButton("🎯 Target Game - Hit the Targets");
   await runWithPause(runTargetGame);
   
-  await showStartButton("Gem Game");
-  // await runWithPause(runGemGame);
+  await showStartButton("💎 Gem Game - Collect the Gems");
+  await runWithPause(runGemGame);
 
   finishGames();
   startPostCalibrationGazeTracing();
