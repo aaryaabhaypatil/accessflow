@@ -770,7 +770,7 @@ function runGemGame() {
       mazeCanvas.id = "mazeCanvas";
       Object.assign(mazeCanvas.style, {
         position: "fixed",
-        top: "50%",
+        top: "53%",
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: "9999999",
@@ -797,7 +797,7 @@ function runGemGame() {
           visited: false
         }));
         
-
+        // Create copies for each cell
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             maze[r][c] = { top: true, right: true, bottom: true, left: true, visited: false };
@@ -969,7 +969,7 @@ function runGemGame() {
       gemDot.style.display = "block";
       gemDot.textContent = "💎";
       gemDot.style.fontSize = "40px";
-      gemDot.style.zIndex = "999999999";
+      gemDot.style.zIndex = "99999999";
 
       let achievement = document.createElement("div");
       achievement.textContent = "🏆";
@@ -1352,15 +1352,15 @@ function runGemGame() {
     // );
     // await runWithPause(runTargetGame);
 
-    await showGameIntro(
-      "Gem Game",
-      [
-        "Well done! You've unlocked a hidden cave…",
-        "Gems glimmer faintly in the darkness.",
-        "Keep your eyes on them to reveal the treasure."
-      ],
-      "💎"
-    );
+    // await showGameIntro(
+    //   "Gem Game",
+    //   [
+    //     "Well done! You've unlocked a hidden cave…",
+    //     "Gems glimmer faintly in the darkness.",
+    //     "Keep your eyes on them to reveal the treasure."
+    //   ],
+    //   "💎"
+    // );
     await runWithPause(runGemGame);
 
     finishGames();
