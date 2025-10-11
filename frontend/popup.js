@@ -392,7 +392,7 @@ async function runBirdGame() {
             const startY = parseFloat(birdContainer.style.top) || points[index].y;
             const endX = points[index].x;
             const endY = points[index].y;
-            const duration = 4000;
+            const duration = 2000;
             const startTime = performance.now();
 
             function animate(time) {
@@ -880,7 +880,7 @@ function startPostCalibrationGazeTracing() {
     if (alivePoints.length > 0) {
       const last = alivePoints[alivePoints.length - 1];
       ctx.beginPath();
-      ctx.arc(last.x, last.y, 6, 0, 2 * Math.PI);
+      ctx.arc(last.x, last.y, 8, 0, 2 * Math.PI);
       ctx.fillStyle = "blue"; 
       ctx.fill();
     }
@@ -1103,9 +1103,9 @@ async function startGames() {
 
   if (blurOverlay) blurOverlay.classList.add("active");
 
-  await runWithPause(runBirdGame);
+  // await runWithPause(runBirdGame);
   await runWithPause(runTargetGame);
-  await runWithPause(runGemGame);
+  // await runWithPause(runGemGame);
 
   finishGames();
   startPostCalibrationGazeTracing();
