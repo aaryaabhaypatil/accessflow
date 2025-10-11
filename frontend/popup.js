@@ -1,4 +1,3 @@
-
 const removeWebgazerDebug = () => {
   const video = document.getElementById('webgazerVideoFeed');
   if (video) video.remove();
@@ -80,7 +79,67 @@ document.addEventListener("DOMContentLoaded", function () {
 //     };
 // }
 
+  // Function to show start button before each game
+  function showStartButton(gameName) {
+    return new Promise((resolve) => {
+      let startOverlay = document.createElement("div");
+      Object.assign(startOverlay.style, {
+        position: "fixed",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: "30000"
+      });
+      document.body.appendChild(startOverlay);
 
+      let gameTitle = document.createElement("div");
+      gameTitle.textContent = gameName;
+      Object.assign(gameTitle.style, {
+        fontSize: "36px",
+        color: "gold",
+        fontWeight: "bold",
+        marginBottom: "30px",
+        textAlign: "center"
+      });
+      startOverlay.appendChild(gameTitle);
+
+      let startButton = document.createElement("button");
+      startButton.textContent = "Start Game";
+      Object.assign(startButton.style, {
+        padding: "15px 40px",
+        fontSize: "24px",
+        fontWeight: "bold",
+        background: "#3E3F29",
+        color: "white",
+        border: "3px solid gold",
+        borderRadius: "12px",
+        cursor: "pointer",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
+        transition: "all 0.3s ease"
+      });
+      startOverlay.appendChild(startButton);
+
+      startButton.addEventListener("mouseenter", () => {
+        startButton.style.transform = "scale(1.1)";
+        startButton.style.background = "#4E4F39";
+      });
+      startButton.addEventListener("mouseleave", () => {
+        startButton.style.transform = "scale(1)";
+        startButton.style.background = "#3E3F29";
+      });
+
+      startButton.addEventListener("click", () => {
+        if (startOverlay.parentNode) startOverlay.remove();
+        resolve();
+      });
+    });
+  }
 
 
 
@@ -380,7 +439,12 @@ async function runBirdGame() {
             )`;
         }
 
-        function moveToNextPoint() {
+        async function moveToNextPoint() {
+            // Check pause before moving
+            while (gamesPaused) {
+                await new Promise(resume => currentGameResolver = resume);
+            }
+
             if (index >= points.length) {
                 birdContainer.style.display = "none";
                 console.log("Collected gaze coordinates:", gameGazeLog);
@@ -435,7 +499,12 @@ async function runBirdGame() {
 
                     const pulseDuration = 1000; 
                     const pulseStart = performance.now();
-                    function pulse(time) {
+                    async function pulse(time) {
+                        // Check pause during pulse
+                        while (gamesPaused) {
+                            await new Promise(resume => currentGameResolver = resume);
+                        }
+
                         const elapsedPulse = time - pulseStart;
                         const pulseT = Math.min(elapsedPulse / pulseDuration, 1);
                         const scale = 0.7 + 0.6 * Math.sin(pulseT * Math.PI); 
@@ -445,7 +514,7 @@ async function runBirdGame() {
                             requestAnimationFrame(pulse);
                         } else {
                             index++;
-                            moveToNextPoint();
+                            await moveToNextPoint();
                         }
                     }
                     requestAnimationFrame(pulse);
@@ -455,7 +524,7 @@ async function runBirdGame() {
             requestAnimationFrame(animate);
         }
 
-        moveToNextPoint();
+        await moveToNextPoint();
     });
 }
 
@@ -601,7 +670,7 @@ function runTargetGame() {
       }, 1000);
     }
 
-    move();
+    await move();
   });
 }
 
@@ -683,7 +752,7 @@ function runGemGame() {
 
     // Updated story lines
     const storyLines = [
-      "Well done! You’ve unlocked the path to a hidden cave…",
+      "Well done! You've unlocked the path to a hidden cave…",
       "Gems glimmer faintly in the darkness.",
       "Keep your eyes on them, and watch as the cave slowly brightens.",
       "The entrance finally opens, revealing the treasure within!"
@@ -708,12 +777,17 @@ function runGemGame() {
       }, 1000);
     }
 
-    function startGemGame(done) {
+    async function startGemGame(done) {
       let moves = 0;
       const totalMoves = 30;
       gemDot.style.display = "block";
 
       async function move() {
+        // Check pause before each move
+        while (gamesPaused) {
+          await new Promise(resume => currentGameResolver = resume);
+        }
+
         if (moves >= totalMoves) {
           gemDot.style.display = "none";
           if (caveEmoji.parentNode) caveEmoji.remove();
@@ -768,7 +842,7 @@ function runGemGame() {
         }, 1000);
       }
 
-      move();
+      await move();
     }
 
     showStoryLines();
@@ -1103,8 +1177,14 @@ async function startGames() {
 
   if (blurOverlay) blurOverlay.classList.add("active");
 
+  // Run all three games in sequence with start buttons before each
+  await showStartButton("Bird Game");
   // await runWithPause(runBirdGame);
+  
+  await showStartButton("Target Game");
   await runWithPause(runTargetGame);
+  
+  await showStartButton("Gem Game");
   // await runWithPause(runGemGame);
 
   finishGames();
@@ -1225,12 +1305,14 @@ if (calibrateBtn) {
 
 let gamesPaused = false;
 let currentGameResolver = null;
-// Pausing caliration games
+
+// Pausing calibration games
 function pauseGames() {
   gamesPaused = true;
   console.log("Calibration games paused.");
 }
-// Resuming calibraiton games
+
+// Resuming calibration games
 function resumeGames() {
   if (!gamesPaused) return;
   gamesPaused = false;
@@ -1242,6 +1324,8 @@ function resumeGames() {
     currentGameResolver = null;
   }
 }
+
+// Keep the old pause/resume buttons functional
 if (pauseBtn) pauseBtn.addEventListener("click", pauseGames);
 if (resumeBtn) resumeBtn.addEventListener("click", resumeGames);
 
