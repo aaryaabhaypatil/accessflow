@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fontWeight: "bold",
         background: "linear-gradient(135deg, #3E3F29, #5a5b3d)",
         color: "#fff",
-        // border: "3px solid gold",
+        border: "3px solid gold",
         borderRadius: "15px",
         cursor: "pointer",
         boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
@@ -411,6 +411,36 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     return new Promise(async (resolve) => {
+      // Get existing score display from HTML
+      let scoreDisplay = document.getElementById("birdScoreDisplay");
+      if (!scoreDisplay) {
+        // Fallback: create if doesn't exist
+        scoreDisplay = document.createElement("div");
+        scoreDisplay.id = "birdScoreDisplay";
+        Object.assign(scoreDisplay.style, {
+          position: "fixed",
+          top: "20px",
+          left: "30px",
+          fontSize: "32px",
+          fontWeight: "bold",
+          color: "gold",
+          textShadow: "0 0 10px rgba(255,215,0,0.8), 0 2px 5px rgba(0,0,0,0.5)",
+          zIndex: "9999999",
+          background: "rgba(0,0,0,0.8)",
+          padding: "15px 25px",
+          borderRadius: "15px",
+          border: "3px solid gold",
+          pointerEvents: "none"
+        });
+        document.body.appendChild(scoreDisplay);
+      }
+      
+      // Show and initialize
+      scoreDisplay.style.display = "block";
+      let score = 0;
+      scoreDisplay.textContent = `Score: ${score}`;
+      console.log("Bird game score display shown");
+
       let birdContainer = document.getElementById("birdContainer");
       if (!birdContainer) {
         birdContainer = document.createElement("div");
@@ -489,6 +519,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (index >= points.length) {
           birdContainer.style.display = "none";
           console.log("Collected gaze coordinates:", gameGazeLog);
+          scoreDisplay.style.display = "none";
           resolve();
           return;
         }
@@ -552,6 +583,11 @@ document.addEventListener("DOMContentLoaded", function () {
               if (pulseT < 1) {
                 requestAnimationFrame(pulse);
               } else {
+                // Increment score
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                console.log("Bird score updated:", score);
+                
                 index++;
                 await moveToNextPoint();
               }
@@ -572,6 +608,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function runTargetGame() {
     return new Promise(async (resolve) => {
+      // Get existing score display
+      let scoreDisplay = document.getElementById("targetScoreDisplay");
+      if (!scoreDisplay) {
+        scoreDisplay = document.createElement("div");
+        scoreDisplay.id = "targetScoreDisplay";
+        Object.assign(scoreDisplay.style, {
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          fontSize: "32px",
+          fontWeight: "bold",
+          color: "gold",
+          textShadow: "0 0 10px rgba(255,215,0,0.8), 0 2px 5px rgba(0,0,0,0.5)",
+          zIndex: "9999999",
+          background: "rgba(0,0,0,0.8)",
+          padding: "15px 25px",
+          borderRadius: "15px",
+          border: "3px solid gold",
+          pointerEvents: "none"
+        });
+        document.body.appendChild(scoreDisplay);
+      }
+
+      scoreDisplay.style.display = "block";
+      let score = 0;
+      scoreDisplay.textContent = `Score: ${score}`;
+      console.log("Target game score display shown");
+
       targetDot.style.display = "block";
       let moves = 0;
       const baseScale = 0.7; 
@@ -672,6 +736,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (moves >= totalPoints) {
           targetDot.style.display = "none";
+          scoreDisplay.style.display = "none";
           resolve();
           return;
         }
@@ -711,6 +776,10 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(async () => {
           renderExplosion();
           setTimeout(async () => {
+            // Increment score
+            score++;
+            scoreDisplay.textContent = `Score: ${score}`;
+            
             moves++;
             if (moves < totalPoints) renderTarget(totalPoints - moves);
             await move();
@@ -726,6 +795,34 @@ document.addEventListener("DOMContentLoaded", function () {
   const gemGazeLog = [];
   function runGemGame() {
     return new Promise((resolve) => {
+      // Get existing score display
+      let scoreDisplay = document.getElementById("gemScoreDisplay");
+      if (!scoreDisplay) {
+        scoreDisplay = document.createElement("div");
+        scoreDisplay.id = "gemScoreDisplay";
+        Object.assign(scoreDisplay.style, {
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          fontSize: "32px",
+          fontWeight: "bold",
+          color: "gold",
+          textShadow: "0 0 10px rgba(255,215,0,0.8), 0 2px 5px rgba(0,0,0,0.5)",
+          zIndex: "999999",
+          background: "rgba(0,0,0,0.6)",
+          padding: "15px 25px",
+          borderRadius: "15px",
+          border: "2px solid gold",
+          pointerEvents: "none"
+        });
+        document.body.appendChild(scoreDisplay);
+      }
+
+      scoreDisplay.style.display = "block";
+      let score = 0;
+      scoreDisplay.textContent = `Score: ${score}`;
+      console.log("Gem game score display shown");
+
       let caveOverlay = document.createElement("div");
       Object.assign(caveOverlay.style, {
         position: "fixed",
@@ -794,6 +891,7 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(() => {
               achievement.style.opacity = "0";
               achievement.style.transform = "translate(-50%, -50%) scale(0.5)";
+              scoreDisplay.style.display = "none";
               done();
             }, 1500);
             return;
@@ -833,6 +931,11 @@ document.addEventListener("DOMContentLoaded", function () {
             gemDot.textContent = "✨";
             setTimeout(async () => {
               gemDot.textContent = "💎";
+              
+              // Increment score
+              score++;
+              scoreDisplay.textContent = `Score: ${score}`;
+              
               moves++;
               await move();
             }, 500);
@@ -842,7 +945,9 @@ document.addEventListener("DOMContentLoaded", function () {
         await move();
       }
 
-      startGemGame(resolve);
+      startGemGame(() => {
+        resolve();
+      });
     });
   }
 

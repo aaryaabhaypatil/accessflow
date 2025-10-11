@@ -1018,3 +1018,14 @@ body, html {
 .explode {
   animation: explode 0.5s ease-out forwards;
 }
+
+
+#birdScoreDisplay, #targetScoreDisplay, #gemScoreDisplay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  color: white;
+  z-index: 999999;
+}
+
