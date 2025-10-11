@@ -116,23 +116,15 @@ document.addEventListener("DOMContentLoaded", function () {
         fontSize: "24px",
         fontWeight: "bold",
         background: "#3E3F29",
-        color: "white",
-        border: "3px solid gold",
+
+        color: "#ffffffff",
+        // border: "3px solid gold",
         borderRadius: "12px",
         cursor: "pointer",
         boxShadow: "0 4px 15px rgba(0,0,0,0.5)",
-        transition: "all 0.3s ease"
+        // transition: "all 0.3s ease"
       });
       startOverlay.appendChild(startButton);
-
-      startButton.addEventListener("mouseenter", () => {
-        startButton.style.transform = "scale(1.1)";
-        startButton.style.background = "#4E4F39";
-      });
-      startButton.addEventListener("mouseleave", () => {
-        startButton.style.transform = "scale(1)";
-        startButton.style.background = "#3E3F29";
-      });
 
       startButton.addEventListener("click", () => {
         if (startOverlay.parentNode) startOverlay.remove();
@@ -1247,13 +1239,13 @@ async function startGames() {
   if (blurOverlay) blurOverlay.classList.add("active");
 
   // Run all three games in sequence with start buttons before each
-  await showStartButton("🦅 Bird Game - Follow the Bird");
+  await showStartButton("Bird Game");
   await runWithPause(runBirdGame);
   
-  await showStartButton("🎯 Target Game - Hit the Targets");
+  await showStartButton("Target Game");
   await runWithPause(runTargetGame);
   
-  await showStartButton("💎 Gem Game - Collect the Gems");
+  await showStartButton("Gem Game");
   await runWithPause(runGemGame);
 
   finishGames();
@@ -1261,10 +1253,6 @@ async function startGames() {
 
   showGazeDots(); 
 }
-
-
-
-
 
 
 function finishGames() {
