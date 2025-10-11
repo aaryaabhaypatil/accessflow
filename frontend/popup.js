@@ -12,14 +12,11 @@ const removeWebgazerDebug = () => {
 const interval = setInterval(removeWebgazerDebug, 100);
 setTimeout(() => clearInterval(interval), 5000);
 
-
 window.onload = () => {
   webgazer.setRegression('ridge')
     .setTracker('clmtrackr')
     .begin();
 };
-
-
 
 window.alert = (msg) => {
   if (typeof msg === "string" && msg.includes("WebGazer works only over https")) {
@@ -27,39 +24,27 @@ window.alert = (msg) => {
   }
   console.log("Alert suppressed:", msg);
 };
-document.addEventListener("DOMContentLoaded", function () {
 
-  // To open up the setting
+document.addEventListener("DOMContentLoaded", function () {
   const openPopupBtn = document.getElementById("openPopupBtn");
   const popupOverlay = document.getElementById("popupOverlay");
-  // Closing the settings
   const closeBtn = document.getElementById("closeBtn");
-  // Visual feedback after saving preferences
   const feedbackBox = document.getElementById("feedbackBox");
-  // Blurring background for calibration and preferences feedback
   const blurOverlay = document.getElementById("blurOverlay");
-  // For calibration games
   const calibrateBtn = document.getElementById("calibrateBtn");
-  // For training data calibration
   const toggle = document.querySelector(".toggle-switch-popup");
-  // Pausing calibration
   const pauseBtn = document.getElementById("pauseCalibrationBtn");
-  //Resume calibration
   const resumeBtn = document.getElementById("resumeCalibrationBtn");
 
   console.log("Screen size:", window.screen.width, window.screen.height);
   console.log("Viewport size:", window.innerWidth, window.innerHeight);
 
-  // tracking calibration
   let calibrationInProgress = false;
-  // for target game
   let currentCalibrationPoint = null;
 
-  // Storing gaze data during claibration games
-  let gameGazeLog = []
+  // UNIFIED: Single array to store ALL gaze data from all games
+  let allGamesGazeLog = [];
 
-
-  // Enhanced function to show intro screen with story and play button
   function showGameIntro(gameName, storyLines, gameIconEmoji) {
     return new Promise((resolve) => {
       let introOverlay = document.createElement("div");
@@ -80,10 +65,8 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       document.body.appendChild(introOverlay);
       
-      // Fade in
       setTimeout(() => introOverlay.style.opacity = "1", 10);
 
-      // Game icon
       let gameIcon = document.createElement("div");
       gameIcon.textContent = gameIconEmoji;
       Object.assign(gameIcon.style, {
@@ -93,7 +76,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       introOverlay.appendChild(gameIcon);
 
-      // Add pulse animation
       if (!document.getElementById("pulseAnimation")) {
         const style = document.createElement("style");
         style.id = "pulseAnimation";
@@ -116,7 +98,6 @@ document.addEventListener("DOMContentLoaded", function () {
         document.head.appendChild(style);
       }
 
-      // Game title
       let gameTitle = document.createElement("div");
       gameTitle.textContent = gameName;
       Object.assign(gameTitle.style, {
@@ -129,7 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       introOverlay.appendChild(gameTitle);
 
-      // Story container - will hold all lines stacked vertically
       let storyContainer = document.createElement("div");
       Object.assign(storyContainer.style, {
         maxWidth: "800px",
@@ -143,7 +123,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       introOverlay.appendChild(storyContainer);
 
-      // Play button (initially hidden)
       let playButton = document.createElement("button");
       playButton.textContent = "▶ Play Game";
       Object.assign(playButton.style, {
@@ -173,11 +152,9 @@ document.addEventListener("DOMContentLoaded", function () {
         playButton.style.boxShadow = "0 6px 20px rgba(0,0,0,0.5)";
       });
 
-      // Function to add story lines one by one
       let currentLine = 0;
       function showNextStoryLine() {
         if (currentLine < storyLines.length) {
-          // Create a new line element
           let lineElement = document.createElement("div");
           lineElement.textContent = storyLines[currentLine];
           Object.assign(lineElement.style, {
@@ -192,7 +169,6 @@ document.addEventListener("DOMContentLoaded", function () {
           currentLine++;
           setTimeout(showNextStoryLine, 3000);
         } else {
-          // All story lines shown, show play button
           setTimeout(() => {
             playButton.style.opacity = "1";
             playButton.style.transform = "scale(1)";
@@ -201,7 +177,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
 
-      // Start story sequence after brief delay
       setTimeout(showNextStoryLine, 1000);
 
       playButton.addEventListener("click", () => {
@@ -214,8 +189,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
-  // Canvas for drawing gaze path
   const pathCanvas = document.createElement("canvas");
   pathCanvas.id = "gazePathCanvas";
   pathCanvas.style.position = "fixed";
@@ -247,8 +220,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-
-
   function waitForVideoReady(timeout = 5000) {
     return new Promise((resolve, reject) => {
       const start = Date.now();
@@ -266,15 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
-
-
-  // Start camera as soon as the extension is on
   initGazeTracking();
 
-
-
-  // Calibration dot as emojis for the games
   function createDot(id, emoji) {
     let dot = document.getElementById(id);
     if (!dot) {
@@ -295,8 +259,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const targetDot = createDot("targetDot", "🎯");
   const gemDot = createDot("gemDot", "💎");
 
-
-  // To track users gaze during gamified calibration
   const gazeDot = document.createElement("div");
   gazeDot.id = "gazeDot";
   gazeDot.style.position = "fixed";
@@ -330,21 +292,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
   function mapGazeToScreen(gaze, video) {
     if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
       return { x: 0, y: 0 };
     }
 
-    // Flip X if video is mirrored
     const rawX = video.mirror ? video.videoWidth - gaze.x : gaze.x;
     const rawY = gaze.y;
-
-    // Scale to actual displayed video size
     const scaleX = video.clientWidth / video.videoWidth;
     const scaleY = video.clientHeight / video.videoHeight;
-
-    // Get video element position on page
     const rect = video.getBoundingClientRect();
 
     return {
@@ -411,10 +367,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     return new Promise(async (resolve) => {
-      // Get existing score display from HTML
       let scoreDisplay = document.getElementById("birdScoreDisplay");
       if (!scoreDisplay) {
-        // Fallback: create if doesn't exist
         scoreDisplay = document.createElement("div");
         scoreDisplay.id = "birdScoreDisplay";
         Object.assign(scoreDisplay.style, {
@@ -435,10 +389,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.body.appendChild(scoreDisplay);
       }
       
-      // Show and initialize
       scoreDisplay.style.display = "block";
       let score = 0;
-      scoreDisplay.textContent = `Score: ${score}`;
+      scoreDisplay.textContent = `🦅 Score: ${score}`;
       console.log("Bird game score display shown");
 
       let birdContainer = document.getElementById("birdContainer");
@@ -511,14 +464,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       async function moveToNextPoint() {
-        // Check pause before moving
         while (gamesPaused) {
           await new Promise(resume => currentGameResolver = resume);
         }
 
         if (index >= points.length) {
           birdContainer.style.display = "none";
-          console.log("Collected gaze coordinates:", gameGazeLog);
           scoreDisplay.style.display = "none";
           resolve();
           return;
@@ -559,7 +510,7 @@ document.addEventListener("DOMContentLoaded", function () {
               game: "bird",
               pointIndex: index,
             };
-            gameGazeLog.push(gazeEntry);
+            allGamesGazeLog.push(gazeEntry);
             console.log("GazeX:", gazeEntry.gazeX, "GazeY: ",gazeEntry.gazeY, "TargetX: ", gazeEntry.targetX, "TargetY: ", gazeEntry.targetY);
           }
 
@@ -583,9 +534,8 @@ document.addEventListener("DOMContentLoaded", function () {
               if (pulseT < 1) {
                 requestAnimationFrame(pulse);
               } else {
-                // Increment score
                 score++;
-                scoreDisplay.textContent = `Score: ${score}`;
+                scoreDisplay.textContent = `🦅 Score: ${score}`;
                 console.log("Bird score updated:", score);
                 
                 index++;
@@ -603,12 +553,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
-  const targetGazeLog = []; 
-
   function runTargetGame() {
     return new Promise(async (resolve) => {
-      // Get existing score display
       let scoreDisplay = document.getElementById("targetScoreDisplay");
       if (!scoreDisplay) {
         scoreDisplay = document.createElement("div");
@@ -633,7 +579,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       scoreDisplay.style.display = "block";
       let score = 0;
-      scoreDisplay.textContent = `Score: ${score}`;
+      scoreDisplay.textContent = `🎯 Score: ${score}`;
       console.log("Target game score display shown");
 
       targetDot.style.display = "block";
@@ -766,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
             game: "target",
             moveIndex: moves
           };
-          targetGazeLog.push(gazeEntry);
+          allGamesGazeLog.push(gazeEntry);
         }
 
         setTimeout(() => {
@@ -776,9 +722,8 @@ document.addEventListener("DOMContentLoaded", function () {
         setTimeout(async () => {
           renderExplosion();
           setTimeout(async () => {
-            // Increment score
             score++;
-            scoreDisplay.textContent = `Score: ${score}`;
+            scoreDisplay.textContent = `🎯 Score: ${score}`;
             
             moves++;
             if (moves < totalPoints) renderTarget(totalPoints - moves);
@@ -791,11 +736,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-
-  const gemGazeLog = [];
   function runGemGame() {
     return new Promise((resolve) => {
-      // Get existing score display
       let scoreDisplay = document.getElementById("gemScoreDisplay");
       if (!scoreDisplay) {
         scoreDisplay = document.createElement("div");
@@ -820,7 +762,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       scoreDisplay.style.display = "block";
       let score = 0;
-      scoreDisplay.textContent = `Score: ${score}`;
+      scoreDisplay.textContent = `💎 Score: ${score}`;
       console.log("Gem game score display shown");
 
       let caveOverlay = document.createElement("div");
@@ -871,7 +813,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const totalMoves = 30;
         gemDot.style.display = "block";
 
-        // Fade out cave overlay gradually
         for (let i = 1; i <= 5; i++) {
           await new Promise(r => setTimeout(r, 1000));
           caveOverlay.style.opacity = String(0.9 - i * 0.15);
@@ -916,7 +857,7 @@ document.addEventListener("DOMContentLoaded", function () {
           caveEmoji.style.filter = `blur(${3 - progress * 3}px)`;
 
           if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
-            gemGazeLog.push({
+            const gazeEntry = {
               time: Date.now(),
               gazeX: window.currentGaze.x,
               gazeY: window.currentGaze.y,
@@ -924,7 +865,8 @@ document.addEventListener("DOMContentLoaded", function () {
               targetY: y,
               game: "gem",
               moveIndex: moves,
-            });
+            };
+            allGamesGazeLog.push(gazeEntry);
           }
 
           setTimeout(async () => {
@@ -932,9 +874,8 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(async () => {
               gemDot.textContent = "💎";
               
-              // Increment score
               score++;
-              scoreDisplay.textContent = `Score: ${score}`;
+              scoreDisplay.textContent = `💎 Score: ${score}`;
               
               moves++;
               await move();
@@ -950,7 +891,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
-
 
   const postCalibrationGazePath = []; 
 
@@ -1154,8 +1094,10 @@ document.addEventListener("DOMContentLoaded", function () {
             const smoothed = getSmoothedGaze({ x: mapped.x, y: mapped.y });
             window.currentGaze = smoothed;
 
-            window.dotGaze.style.left = `${smoothed.x - 10}px`;
-            window.dotGaze.style.top = `${smoothed.y - 10}px`;
+            if (window.dotGaze) {
+              window.dotGaze.style.left = `${smoothed.x - 10}px`;
+              window.dotGaze.style.top = `${smoothed.y - 10}px`;
+            }
           })
           .begin();
 
@@ -1232,7 +1174,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    // Bird Game with intro
     await showGameIntro(
       "Bird Game",
       [
@@ -1244,7 +1185,6 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     await runWithPause(runBirdGame);
 
-    // Target Game with intro
     await showGameIntro(
       "Target Game",
       [
@@ -1256,7 +1196,6 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     await runWithPause(runTargetGame);
 
-    // Gem Game with intro
     await showGameIntro(
       "Gem Game",
       [
@@ -1281,6 +1220,16 @@ document.addEventListener("DOMContentLoaded", function () {
     blurOverlay.classList.remove("active");
     if (blurOverlay) blurOverlay.style.display = "none";
     pathDrawingEnabled = true;
+
+    console.log("✅ ALL GAMES COMPLETED - Total gaze points collected:", allGamesGazeLog.length);
+    console.log("📊 Complete gaze data from all games:", allGamesGazeLog);
+    
+    try {
+      localStorage.setItem('allGamesGazeData', JSON.stringify(allGamesGazeLog));
+      console.log("💾 Gaze data saved to localStorage");
+    } catch (e) {
+      console.warn("Could not save to localStorage:", e);
+    }
 
     let popupOverlay = document.createElement("div");
     Object.assign(popupOverlay.style, {
@@ -1548,5 +1497,16 @@ document.addEventListener("DOMContentLoaded", function () {
       if (popupOverlay) popupOverlay.style.display = "none";
     }, 1000);
   }
+
+  window.getGazeData = () => {
+    console.log("📊 Total gaze points:", allGamesGazeLog.length);
+    console.log("🎮 Breakdown by game:");
+    console.log("  🦅 Bird:", allGamesGazeLog.filter(d => d.game === "bird").length);
+    console.log("  🎯 Target:", allGamesGazeLog.filter(d => d.game === "target").length);
+    console.log("  💎 Gem:", allGamesGazeLog.filter(d => d.game === "gem").length);
+    return allGamesGazeLog;
+  };
+
+  console.log("💡 Tip: Type 'window.getGazeData()' in console to view all collected gaze data");
 
 });
