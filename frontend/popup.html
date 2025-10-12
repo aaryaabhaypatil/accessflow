@@ -2,118 +2,117 @@
 <html lang="en">
 <head>
   <script src="webgazer.js"></script>
-  <!-- <script src="test.js"></script> -->
-
-
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AccessFlow Landing Page</title>
-  <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@700&family=Work+Sans:wght@300;400;700&display=swap" rel="stylesheet" />
+  <title>AccessFlow - Eye Tracking Browser Extension</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="bg-animation">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
 
-    <div id="birdScoreDisplay" style="display: none;">🦅 Score: 0</div>
-    <div id="targetScoreDisplay" style="display: none;">🎯 Score: 0</div>
-    <div id="gemScoreDisplay" style="display: none;">💎 Score: 0</div>
   <div class="container">
-    <div class="toggle-switch-popup" id="toggle-switch-popup"></div>
+    <div id="birdScoreDisplay" class="score-display">🦅 Score: 0</div>
+    <div id="targetScoreDisplay" class="score-display">🎯 Score: 0</div>
+    <div id="gemScoreDisplay" class="score-display">💎 Score: 0</div>
 
-    <div class="button open-popup" id="openPopupBtn">
-      <div>Settings</div>
-    </div>
-    
-
-    <div id="blurOverlay">
-     
-      <button id="pauseCalibrationBtn">⏸</button>
-      <button id="resumeCalibrationBtn">▶</button>
-      <div id="brightness-display">Brightness: </div>
-
-    </div>
-
-    <div class="top-section">
-      <div class="accessflow-description">
-        <span class="no-wrap">
-          <span class="accessflow-desc-light">AccessFlow is a </span>
-          <span class="accessflow-desc-bold">browser extension </span>
-          <span class="accessflow-desc-light">
-            that empowers you to navigate websites using only your eyes. Built for accessibility, it provides a hands-free browsing experience, making the web more inclusive for people with lived experience of disability.
-          </span>
-        </span>
+    <header class="header-section">
+      <div class="logo">
+        <span class="logo-icon">👁️</span>
+        AccessFlow
       </div>
-      <img class="feature-image" src="/Screenshot 2025-08-12 at 7.35.05 pm.png" alt="Feature image" />
-    </div>
+      <button class="settings-btn" id="openPopupBtn">⚙️ Settings</button>
+    </header>
 
-    <div class="background-box"></div>
-
-    <div class="key-features">
-      <span class="key-features-heading">Key Features<br/></span>
-      <ul class="key-features-list">
-        <li>Eye Gesture Navigation – Scroll, click, and explore the web with nothing but your gaze.</li>
-        <li>Customisable Gestures – Fine-tune sensitivity and actions to match your style.</li>
-        <li>Real-Time Tracking – Enjoy smooth, instant responses as your eyes lead the way.</li>
-        <li>Accessible by Design – Creating alongside people with lived experience of disability.</li>
-        <li>Privacy First – Your gaze data never leaves your browser. <b>Ever.</b></li>
-        <li>Game-Based Calibration – Kick things off with fun mini-games that get your eyes in sync.</li>
-      </ul>
-    </div>
-
-<div class="calibrate-instruction">
-  <span class="black-light">Click on&nbsp;</span>
-
-  <button class="button calibrate-small" id="calibrateBtn">Calibrate</button>
-
-  <span class="black-light instruction-text">button to get started!!</span>
-</div>
-
-
-<!-- optional preview feed -->
-<video id="webgazerVideoFeed" autoplay playsinline></video>
-
-<style>
-  #webgazerVideoFeed {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-    pointer-events: none !important;
-    position: absolute !important;
-  }
-</style>
-
-
-<canvas id="gazePathCanvas" 
-  style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 99999;"></canvas>
-
-
-  <!-- Popup Overlay -->
-  <div id="popupOverlay" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
-    <div id="popupContent">
-      <div class="header">
-        <div class="title-bar">
-          <div class="toggle-switch" id="toggleSwitch"></div>
-          <h1 id="popupTitle">AccessFlow - Eye Tracking</h1>
-          <button class="close-btn" id="closeBtn" aria-label="Close popup">&times;</button>
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1 class="hero-title">Navigate the Web with Your Eyes</h1>
+        <p class="hero-description">
+          AccessFlow is a <strong>browser extension</strong> that empowers you to navigate websites using only your eyes. Built for accessibility, it provides a hands-free browsing experience, making the web more inclusive for people with lived experience of disability.
+        </p>
+        <div class="hero-cta">
+          <button class="cta-primary" id="calibrateBtn">🎮 Start Calibration</button>
         </div>
       </div>
+      <div class="feature-visual">
+        <div class="feature-card">
+          <div class="eye-icon">👁️</div>
+          <p class="feature-text">Hands-free browsing powered by your gaze</p>
+        </div>
+      </div>
+    </section>
 
-      <canvas id="gazeCanvas"></canvas>
-      <div id="gazeDot"></div>
+    <section class="features-section">
+      <div class="section-header">
+        <h2 class="section-title">Key Features</h2>
+        <p class="section-subtitle">Everything you need for seamless eye-controlled browsing</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-icon">👀</div>
+          <h3 class="feature-item-title">Eye Gesture Navigation</h3>
+          <p class="feature-desc">Scroll, click, and explore the web with nothing but your gaze.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚙️</div>
+          <h3 class="feature-item-title">Customizable Gestures</h3>
+          <p class="feature-desc">Fine-tune sensitivity and actions to match your unique style.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">⚡</div>
+          <h3 class="feature-item-title">Real-Time Tracking</h3>
+          <p class="feature-desc">Enjoy smooth, instant responses as your eyes lead the way.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">♿</div>
+          <h3 class="feature-item-title">Accessible by Design</h3>
+          <p class="feature-desc">Created alongside people with lived experience of disability.</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🔒</div>
+          <h3 class="feature-item-title">Privacy First</h3>
+          <p class="feature-desc">Your gaze data never leaves your browser. <span class="highlight">Ever.</span></p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🎮</div>
+          <h3 class="feature-item-title">Game-Based Calibration</h3>
+          <p class="feature-desc">Kick things off with fun mini-games that get your eyes in sync.</p>
+        </div>
+      </div>
+    </section>
+  </div>
 
-      <div class="gestures-container" role="region" aria-label="Gestures settings">
-        <h3 class="gestures-title">Gestures</h3>
+  <!-- Control Panel -->
+  <div id="blurOverlay">
+    <button id="pauseCalibrationBtn" title="Pause">⏸</button>
+    <button id="resumeCalibrationBtn" title="Resume">▶</button>
+    <div id="brightness-display">Brightness: --</div>
+  </div>
 
-        <div class="gesture-container">
+  <!-- Settings Popup -->
+  <div id="popupOverlay">
+    <div id="popupContent">
+      <div class="title-bar">
+        <div class="toggle-switch" id="toggleSwitch"></div>
+        <h1>AccessFlow - Eye Tracking</h1>
+        <button class="close-btn" id="closeBtn">&times;</button>
+      </div>
+
+      <div class="popup-body">
+        <div class="gestures-container">
+          <h3 class="gestures-title">Gestures</h3>
+
           <div class="gesture-row">
             <div class="gesture-column">
               <label for="scrollLeftSelect" class="gesture-label">Scroll Left</label>
               <select id="scrollLeftSelect" class="gesture-select">
                 <option value="">Choose an action</option>
                 <option value="pageLeft">Look Left</option>
-                <option value="contentLeft">Fixate anywhere on Left Edge</option>
-
+                <option value="contentLeft">Fixate on Left Edge</option>
               </select>
             </div>
 
@@ -121,33 +120,30 @@
               <label for="scrollRightSelect" class="gesture-label">Scroll Right</label>
               <select id="scrollRightSelect" class="gesture-select">
                 <option value="">Choose an action</option>
-                <option value="pageRight">Look Left + Triple Blink</option>
-                <option value="contentRight">Fixate anywhere on Right Edge</option>
-
+                <option value="pageRight">Look Right</option>
+                <option value="contentRight">Fixate on Right Edge</option>
               </select>
             </div>
           </div>
 
           <div class="gesture-row">
             <div class="gesture-column">
-              <label for="scrollDownSelect" class="gesture-label">Scroll Down</label>
-              <select id="scrollDownSelect" class="gesture-select">
-                <option value="">Choose an action</option>
-                <option value="pageDown">Look Down + Triple Blink</option>
-                <option value="contentDown">Fixate on Bottom Edge</option>
-                <option value="windowDown">Counterclockwise Eye Circle</option>
-                <option value="holdGazeDown">Raise Eyebrows + Hold (4s)</option>
-              </select>
-            </div>
-
-            <div class="gesture-column">
               <label for="scrollUpSelect" class="gesture-label">Scroll Up</label>
               <select id="scrollUpSelect" class="gesture-select">
                 <option value="">Choose an action</option>
                 <option value="pageUp">Look Up + Triple Blink</option>
                 <option value="contentUp">Fixate on Top Edge</option>
-                <option value="windowUp">Small Clockwise Eye Circle</option>
-                <option value="holdGazeUp">Raise Eyebrows + Hold Gaze (4s)</option>
+                <option value="windowUp">Clockwise Eye Circle</option>
+              </select>
+            </div>
+
+            <div class="gesture-column">
+              <label for="scrollDownSelect" class="gesture-label">Scroll Down</label>
+              <select id="scrollDownSelect" class="gesture-select">
+                <option value="">Choose an action</option>
+                <option value="pageDown">Look Down + Triple Blink</option>
+                <option value="contentDown">Fixate on Bottom Edge</option>
+                <option value="windowDown">Counter-clockwise Circle</option>
               </select>
             </div>
           </div>
@@ -160,86 +156,54 @@
                 <option value="fixate3">Fixate for 3 seconds</option>
                 <option value="fixate5">Fixate for 5 seconds</option>
                 <option value="fixate7">Fixate for 7 seconds</option>
-                <option value="fixate10">Fixate for 10 seconds</option>
               </select>
             </div>
             <div class="gesture-column"></div>
           </div>
         </div>
-      </div>
 
-      <div class="gestures-container" role="region" aria-label="Customize settings">
-        
-        <h3 class="customise-title">Customise</h3>
-      
-        <div class="gesture-row">
-          <div class="gesture-column">
-            <label for="customActionSelect" class="gesture-label">Action</label>
-            <select id="customActionSelect" class="gesture-select">
-              <option value="">Select Item</option>
-              <option value="option1">Option 1</option>
-              <option value="option2">Option 2</option>
-              <option value="option3">Option 3</option>
-            </select>
+        <div class="gestures-container">
+          <h3 class="gestures-title">Customise</h3>
+
+          <div class="gesture-row">
+            <div class="gesture-column">
+              <label for="customActionSelect" class="gesture-label">Action</label>
+              <select id="customActionSelect" class="gesture-select">
+                <option value="">Select Item</option>
+                <option value="option1">New Tab</option>
+                <option value="option2">Close Tab</option>
+                <option value="option3">Refresh</option>
+              </select>
+            </div>
+
+            <div class="gesture-column">
+              <label for="customGestureSelect" class="gesture-label">Gesture</label>
+              <select id="customGestureSelect" class="gesture-select">
+                <option value="">Select Item</option>
+                <option value="optionA">Double Blink</option>
+                <option value="optionB">Hold Gaze</option>
+                <option value="optionC">Eye Circle</option>
+              </select>
+            </div>
           </div>
-      
-          <div class="gesture-column">
-            <label for="customGestureSelect" class="gesture-label">Gesture</label>
-            <select id="customGestureSelect" class="gesture-select">
-              <option value="">Select Item</option>
-              <option value="optionA">Option A</option>
-              <option value="optionB">Option B</option>
-              <option value="optionC">Option C</option>
-            </select>
+
+          <div style="text-align: center; margin-top: 1rem;">
+            <button id="addButton" class="btn-primary">+ Add</button>
           </div>
         </div>
-      
-        <div style="text-align:center;">
-          <button id="addButton" class="btn-primary">Add</button>
-        </div>
+
+        <button id="saveButton" class="btn-primary">💾 Save</button>
       </div>
-
-      
-      <button id="saveButton">Save</button>
-
-      <div id="popupblurOverlay" style="
-        display: none;
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.2);
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        z-index: 10900;
-      "></div>
-
-
-      <div id="feedbackBox" style="
-        display: none;
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: #3E3F29;
-        color: #F1F0E4;
-        padding: 25px 45px; /* Bigger padding for bigger box */
-        border-radius: 16px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-        font-weight: 700;
-        font-size: 1.5rem; /* Bigger text */
-        z-index: 20000;
-        text-align: center;
-        min-width: 250px; /* Increased minimum width */
-      ">
-      </div>
-
-
-      <video id="camera" autoplay muted playsinline></video>
-
     </div>
   </div>
+
+  <!-- Feedback Box -->
+  <div id="feedbackBox">✅ Preferences saved!</div>
+
+  <!-- Hidden Elements -->
+  <video id="webgazerVideoFeed" autoplay playsinline></video>
+  <canvas id="gazePathCanvas"></canvas>
+
   <script src="popup.js"></script>
-  <script src="gazeDot.js"></script>
-  <!-- <script src="calibration.js"></script> -->
-  
 </body>
 </html>
