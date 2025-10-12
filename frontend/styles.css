@@ -400,9 +400,14 @@ html, body {
   display: none;
 }
 
-#birdScoreDisplay { top: 20px; left: 20px; }
-#targetScoreDisplay, #gemScoreDisplay { top: 20px; right: 20px; }
-
+#birdScoreDisplay, #targetScoreDisplay, #gemScoreDisplay {
+  position: absolute;
+  top: 20px;
+  left: 55vw;
+  font-size: 20px;
+  color: white;
+  z-index: 999999;
+}
 /* Control Panel */
 #blurOverlay {
   display: none;
@@ -721,4 +726,41 @@ html, body {
   .feature-text {
     font-size: 1rem;
   }
+}
+
+#pauseCalibrationBtn {
+  position: absolute; 
+  top: 20px;
+  border-radius: 10px;
+  left: 42vw;
+  width: 5vw;
+  height: 4.2vh;
+  align-items: center;
+  background-color: #3E3F29;
+  color: #F1F0E4;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 2.5vh;
+  font-weight: 300;
+  line-height: 1.0;
+  word-wrap: break-word;
+}
+
+
+#resumeCalibrationBtn {
+  position: absolute; 
+  top: 20px;
+  border-radius: 10px;
+  left: 48vw;
+  width: 5vw;
+  height: 4.2vh;
+  align-items: center;
+  background-color: #3E3F29;
+  color: #F1F0E4;
+  font-family: 'Work Sans', sans-serif;
+  font-size: 2.5vh;
+  font-weight: 300;
+  line-height: 1.0;
+  word-wrap: break-word;
+
+
 }
