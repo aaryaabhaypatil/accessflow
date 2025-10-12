@@ -775,7 +775,7 @@ function runGemGame() {
         transform: "translate(-50%, -50%)",
         zIndex: "9999999",
         border: "4px solid gold",
-        boxShadow: "0 0 30px rgba(255,215,0,0.5)",
+        boxShadow: "0 0 30px rgba(255, 255, 255, 0.5)",
         borderRadius: "10px"
       });
       
@@ -856,7 +856,7 @@ function runGemGame() {
 
         // Draw the solution path first (if provided)
         if (highlightPath && highlightPath.length > 0) {
-          ctx.strokeStyle = "rgba(255, 215, 0, 0.3)";
+          ctx.strokeStyle = "rgba(77, 226, 77, 0.23)";
           ctx.lineWidth = cellSize * 0.5;
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
@@ -877,7 +877,7 @@ function runGemGame() {
         }
 
         // Draw maze walls
-        ctx.strokeStyle = "#8B4513";
+        ctx.strokeStyle = "#fdfdfdff";
         ctx.lineWidth = 3;
         ctx.shadowColor = "#654321";
         ctx.shadowBlur = 5;
@@ -911,14 +911,13 @@ function runGemGame() {
 
         ctx.shadowBlur = 0;
 
-        // Draw entrance (top-left)
-        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
+
+
         ctx.fillRect(2, 2, cellSize - 4, cellSize - 4);
         ctx.font = `${cellSize * 0.6}px Arial`;
         ctx.fillText("🚪", cellSize * 0.2, cellSize * 0.7);
 
-        // Draw exit (bottom-right)
-        ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
+
         ctx.fillRect(14 * cellSize + 2, 14 * cellSize + 2, cellSize - 4, cellSize - 4);
         ctx.font = `${cellSize * 0.6}px Arial`;
         ctx.fillText("🏆", 14 * cellSize + cellSize * 0.2, 14 * cellSize + cellSize * 0.7);
@@ -997,11 +996,11 @@ function runGemGame() {
           const screenX = canvasRect.left + point.col * cellSize + cellSize / 2;
           const screenY = canvasRect.top + point.row * cellSize + cellSize / 2;
 
-          // Center the gem perfectly on the path point
-          const gemSize = 40; // gem font size
+
+          const gemSize = 40; 
           gemDot.style.left = `${screenX}px`;
           gemDot.style.top = `${screenY}px`;
-          gemDot.style.transform = "translate(-50%, -50%)"; // Center it on the coordinates
+          gemDot.style.transform = "translate(-50%, -50%)";
 
           const progress = i / pathPoints.length;
           const glowStrength = Math.floor(10 + progress * 50);
@@ -1024,7 +1023,7 @@ function runGemGame() {
           score++;
           scoreDisplay.textContent = `💎 Score: ${score}`;
 
-          await new Promise(r => setTimeout(r, 400));
+          await new Promise(r => setTimeout(r, 800));
         }
 
         gemDot.style.display = "none";
@@ -1040,8 +1039,8 @@ function runGemGame() {
           setTimeout(() => {
             if (achievement.parentNode) achievement.remove();
             resolve();
-          }, 1000);
-        }, 2000);
+          }, 3000);
+        }, 4000);
       }
 
       animateThroughMaze();
