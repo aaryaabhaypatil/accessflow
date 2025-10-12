@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
       gameTitle.textContent = gameName;
       Object.assign(gameTitle.style, {
         fontSize: "48px",
-        color: "gold",
+        color: "white",
         fontWeight: "bold",
         marginBottom: "40px",
         textAlign: "center",
@@ -116,10 +116,16 @@ document.addEventListener("DOMContentLoaded", function () {
         padding: "0 30px",
         textAlign: "center",
         marginBottom: "50px",
-        display: "flex",
         flexDirection: "column",
         gap: "20px",
-        minHeight: "200px"
+        minHeight: "200px",
+        color: "gold",
+        fontWeight: "bold", 
+        fontSize: "1rem",
+        lineHeight: "1.4",
+        textShadow: "0 0 20px rgba(255,215,0,0.5)",
+        fontFamily: "'Poppins', sans-serif",
+        letterSpacing: "1px",
       });
       introOverlay.appendChild(storyContainer);
 
@@ -159,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
           lineElement.textContent = storyLines[currentLine];
           Object.assign(lineElement.style, {
             fontSize: "22px",
-            color: "#e0e0e0",
+            color: "gold",
             lineHeight: "1.6",
             opacity: "0",
             animation: "fadeInUp 0.8s ease forwards"
@@ -1329,15 +1335,15 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    // await showGameIntro(
-    //   "Bird Game",
-    //   [
-    //     "A gentle breeze flows through the forest…",
-    //     "A mysterious bird flutters into view.",
-    //     "Follow the bird carefully — it knows the way forward."
-    //   ],
-    //   "🦅"
-    // );
+    await showGameIntro(
+      "Bird Game",
+      [
+        "A gentle breeze flows through the forest…",
+        "A mysterious bird flutters into view.",
+        "Follow the bird carefully — it knows the way forward."
+      ],
+      "🦅"
+    );
     // await runWithPause(runBirdGame);
 
     // await showGameIntro(
