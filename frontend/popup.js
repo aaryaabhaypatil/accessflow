@@ -112,10 +112,11 @@ document.addEventListener("DOMContentLoaded", function () {
       Object.assign(storyContainer.style, {
         maxWidth: "900px",
         width: "90%",
-        padding: "60px 80px",
+        // padding: "60px 80px",
         textAlign: "center",
         marginBottom: "50px",
         display: "flex",
+        flexWrap: "wrap",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
@@ -178,9 +179,17 @@ document.addEventListener("DOMContentLoaded", function () {
           let lineElement = document.createElement("div");
           lineElement.textContent = storyLines[currentLine];
           Object.assign(lineElement.style, {
-            fontSize: "22px",
-            color: "#F1F0E4",
-            lineHeight: "1.6",
+            fontSize: "19px",
+            fontWeight: "bold",
+            color: "#000000ff",
+            lineHeight: "1", 
+            whiteSpace: "normal",      // ✅ allows text to wrap
+            wordWrap: "break-word",    // ✅ breaks long words if needed
+            overflowWrap: "break-word",// ✅ ensures wrapping in all browsers
+            textAlign: "center",       // optional — keeps it nicely aligned
+            maxWidth: "100%",           // ensures it fits within container
+            display: "block",             // ✅ ensures it's treated like a paragraph
+            width: "100%",      
             opacity: "0",
             animation: "fadeInUp 0.8s ease forwards"
           });
@@ -1375,7 +1384,7 @@ function runGemGame() {
       [
         "A quiet mist rolls in as the ground begins to shift…",
         "Walls rise around you, forming a twisting maze.",
-        "Use your gaze to find the path — only focus will lead you out."
+        "Use your gaze — only focus will lead you out."
       ],
       "🌀"
     );
