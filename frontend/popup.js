@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
         left: "0",
         width: "100%",
         height: "100%",
-        background: "linear-gradient(135deg, rgba(20,20,40,0.95), rgba(40,30,20,0.95))",
+        background: "#00000011",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -391,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       scoreDisplay.style.display = "block";
       let score = 0;
-      scoreDisplay.textContent = `🦅 Score: ${score}`;
+      scoreDisplay.textContent = `Score: ${score}`;
       console.log("Bird game score display shown");
 
       let birdContainer = document.getElementById("birdContainer");
@@ -535,7 +535,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 requestAnimationFrame(pulse);
               } else {
                 score++;
-                scoreDisplay.textContent = `🦅 Score: ${score}`;
+                scoreDisplay.textContent = `Score: ${score}`;
                 console.log("Bird score updated:", score);
                 
                 index++;
@@ -579,7 +579,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       scoreDisplay.style.display = "block";
       let score = 0;
-      scoreDisplay.textContent = `🎯 Score: ${score}`;
+      scoreDisplay.textContent = `Score: ${score}`;
       console.log("Target game score display shown");
 
       targetDot.style.display = "block";
@@ -723,7 +723,7 @@ document.addEventListener("DOMContentLoaded", function () {
           renderExplosion();
           setTimeout(async () => {
             score++;
-            scoreDisplay.textContent = `🎯 Score: ${score}`;
+            scoreDisplay.textContent = `Score: ${score}`;
             
             moves++;
             if (moves < totalPoints) renderTarget(totalPoints - moves);
@@ -762,7 +762,7 @@ function runGemGame() {
 
       scoreDisplay.style.display = "block";
       let score = 0;
-      scoreDisplay.textContent = `💎 Score: ${score}`;
+      scoreDisplay.textContent = `Score: ${score}`;
       console.log("Gem game score display shown");
 
       // Create maze canvas
@@ -1021,7 +1021,7 @@ function runGemGame() {
           }
 
           score++;
-          scoreDisplay.textContent = `💎 Score: ${score}`;
+          scoreDisplay.textContent = `Score: ${score}`;
 
           await new Promise(r => setTimeout(r, 800));
         }
