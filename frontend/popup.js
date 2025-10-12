@@ -127,22 +127,26 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       introOverlay.appendChild(storyContainer);
 
-      let playButton = document.createElement("button");
-      playButton.textContent = "▶ Play Game";
-      Object.assign(playButton.style, {
-        padding: "18px 50px",
-        fontSize: "26px",
-        fontWeight: "bold",
-        background: "#7D8D86",
-        color: "#000000ff",
+      const arcadeFont = document.createElement("link");
+      arcadeFont.href = "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap";
+      arcadeFont.rel = "stylesheet";
+      document.head.appendChild(arcadeFont);
 
-        borderRadius: "15px",
+      let playButton = document.createElement("button");
+      playButton.textContent = "PLAY";
+      Object.assign(playButton.style, {
+        padding: "20px 60px",
+        fontSize: "20px",
+        fontFamily: "'Press Start 2P', cursive",
+        fontWeight: "bold",
+        letterSpacing: "2px",
+        background: "#7D8D86",
+        color: "#000",
         cursor: "pointer",
-        boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
         transition: "all 0.3s ease",
         opacity: "0",
         transform: "scale(0.8)",
-        pointerEvents: "none"
+        pointerEvents: "none",
       });
       introOverlay.appendChild(playButton);
 
