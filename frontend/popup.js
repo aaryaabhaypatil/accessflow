@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
         flexDirection: "column",
         gap: "20px",
         minHeight: "200px",
-        color: "gold",
+        color: "#F1F0E4",
         fontWeight: "bold", 
         fontSize: "1rem",
         lineHeight: "1.4",
@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
           lineElement.textContent = storyLines[currentLine];
           Object.assign(lineElement.style, {
             fontSize: "22px",
-            color: "gold",
+            color: "#F1F0E4",
             lineHeight: "1.6",
             opacity: "0",
             animation: "fadeInUp 0.8s ease forwards"
