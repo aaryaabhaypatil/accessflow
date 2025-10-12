@@ -110,22 +110,34 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let storyContainer = document.createElement("div");
       Object.assign(storyContainer.style, {
-        maxWidth: "800px",
-        padding: "0 30px",
+        maxWidth: "900px",
+        width: "90%",
+        padding: "60px 80px",
         textAlign: "center",
         marginBottom: "50px",
+        display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
         gap: "20px",
-        minHeight: "200px",
-        color: "#F1F0E4",
-        fontWeight: "bold", 
-        fontSize: "1rem",
-        lineHeight: "1.4",
-        textShadow: "0 0 20px rgba(255,215,0,0.5)",
+        minHeight: "300px",
+        color: "#2C1810",
+        fontWeight: "600", 
+        fontSize: "1.1rem",
+        lineHeight: "1.6",
+        textShadow: "0 1px 2px rgba(255,255,255,0.3)",
         fontFamily: "'Poppins', sans-serif",
-        letterSpacing: "1px",
+        letterSpacing: "0.5px",
+        backgroundImage: "url('scroll-6.jpeg')",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        backgroundColor: "transparent",
+        position: "relative"
       });
       introOverlay.appendChild(storyContainer);
+
+
 
       const arcadeFont = document.createElement("link");
       arcadeFont.href = "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap";
