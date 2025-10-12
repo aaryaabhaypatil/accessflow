@@ -1329,37 +1329,37 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    // await showGameIntro(
-    //   "Bird Game",
-    //   [
-    //     "A gentle breeze flows through the forest…",
-    //     "A mysterious bird flutters into view.",
-    //     "Follow the bird carefully — it knows the way forward."
-    //   ],
-    //   "🦅"
-    // );
-    // await runWithPause(runBirdGame);
+    await showGameIntro(
+      "Bird Game",
+      [
+        "A gentle breeze flows through the forest…",
+        "A mysterious bird flutters into view.",
+        "Follow the bird carefully — it knows the way forward."
+      ],
+      "🦅"
+    );
+    await runWithPause(runBirdGame);
 
-    // await showGameIntro(
-    //   "Target Game",
-    //   [
-    //     "The bird vanishes into the shadows…",
-    //     "Targets suddenly appear around you.",
-    //     "Strike carefully — your focus guides the way."
-    //   ],
-    //   "🎯"
-    // );
-    // await runWithPause(runTargetGame);
+    await showGameIntro(
+      "Target Game",
+      [
+        "The bird vanishes into the shadows…",
+        "Targets suddenly appear around you.",
+        "Strike carefully — your focus guides the way."
+      ],
+      "🎯"
+    );
+    await runWithPause(runTargetGame);
 
-    // await showGameIntro(
-    //   "Gem Game",
-    //   [
-    //     "Well done! You've unlocked a hidden cave…",
-    //     "Gems glimmer faintly in the darkness.",
-    //     "Keep your eyes on them to reveal the treasure."
-    //   ],
-    //   "💎"
-    // );
+    await showGameIntro(
+      "Gem Game",
+      [
+        "Well done! You've unlocked a hidden cave…",
+        "Gems glimmer faintly in the darkness.",
+        "Keep your eyes on them to reveal the treasure."
+      ],
+      "💎"
+    );
     await runWithPause(runGemGame);
 
     finishGames();
@@ -1419,7 +1419,7 @@ function runGemGame() {
     popupOverlay.appendChild(popupBox);
 
     let message = document.createElement("div");
-    message.textContent = "Calibration complete! The red dot now shows your real-time gaze with path.";
+    message.textContent = "Calibration complete! The Blue dot now shows your real-time gaze with path.";
     popupBox.appendChild(message);
 
     let closeButton = document.createElement("button");
