@@ -332,6 +332,11 @@ html, body {
   overflow: hidden;
 }
 
+.feature-image {
+    max-width: 100%; /* will shrink image if container is smaller */
+    height: auto;
+}
+
 .feature-item::before {
   content: '';
   position: absolute;
