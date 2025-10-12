@@ -153,7 +153,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fontFamily: "'Press Start 2P', cursive",
         fontWeight: "bold",
         letterSpacing: "2px",
-        background: "#7D8D86",
+        background: "#BCA88D",
         color: "#000",
         cursor: "pointer",
         transition: "all 0.3s ease",
