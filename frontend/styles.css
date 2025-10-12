@@ -388,7 +388,8 @@ html, body {
 .score-display {
   position: fixed;
   padding: 1rem 1.5rem;
-  border-radius: 15px;
+  left: 1500px;
+  /* border-radius: 15px; */
   font-size: 1.5rem;
   font-weight: 700;
   background: #BCA88D;
@@ -403,9 +404,10 @@ html, body {
 #birdScoreDisplay, #targetScoreDisplay, #gemScoreDisplay {
   position: absolute;
   top: 20px;
-  left: 55vw;
+
+  width: 10vw;
   font-size: 20px;
-  color: white;
+  color: rgb(0, 0, 0);
   z-index: 999999;
 }
 /* Control Panel */
@@ -413,7 +415,7 @@ html, body {
   display: none;
   position: fixed;
   inset: 0;
-  background: #3E3F29;
+  background: #000000;
   backdrop-filter: none; 
   -webkit-backdrop-filter: none; 
   z-index: 10900;
@@ -429,7 +431,9 @@ html, body {
 #blurOverlay button {
   width: 160px;
   height: 60px;
-  border-radius: 15px;
+  /* border-radius: 15px; */
+  top: 30px;
+  left: 775px;
   font-weight: bold;
   background: #BCA88D;
   border: none;
@@ -730,8 +734,8 @@ html, body {
 }
 #togglePauseBtn{
     position: absolute; 
-    top: 20px;
-    border-radius: 10px;
+    top: 30px;
+    /* border-radius: 10px; */
     left: 42vw;
     width: 10vw;
     height: 4.2vh;
@@ -739,7 +743,7 @@ html, body {
     background-color: #3E3F29;
     color: #F1F0E4;
     font-family: 'Work Sans', sans-serif;
-    font-size: 2.5vh;
+    font-size: 2vh;
     font-weight: 300;
     line-height: 1.0;
     word-wrap: break-word;

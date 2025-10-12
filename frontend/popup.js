@@ -780,9 +780,9 @@ function runGemGame() {
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: "9999999",
-        border: "2px solid gold",
-        boxShadow: "0 0 30px rgba(255, 255, 255, 0.5)",
-        borderRadius: "10px"
+        // border: "2px solid gold",
+        // boxShadow: "0 0 30px rgba(255, 255, 255, 0.5)",
+        // borderRadius: "10px"
       });
       
       const mazeSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 900);
@@ -862,7 +862,7 @@ function runGemGame() {
 
         // Draw the solution path first (if provided)
         if (highlightPath && highlightPath.length > 0) {
-          ctx.strokeStyle = "rgba(77, 226, 77, 0.23)";
+          ctx.strokeStyle = "#bca88d8a";
           ctx.lineWidth = cellSize * 0.5;
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
