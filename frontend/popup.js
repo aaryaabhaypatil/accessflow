@@ -770,16 +770,16 @@ function runGemGame() {
       mazeCanvas.id = "mazeCanvas";
       Object.assign(mazeCanvas.style, {
         position: "fixed",
-        top: "53%",
+        top: "55%",
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: "9999999",
-        border: "4px solid gold",
+        border: "2px solid gold",
         boxShadow: "0 0 30px rgba(255, 255, 255, 0.5)",
         borderRadius: "10px"
       });
       
-      const mazeSize = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9, 900);
+      const mazeSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 900);
       mazeCanvas.width = mazeSize;
       mazeCanvas.height = mazeSize;
       document.body.appendChild(mazeCanvas);
@@ -1329,27 +1329,27 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    await showGameIntro(
-      "Bird Game",
-      [
-        "A gentle breeze flows through the forest…",
-        "A mysterious bird flutters into view.",
-        "Follow the bird carefully — it knows the way forward."
-      ],
-      "🦅"
-    );
-    await runWithPause(runBirdGame);
+    // await showGameIntro(
+    //   "Bird Game",
+    //   [
+    //     "A gentle breeze flows through the forest…",
+    //     "A mysterious bird flutters into view.",
+    //     "Follow the bird carefully — it knows the way forward."
+    //   ],
+    //   "🦅"
+    // );
+    // await runWithPause(runBirdGame);
 
-    await showGameIntro(
-      "Target Game",
-      [
-        "The bird vanishes into the shadows…",
-        "Targets suddenly appear around you.",
-        "Strike carefully — your focus guides the way."
-      ],
-      "🎯"
-    );
-    await runWithPause(runTargetGame);
+    // await showGameIntro(
+    //   "Target Game",
+    //   [
+    //     "The bird vanishes into the shadows…",
+    //     "Targets suddenly appear around you.",
+    //     "Strike carefully — your focus guides the way."
+    //   ],
+    //   "🎯"
+    // );
+    // await runWithPause(runTargetGame);
 
     await showGameIntro(
       "Gem Game",
