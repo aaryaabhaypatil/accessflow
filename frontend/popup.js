@@ -33,8 +33,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const blurOverlay = document.getElementById("blurOverlay");
   const calibrateBtn = document.getElementById("calibrateBtn");
   const toggle = document.querySelector(".toggle-switch-popup");
-  const pauseBtn = document.getElementById("pauseCalibrationBtn");
-  const resumeBtn = document.getElementById("resumeCalibrationBtn");
+  // const pauseBtn = document.getElementById("pauseCalibrationBtn");
+  // const resumeBtn = document.getElementById("resumeCalibrationBtn");
 
   console.log("Screen size:", window.screen.width, window.screen.height);
   console.log("Viewport size:", window.innerWidth, window.innerHeight);
@@ -1335,15 +1335,15 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    await showGameIntro(
-      "Bird Game",
-      [
-        "A gentle breeze flows through the forest…",
-        "A mysterious bird flutters into view.",
-        "Follow the bird carefully — it knows the way forward."
-      ],
-      "🦅"
-    );
+    // await showGameIntro(
+    //   "Bird Game",
+    //   [
+    //     "A gentle breeze flows through the forest…",
+    //     "A mysterious bird flutters into view.",
+    //     "Follow the bird carefully — it knows the way forward."
+    //   ],
+    //   "🦅"
+    // );
     // await runWithPause(runBirdGame);
 
     // await showGameIntro(
@@ -1357,15 +1357,15 @@ function runGemGame() {
     // );
     // await runWithPause(runTargetGame);
 
-    await showGameIntro(
-      "Gem Game",
-      [
-        "Well done! You've unlocked a hidden cave…",
-        "Gems glimmer faintly in the darkness.",
-        "Keep your eyes on them to reveal the treasure."
-      ],
-      "💎"
-    );
+    // await showGameIntro(
+    //   "Gem Game",
+    //   [
+    //     "Well done! You've unlocked a hidden cave…",
+    //     "Gems glimmer faintly in the darkness.",
+    //     "Keep your eyes on them to reveal the treasure."
+    //   ],
+    //   "💎"
+    // );
     await runWithPause(runGemGame);
 
     finishGames();
@@ -1456,8 +1456,8 @@ function runGemGame() {
     });
   }
 
-  let gamesPaused = false;
-  let currentGameResolver = null;
+  // let gamesPaused = false;
+  // let currentGameResolver = null;
 
   function pauseGames() {
     gamesPaused = true;
@@ -1475,8 +1475,26 @@ function runGemGame() {
     }
   }
 
-  if (pauseBtn) pauseBtn.addEventListener("click", pauseGames);
-  if (resumeBtn) resumeBtn.addEventListener("click", resumeGames);
+  const togglePauseBtn = document.getElementById("togglePauseBtn");
+
+  let gamesPaused = false;
+  let currentGameResolver = null;
+
+  function togglePause() {
+    if (gamesPaused) {
+      resumeGames();
+      togglePauseBtn.textContent = "Pause";
+      togglePauseBtn.title = "Pause";
+    } else {
+      pauseGames();
+      togglePauseBtn.textContent = "Resume";
+      togglePauseBtn.title = "Resume";
+    }
+  }
+  if (togglePauseBtn) togglePauseBtn.addEventListener("click", togglePause);
+
+  // if (pauseBtn) pauseBtn.addEventListener("click", pauseGames);
+  // if (resumeBtn) resumeBtn.addEventListener("click", resumeGames);
 
   async function runWithPause(gameFn) {
     while (gamesPaused) {

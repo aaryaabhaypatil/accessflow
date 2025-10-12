@@ -391,7 +391,7 @@ html, body {
   border-radius: 15px;
   font-size: 1.5rem;
   font-weight: 700;
-  background: rgba(62, 63, 41, 0.9);
+  background: #BCA88D;
   backdrop-filter: blur(10px);
   color: #F1F0E4;
   border: 1px solid rgba(62, 63, 41, 0.2);
@@ -427,12 +427,13 @@ html, body {
 }
 
 #blurOverlay button {
-  width: 60px;
+  width: 160px;
   height: 60px;
   border-radius: 15px;
+  font-weight: bold;
   background: #BCA88D;
   border: none;
-  color: #F1F0E4;
+  color: #000000;
   font-size: 1.5rem;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -726,6 +727,22 @@ html, body {
   .feature-text {
     font-size: 1rem;
   }
+}
+#togglePauseBtn{
+    position: absolute; 
+    top: 20px;
+    border-radius: 10px;
+    left: 42vw;
+    width: 10vw;
+    height: 4.2vh;
+    align-items: center;
+    background-color: #3E3F29;
+    color: #F1F0E4;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 2.5vh;
+    font-weight: 300;
+    line-height: 1.0;
+    word-wrap: break-word;
 }
 
 #pauseCalibrationBtn {
