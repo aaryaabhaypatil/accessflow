@@ -735,6 +735,7 @@ html, body {
 #togglePauseBtn{
     position: absolute; 
     top: 30px;
+    display: none;
     /* border-radius: 10px; */
     left: 42vw;
     width: 10vw;

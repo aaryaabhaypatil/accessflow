@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const blurOverlay = document.getElementById("blurOverlay");
   const calibrateBtn = document.getElementById("calibrateBtn");
   const toggle = document.querySelector(".toggle-switch-popup");
-  // const pauseBtn = document.getElementById("pauseCalibrationBtn");
-  // const resumeBtn = document.getElementById("resumeCalibrationBtn");
 
   console.log("Screen size:", window.screen.width, window.screen.height);
   console.log("Viewport size:", window.innerWidth, window.innerHeight);
@@ -135,9 +133,9 @@ document.addEventListener("DOMContentLoaded", function () {
         padding: "18px 50px",
         fontSize: "26px",
         fontWeight: "bold",
-        background: "linear-gradient(135deg, #3E3F29, #5a5b3d)",
-        color: "#fff",
-        border: "3px solid gold",
+        background: "#7D8D86",
+        color: "#000000ff",
+
         borderRadius: "15px",
         cursor: "pointer",
         boxShadow: "0 6px 20px rgba(0,0,0,0.5)",
@@ -186,6 +184,12 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(showNextStoryLine, 1000);
 
       playButton.addEventListener("click", () => {
+        // Show the pause button when Play Game is clicked
+        const togglePauseBtn = document.getElementById("togglePauseBtn");
+        if (togglePauseBtn) {
+          togglePauseBtn.style.display = "block";
+        }
+        
         introOverlay.style.opacity = "0";
         setTimeout(() => {
           if (introOverlay.parentNode) introOverlay.remove();
@@ -780,9 +784,6 @@ function runGemGame() {
         left: "50%",
         transform: "translate(-50%, -50%)",
         zIndex: "9999999",
-        // border: "2px solid gold",
-        // boxShadow: "0 0 30px rgba(255, 255, 255, 0.5)",
-        // borderRadius: "10px"
       });
       
       const mazeSize = Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8, 900);
@@ -917,12 +918,9 @@ function runGemGame() {
 
         ctx.shadowBlur = 0;
 
-
-
         ctx.fillRect(2, 2, cellSize - 4, cellSize - 4);
         ctx.font = `${cellSize * 0.6}px Arial`;
         ctx.fillText("🚪", cellSize * 0.2, cellSize * 0.7);
-
 
         ctx.fillRect(14 * cellSize + 2, 14 * cellSize + 2, cellSize - 4, cellSize - 4);
         ctx.font = `${cellSize * 0.6}px Arial`;
@@ -1001,7 +999,6 @@ function runGemGame() {
           const point = pathPoints[i];
           const screenX = canvasRect.left + point.col * cellSize + cellSize / 2;
           const screenY = canvasRect.top + point.row * cellSize + cellSize / 2;
-
 
           const gemSize = 40; 
           gemDot.style.left = `${screenX}px`;
@@ -1335,37 +1332,37 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    // await showGameIntro(
-    //   "Bird Game",
-    //   [
-    //     "A gentle breeze flows through the forest…",
-    //     "A mysterious bird flutters into view.",
-    //     "Follow the bird carefully — it knows the way forward."
-    //   ],
-    //   "🦅"
-    // );
-    // await runWithPause(runBirdGame);
+    await showGameIntro(
+      "Bird Game",
+      [
+        "A gentle breeze flows through the forest…",
+        "A mysterious bird flutters into view.",
+        "Follow the bird carefully — it knows the way forward."
+      ],
+      "🦅"
+    );
+    await runWithPause(runBirdGame);
 
-    // await showGameIntro(
-    //   "Target Game",
-    //   [
-    //     "The bird vanishes into the shadows…",
-    //     "Targets suddenly appear around you.",
-    //     "Strike carefully — your focus guides the way."
-    //   ],
-    //   "🎯"
-    // );
-    // await runWithPause(runTargetGame);
+    await showGameIntro(
+      "Target Game",
+      [
+        "The bird vanishes into the shadows…",
+        "Targets suddenly appear around you.",
+        "Strike carefully — your focus guides the way."
+      ],
+      "🎯"
+    );
+    await runWithPause(runTargetGame);
 
-    // await showGameIntro(
-    //   "Gem Game",
-    //   [
-    //     "Well done! You've unlocked a hidden cave…",
-    //     "Gems glimmer faintly in the darkness.",
-    //     "Keep your eyes on them to reveal the treasure."
-    //   ],
-    //   "💎"
-    // );
+    await showGameIntro(
+      "Maze Game",
+      [
+        "A quiet mist rolls in as the ground begins to shift…",
+        "Walls rise around you, forming a twisting maze.",
+        "Use your gaze to find the path — only focus will lead you out."
+      ],
+      "🌀"
+    );
     await runWithPause(runGemGame);
 
     finishGames();
@@ -1380,6 +1377,11 @@ function runGemGame() {
     gemDot.style.display = "none";
     blurOverlay.classList.remove("active");
     if (blurOverlay) blurOverlay.style.display = "none";
+    
+    // Hide the pause button when calibration is complete
+    const togglePauseBtn = document.getElementById("togglePauseBtn");
+    if (togglePauseBtn) togglePauseBtn.style.display = "none";
+    
     pathDrawingEnabled = true;
 
     console.log("✅ ALL GAMES COMPLETED - Total gaze points collected:", allGamesGazeLog.length);
@@ -1456,8 +1458,9 @@ function runGemGame() {
     });
   }
 
-  // let gamesPaused = false;
-  // let currentGameResolver = null;
+  // Declare variables for pause/resume functionality
+  let gamesPaused = false;
+  let currentGameResolver = null;
 
   function pauseGames() {
     gamesPaused = true;
@@ -1475,26 +1478,29 @@ function runGemGame() {
     }
   }
 
-  const togglePauseBtn = document.getElementById("togglePauseBtn");
-
-  let gamesPaused = false;
-  let currentGameResolver = null;
-
   function togglePause() {
+    const togglePauseBtn = document.getElementById("togglePauseBtn");
     if (gamesPaused) {
       resumeGames();
-      togglePauseBtn.textContent = "Pause";
-      togglePauseBtn.title = "Pause";
+      if (togglePauseBtn) {
+        togglePauseBtn.textContent = "Pause";
+        togglePauseBtn.title = "Pause";
+      }
     } else {
       pauseGames();
-      togglePauseBtn.textContent = "Resume";
-      togglePauseBtn.title = "Resume";
+      if (togglePauseBtn) {
+        togglePauseBtn.textContent = "Resume";
+        togglePauseBtn.title = "Resume";
+      }
     }
   }
-  if (togglePauseBtn) togglePauseBtn.addEventListener("click", togglePause);
 
-  // if (pauseBtn) pauseBtn.addEventListener("click", pauseGames);
-  // if (resumeBtn) resumeBtn.addEventListener("click", resumeGames);
+  // Set up the toggle button
+  const togglePauseBtn = document.getElementById("togglePauseBtn");
+  if (togglePauseBtn) {
+    togglePauseBtn.style.display = "none"; // Hide initially
+    togglePauseBtn.addEventListener("click", togglePause); // Add event listener
+  }
 
   async function runWithPause(gameFn) {
     while (gamesPaused) {
