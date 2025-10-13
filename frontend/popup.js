@@ -1389,7 +1389,7 @@ function runGemGame() {
         "Walls rise around you, forming a twisting maze.",
         "Use your gaze — only focus will lead you out."
       ],
-      "🌀"
+       `₪`
     );
     await runWithPause(runGemGame);
 

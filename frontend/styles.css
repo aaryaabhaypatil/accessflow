@@ -415,7 +415,7 @@ html, body {
   z-index: 999999;
   width: auto;
 }
-/* Control Panel */
+
 #blurOverlay {
   display: none;
   position: fixed;
