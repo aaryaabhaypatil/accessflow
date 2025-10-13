@@ -1360,16 +1360,16 @@ function runGemGame() {
 
     if (blurOverlay) blurOverlay.classList.add("active");
 
-    // await showGameIntro(
-    //   "Bird Game",
-    //   [
-    //     "A gentle breeze flows through the forest…",
-    //     "A mysterious bird flutters into view.",
-    //     "Follow the bird carefully — it knows the way forward."
-    //   ],
-    //   "🦅"
-    // );
-    // await runWithPause(runBirdGame);
+    await showGameIntro(
+      "Bird Game",
+      [
+        "A gentle breeze flows through the forest…",
+        "A mysterious bird flutters into view.",
+        "Follow the bird carefully — it knows the way forward."
+      ],
+      "🦅"
+    );
+    await runWithPause(runBirdGame);
 
     await showGameIntro(
       "Target Game",
