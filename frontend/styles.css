@@ -393,7 +393,7 @@ html, body {
   /* border-radius: 15px; */
   font-size: 1.5rem;
   font-weight: 700;
-  background: #bca88d5d;
+  /* background: #bca88d5d; */
   backdrop-filter: blur(10px);
   color: #F1F0E4;
   border: 1px solid rgba(62, 63, 41, 0.2);
@@ -405,10 +405,10 @@ html, body {
 #birdScoreDisplay, #targetScoreDisplay, #gemScoreDisplay {
   position: absolute;
   top: 20px;
-
+  font-weight: bold;
   width: 10vw;
-  font-size: 20px;
-  color: rgb(0, 0, 0);
+  font-size: 2rem;
+  color: #F1F0E4;
   z-index: 999999;
 }
 /* Control Panel */
