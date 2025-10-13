@@ -1508,13 +1508,13 @@ function runGemGame() {
     if (gamesPaused) {
       resumeGames();
       if (togglePauseBtn) {
-        togglePauseBtn.textContent = "Pause";
+        togglePauseBtn.innerHTML = "⏸ Pause";
         togglePauseBtn.title = "Pause";
       }
     } else {
       pauseGames();
       if (togglePauseBtn) {
-        togglePauseBtn.textContent = "Resume";
+        togglePauseBtn.innerHTML = "▶ Resume";
         togglePauseBtn.title = "Resume";
       }
     }
