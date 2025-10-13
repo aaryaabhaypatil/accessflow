@@ -388,11 +388,11 @@ html, body {
 .score-display {
   position: fixed;
   padding: 1rem 1.5rem;
-  left: 1500px;
+  left: 42vw;
   /* border-radius: 15px; */
   font-size: 1.5rem;
   font-weight: 700;
-  background: #BCA88D;
+  background: #bca88d5d;
   backdrop-filter: blur(10px);
   color: #F1F0E4;
   border: 1px solid rgba(62, 63, 41, 0.2);
@@ -433,7 +433,7 @@ html, body {
   height: 60px;
   /* border-radius: 15px; */
   top: 30px;
-  left: 775px;
+  left: 90px;
   font-weight: bold;
   background: #BCA88D;
   border: none;
@@ -453,6 +453,8 @@ html, body {
   color: rgba(62, 63, 41, 0.9);
   font-size: 1rem;
   margin-left: 1rem;
+  left:1500px;
+  position: relative;
 }
 
 /* Settings Popup */
@@ -737,7 +739,7 @@ html, body {
     top: 30px;
     display: none;
     /* border-radius: 10px; */
-    left: 42vw;
+    left: 90px;
     width: 10vw;
     height: 4.2vh;
     align-items: center;
