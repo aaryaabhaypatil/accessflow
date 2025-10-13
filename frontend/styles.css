@@ -400,16 +400,20 @@ html, body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   z-index: 9999999;
   display: none;
+  white-space: nowrap; /* ✅ Prevents line break */
+  width: auto;         /* ✅ Allow the box to fit the content */
+  text-align: center;  /* Optional, if you want it centered inside */
 }
 
 #birdScoreDisplay, #targetScoreDisplay, #gemScoreDisplay {
-  position: absolute;
+
   top: 20px;
   font-weight: bold;
   width: 10vw;
   font-size: 2rem;
   color: #F1F0E4;
   z-index: 999999;
+  width: auto;
 }
 /* Control Panel */
 #blurOverlay {
