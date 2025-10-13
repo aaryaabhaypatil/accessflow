@@ -388,6 +388,7 @@ html, body {
 .score-display {
   position: fixed;
   padding: 1rem 1.5rem;
+  font-family: "'Press Start 2P', cursive";
   left: 42vw;
   /* border-radius: 15px; */
   font-size: 1.5rem;

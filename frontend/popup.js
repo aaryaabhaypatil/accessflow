@@ -209,10 +209,13 @@ document.addEventListener("DOMContentLoaded", function () {
       setTimeout(showNextStoryLine, 1000);
 
       playButton.addEventListener("click", () => {
-        // Show the pause button when Play Game is clicked
+
         const togglePauseBtn = document.getElementById("togglePauseBtn");
         if (togglePauseBtn) {
           togglePauseBtn.style.display = "block";
+          togglePauseBtn.innerHTML = "⏸";
+          togglePauseBtn.title = "Pause";
+          console.log("✅ Pause button shown");
         }
         
         introOverlay.style.opacity = "0";
@@ -1405,7 +1408,18 @@ function runGemGame() {
     
     // Hide the pause button when calibration is complete
     const togglePauseBtn = document.getElementById("togglePauseBtn");
-    if (togglePauseBtn) togglePauseBtn.style.display = "none";
+    if (togglePauseBtn) {
+      togglePauseBtn.style.display = "none";
+      togglePauseBtn.innerHTML = "⏸";
+      togglePauseBtn.title = "Pause";
+      
+      // Remove old listeners by cloning
+      const newBtn = togglePauseBtn.cloneNode(true);
+      togglePauseBtn.parentNode.replaceChild(newBtn, togglePauseBtn);
+      newBtn.addEventListener("click", togglePause);
+      
+      console.log("✅ Pause button initialized");
+    }
     
     pathDrawingEnabled = true;
 
@@ -1505,6 +1519,11 @@ function runGemGame() {
 
   function togglePause() {
     const togglePauseBtn = document.getElementById("togglePauseBtn");
+
+    if (!togglePauseBtn) {
+      console.error("❌ Pause button not found!");
+      return;
+    }
     if (gamesPaused) {
       resumeGames();
       if (togglePauseBtn) {
@@ -1524,7 +1543,10 @@ function runGemGame() {
   const togglePauseBtn = document.getElementById("togglePauseBtn");
   if (togglePauseBtn) {
     togglePauseBtn.style.display = "none"; // Hide initially
+    togglePauseBtn.innerHTML = "⏸"; // Set initial icon
+    togglePauseBtn.title = "Pause"; // Set initial tooltip
     togglePauseBtn.addEventListener("click", togglePause); // Add event listener
+
   }
 
   async function runWithPause(gameFn) {
