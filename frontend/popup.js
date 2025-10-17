@@ -538,19 +538,19 @@ document.addEventListener("DOMContentLoaded", function () {
           birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
           if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-            const mappedGaze = mapGazeToScreen(window.currentGaze, window.videoElement); 
-            const gazeEntry = {
-              time: Date.now(),
-              gazeX: mappedGaze.x,
-              gazeY: mappedGaze.y,
-              targetX: currentX,
-              targetY: currentY,
-              game: "bird",
-              pointIndex: index,
-            };
-            allGamesGazeLog.push(gazeEntry);
-            console.log("GazeX:", gazeEntry.gazeX, "GazeY: ",gazeEntry.gazeY, "TargetX: ", gazeEntry.targetX, "TargetY: ", gazeEntry.targetY);
-          }
+              const gazeEntry = {
+                time: Date.now(),
+                gazeX: window.currentGaze.x,
+                gazeY: window.currentGaze.y,
+                targetX: currentX,
+                targetY: currentY,
+                game: "bird",
+                pointIndex: index,
+              };
+              allGamesGazeLog.push(gazeEntry);
+              // Uncomment for debugging:
+              console.log("Bird - Gaze:", gazeEntry.gazeX, gazeEntry.gazeY, "Target:", currentX, currentY);
+            }
 
           if (t < 1) {
             requestAnimationFrame(animate);
@@ -740,7 +740,7 @@ document.addEventListener("DOMContentLoaded", function () {
         targetDot.style.transform = `scale(${baseScale})`;
         targetDot.style.transition = "transform 0.3s ease-out";
 
-        if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
           const gazeEntry = {
             time: Date.now(),
             gazeX: window.currentGaze.x,
@@ -751,6 +751,8 @@ document.addEventListener("DOMContentLoaded", function () {
             moveIndex: moves
           };
           allGamesGazeLog.push(gazeEntry);
+          console.log(`🎯 TARGET GAME - Gaze: (${Math.round(gazeEntry.gazeX)}, ${Math.round(gazeEntry.gazeY)}) | Target: (${Math.round(x)}, ${Math.round(y)})`);
+
         }
 
         setTimeout(() => {
@@ -1037,7 +1039,7 @@ function runGemGame() {
           const glowStrength = Math.floor(10 + progress * 50);
           gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
 
-          if (window.currentGaze && window.currentGaze.x !== null && window.currentGaze.y !== null) {
+          if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
             const gazeEntry = {
               time: Date.now(),
               gazeX: window.currentGaze.x,
@@ -1049,6 +1051,8 @@ function runGemGame() {
               mazeProgress: progress
             };
             allGamesGazeLog.push(gazeEntry);
+            console.log(`💎 GEM GAME - Gaze: (${Math.round(gazeEntry.gazeX)}, ${Math.round(gazeEntry.gazeY)}) | Target: (${Math.round(screenX)}, ${Math.round(screenY)}) | Progress: ${(progress * 100).toFixed(0)}%`);
+
           }
 
           score++;
@@ -1215,92 +1219,71 @@ function runGemGame() {
     setInterval(tryHide, 100); 
   }
 
-  async function startGazeTracker() {
+async function startGazeTracker() {
+  try {
+    console.log("Starting gaze tracker...");
+
     try {
-      console.log("Starting gaze tracker...");
+      // Let WebGazer handle getting the video stream itself
+      await webgazer
+        .setRegression("ridge")
+        .setTracker("clmtrackr")
+        .showPredictionPoints(false)
+        .showVideo(false)  // Hide WebGazer's video display
+        .showFaceOverlay(false)
+        .showFaceFeedbackBox(false)
+        .setGazeListener((data) => {
+          if (!data) return;
 
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      const video = document.createElement("video");
-      window.videoElement = video;
-      video.srcObject = stream;
-      video.autoplay = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.style.display = "none";
-      document.body.appendChild(video);
-
-      await new Promise((resolve) => {
-        video.onloadeddata = () => {
-          video.play();
-          resolve();
-        };
-      });
-
-      await new Promise((resolve) => {
-        function checkVideoReady() {
-          if (video.readyState >= 3 && video.videoWidth > 0 && video.videoHeight > 0) {
-            console.log("Video is ready!", video.videoWidth, video.videoHeight);
-            resolve();
-          } else {
-            requestAnimationFrame(checkVideoReady);
+          if (!isFinite(data.x) || !isFinite(data.y)) {
+            return;
           }
-        }
-        checkVideoReady();
-      });
 
-      function debugWebGazerDot() {
-        const allDots = document.querySelectorAll("[id*='webgazer'], [class*='webgazer']");
-        console.log("Found WebGazer elements:", allDots);
+          // WebGazer returns screen coordinates directly
+          const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+          
+          window.currentGaze = smoothed;
 
-        allDots.forEach((el, i) => {
-          console.log(`Element ${i}:`, el, "display:", getComputedStyle(el).display);
-        });
-      }
+          if (window.dotGaze) {
+            window.dotGaze.style.left = `${smoothed.x - 10}px`;
+            window.dotGaze.style.top = `${smoothed.y - 10}px`;
+            window.dotGaze.style.display = "none";  // Keep it hidden during calibration
+          }
+        })
+        .begin();
 
+      console.log("✅ WebGazer initialized successfully");
+
+      // Wait a moment for WebGazer to start tracking
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Hide any WebGazer UI elements
       function hideAllWebgazerElements() {
         const elements = document.querySelectorAll("[id*='webgazer'], [class*='webgazer']");
         elements.forEach(el => {
-          if (el.id !== 'webgazerGazeDot') {
-            el.style.display = "none";
-            el.style.opacity = "0";
-            el.style.visibility = "hidden";
-          }
+          el.style.display = "none";
+          el.style.opacity = "0";
+          el.style.visibility = "hidden";
+          el.style.pointerEvents = "none";
         });
       }
 
-      try {
-        await webgazer
-          .setRegression("ridge")
-          .setTracker("TFFacemesh")
-          .showPredictionPoints(false)
-          .setGazeListener((data) => {
-            if (!data || !isFinite(data.x) || !isFinite(data.y)) return;
+      hideAllWebgazerElements();
+      setInterval(hideAllWebgazerElements, 100);
 
-            const mapped = mapGazeToScreen(data, video);
-            const smoothed = getSmoothedGaze({ x: mapped.x, y: mapped.y });
-            window.currentGaze = smoothed;
-
-            if (window.dotGaze) {
-              window.dotGaze.style.left = `${smoothed.x - 10}px`;
-              window.dotGaze.style.top = `${smoothed.y - 10}px`;
-            }
-          })
-          .begin();
-
-        debugWebGazerDot();
-        setInterval(hideAllWebgazerElements, 100);
-
-        console.log("WebGazer started ✅");
-        startBrightnessLoop(video);
-      } catch (err) {
-        console.error("WebGazer failed to start:", err);
-        startBrightnessLoop(video);
-      }
+      console.log("✅ WebGazer started successfully");
 
     } catch (err) {
-      console.error("❌ Failed to start gaze tracker:", err);
+      console.error("❌ WebGazer failed to start:", err);
     }
+
+  } catch (err) {
+    console.error("❌ Failed to start gaze tracker:", err);
+    alert("Camera access failed. Please allow camera permissions and try again.");
   }
+}
+
+console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element =", window.videoElement);
 
   function startBrightnessLoop(video) {
     const brightnessDisplay = document.getElementById("brightness-display");
