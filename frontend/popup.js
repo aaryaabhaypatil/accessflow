@@ -1398,7 +1398,7 @@ function runGemGame() {
     showGazeDots(); 
   }
 
-  function finishGames() {
+  async function finishGames() {
     calibrationInProgress = false;
     birdDot.style.display = "none";
     targetDot.style.display = "none";
@@ -1426,9 +1426,18 @@ function runGemGame() {
     console.log("✅ ALL GAMES COMPLETED - Total gaze points collected:", allGamesGazeLog.length);
     console.log("📊 Complete gaze data from all games:", allGamesGazeLog);
     
+    const dataSent = await sendGazeDataToBackend(allGamesGazeLog);
+    
+    if (dataSent) {
+      console.log("✅ Gaze data sent to backend successfully");
+    } else {
+      console.warn("⚠️ Could not send gaze data to backend, but calibration is complete");
+    }
+
+    // Also save locally as backup
     try {
       localStorage.setItem('allGamesGazeData', JSON.stringify(allGamesGazeLog));
-      console.log("💾 Gaze data saved to localStorage");
+      console.log("💾 Gaze data backed up to localStorage");
     } catch (e) {
       console.warn("Could not save to localStorage:", e);
     }
@@ -1636,6 +1645,39 @@ function runGemGame() {
     });
   }
 
+  async function sendGazeDataToBackend(gazeData) {
+    try {
+      const payload = {
+        timestamp: new Date().toISOString(),
+        totalPoints: gazeData.length,
+        gameBreakdown: {
+          bird: gazeData.filter(d => d.game === "bird").length,
+          target: gazeData.filter(d => d.game === "target").length,
+          gem: gazeData.filter(d => d.game === "gem").length
+        },
+        gazePoints: gazeData
+      };
+
+      const response = await fetch('http://localhost:3000/save-gaze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        console.log("✅ Gaze data successfully sent to backend");
+        return true;
+      } else {
+        console.error("❌ Failed to send gaze data. Status:", response.status);
+        return false;
+      }
+    } catch (err) {
+      console.error("❌ Error sending gaze data to backend:", err);
+      return false;
+    }
+  }
   if (closeBtn && popupOverlay) {
     closeBtn.addEventListener("click", () => popupOverlay.style.display = "none");
 
