@@ -42,6 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // UNIFIED: Single array to store ALL gaze data from all games
   let allGamesGazeLog = [];
+  window.currentGaze = { x: 0, y: 0 };
 
   function showGameIntro(gameName, storyLines, gameIconEmoji) {
     return new Promise((resolve) => {
@@ -275,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  initGazeTracking();
+  // initGazeTracking();
 
   function createDot(id, emoji) {
     let dot = document.getElementById(id);
@@ -1084,101 +1085,105 @@ function runGemGame() {
 
   const postCalibrationGazePath = []; 
 
-  function startPostCalibrationGazeTracing() {
-    const canvas = document.createElement("canvas");
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    canvas.style.position = "fixed";
-    canvas.style.left = "0";
-    canvas.style.top = "0";
-    canvas.style.zIndex = "99998";
-    canvas.style.pointerEvents = "none";
-    document.body.appendChild(canvas);
+function startPostCalibrationGazeTracing() {
+  console.log("🔍 POST-CALIBRATION GAZE TRACING STARTING");
+  console.log("Current gaze value:", window.currentGaze);
+  
+  const canvas = document.createElement("canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.position = "fixed";
+  canvas.style.left = "0";
+  canvas.style.top = "0";
+  canvas.style.zIndex = "99998";
+  canvas.style.pointerEvents = "none";
+  document.body.appendChild(canvas);
 
-    const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d");
 
-    let dot = document.getElementById("webgazerGazeDot");
-    if (!dot) {
-      dot = document.createElement("div");
-      dot.id = "webgazerGazeDot";
-      dot.style.position = "fixed";
-      dot.style.width = "12px";
-      dot.style.height = "12px";
-      dot.style.background = "red";
-      dot.style.borderRadius = "50%";
-      dot.style.zIndex = "99999";
-      dot.style.pointerEvents = "none";
-      dot.style.left = "50%";
-      dot.style.top = "50%";
-      document.body.appendChild(dot);
-      console.log("✅ Gaze dot created");
-    }
-
-    const gazeHistory = [];
-    const SMOOTHING_WINDOW = 5;
-    const trail = [];
-    const TRAIL_LIFETIME = 5000; 
-
-    function getSmoothedGaze(newPoint) {
-      if (!newPoint || newPoint.x == null || newPoint.y == null) return null;
-      gazeHistory.push(newPoint);
-      if (gazeHistory.length > SMOOTHING_WINDOW) gazeHistory.shift();
-
-      const avg = gazeHistory.reduce(
-        (acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }),
-        { x: 0, y: 0 }
-      );
-      return {
-        x: avg.x / gazeHistory.length,
-        y: avg.y / gazeHistory.length
-      };
-    }
-
-    webgazer.setGazeListener((data) => {
-      if (!data) return;
-
-      const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
-      if (!smoothed) return;
-
-      dot.style.left = smoothed.x - dot.offsetWidth / 2 + "px";
-      dot.style.top = smoothed.y - dot.offsetHeight / 2 + "px";
-
-      trail.push({ x: smoothed.x, y: smoothed.y, time: Date.now() });
-    });
-
-    function drawTrail() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const now = Date.now();
-      const alivePoints = trail.filter(p => now - p.time < TRAIL_LIFETIME);
-
-      if (alivePoints.length > 1) {
-        ctx.beginPath();
-        ctx.moveTo(alivePoints[0].x, alivePoints[0].y);
-        for (let i = 1; i < alivePoints.length; i++) {
-          ctx.lineTo(alivePoints[i].x, alivePoints[i].y);
-        }
-        ctx.strokeStyle = "rgba(0, 0, 255, 0.5)"; 
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-
-      if (alivePoints.length > 0) {
-        const last = alivePoints[alivePoints.length - 1];
-        ctx.beginPath();
-        ctx.arc(last.x, last.y, 8, 0, 2 * Math.PI);
-        ctx.fillStyle = "blue"; 
-        ctx.fill();
-      }
-
-      trail.length = 0;
-      trail.push(...alivePoints);
-
-      requestAnimationFrame(drawTrail);
-    }
-
-    drawTrail();
+  let dot = document.getElementById("webgazerGazeDot");
+  if (!dot) {
+    dot = document.createElement("div");
+    dot.id = "webgazerGazeDot";
+    dot.style.position = "fixed";
+    dot.style.width = "12px";
+    dot.style.height = "12px";
+    dot.style.background = "blue";
+    dot.style.borderRadius = "50%";
+    dot.style.zIndex = "99999";
+    dot.style.pointerEvents = "none";
+    dot.style.left = "50%";
+    dot.style.top = "50%";
+    document.body.appendChild(dot);
+    console.log("✅ Blue gaze dot created");
   }
+
+  const trail = [];
+  const TRAIL_LIFETIME = 5000;
+  let frameCount = 0;
+
+  function drawTrail() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const now = Date.now();
+    const alivePoints = trail.filter(p => now - p.time < TRAIL_LIFETIME);
+
+    if (alivePoints.length > 1) {
+      ctx.beginPath();
+      ctx.moveTo(alivePoints[0].x, alivePoints[0].y);
+      for (let i = 1; i < alivePoints.length; i++) {
+        ctx.lineTo(alivePoints[i].x, alivePoints[i].y);
+      }
+      ctx.strokeStyle = "rgba(0, 0, 255, 0.5)"; 
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    if (alivePoints.length > 0) {
+      const last = alivePoints[alivePoints.length - 1];
+      ctx.beginPath();
+      ctx.arc(last.x, last.y, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = "blue"; 
+      ctx.fill();
+    }
+
+    trail.length = 0;
+    trail.push(...alivePoints);
+
+    requestAnimationFrame(drawTrail);
+  }
+
+  function updateGazeDot() {
+    frameCount++;
+    
+    // Debug every 30 frames (roughly every second at 60fps)
+    if (frameCount % 30 === 0) {
+      console.log("Frame", frameCount, "- window.currentGaze:", window.currentGaze);
+    }
+
+    if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+      dot.style.left = window.currentGaze.x - dot.offsetWidth / 2 + "px";
+      dot.style.top = window.currentGaze.y - dot.offsetHeight / 2 + "px";
+      dot.style.opacity = "1";
+      dot.style.display = "block";
+
+      trail.push({ 
+        x: window.currentGaze.x, 
+        y: window.currentGaze.y, 
+        time: Date.now() 
+      });
+    } else {
+      dot.style.opacity = "0.3"; // Make it semi-visible if gaze is 0,0
+    }
+    
+    requestAnimationFrame(updateGazeDot);
+  }
+
+  drawTrail();
+  updateGazeDot();
+  
+  console.log("✅ Post-calibration gaze tracing started");
+}
 
   const gazeHistory = [];
   const SMOOTHING_WINDOW = 5; 
@@ -1354,30 +1359,32 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     );
     await runWithPause(runBirdGame);
 
-    // await showGameIntro(
-    //   "Target Game",
-    //   [
-    //     "The bird vanishes into the shadows…",
-    //     "Targets suddenly appear around you.",
-    //     "Strike carefully — your focus guides the way."
-    //   ],
-    //   "⌖"
-    // );
-    // await runWithPause(runTargetGame);
+    await showGameIntro(
+      "Target Game",
+      [
+        "The bird vanishes into the shadows…",
+        "Targets suddenly appear around you.",
+        "Strike carefully — your focus guides the way."
+      ],
+      "⌖"
+    );
+    await runWithPause(runTargetGame);
 
-    // await showGameIntro(
-    //   "Maze Game",
-    //   [
-    //     "A quiet mist rolls in as the ground begins to shift…",
-    //     "Walls rise around you, forming a twisting maze.",
-    //     "Use your gaze — only focus will lead you out."
-    //   ],
-    //    `₪`
-    // );
-    // await runWithPause(runGemGame);
+    await showGameIntro(
+      "Maze Game",
+      [
+        "A quiet mist rolls in as the ground begins to shift…",
+        "Walls rise around you, forming a twisting maze.",
+        "Use your gaze — only focus will lead you out."
+      ],
+       `₪`
+    );
+    await runWithPause(runGemGame);
 
     await finishGames();
+    console.log("📍 About to start post-calibration tracing. Current gaze:", window.currentGaze);
     startPostCalibrationGazeTracing();
+    console.log("📍 Post-calibration tracing should now be running. Current gaze:", window.currentGaze);
     showGazeDots(); 
   }
 
@@ -1575,7 +1582,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
       window.dotGaze = dotGaze;
     }
 
-    window.currentGaze = { x: 0, y: 0 };
+    
 
     await webgazer
       .setRegression("ridge")
