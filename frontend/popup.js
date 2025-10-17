@@ -1371,29 +1371,29 @@ function runGemGame() {
     );
     await runWithPause(runBirdGame);
 
-    await showGameIntro(
-      "Target Game",
-      [
-        "The bird vanishes into the shadows…",
-        "Targets suddenly appear around you.",
-        "Strike carefully — your focus guides the way."
-      ],
-      "⌖"
-    );
-    await runWithPause(runTargetGame);
+    // await showGameIntro(
+    //   "Target Game",
+    //   [
+    //     "The bird vanishes into the shadows…",
+    //     "Targets suddenly appear around you.",
+    //     "Strike carefully — your focus guides the way."
+    //   ],
+    //   "⌖"
+    // );
+    // await runWithPause(runTargetGame);
 
-    await showGameIntro(
-      "Maze Game",
-      [
-        "A quiet mist rolls in as the ground begins to shift…",
-        "Walls rise around you, forming a twisting maze.",
-        "Use your gaze — only focus will lead you out."
-      ],
-       `₪`
-    );
-    await runWithPause(runGemGame);
+    // await showGameIntro(
+    //   "Maze Game",
+    //   [
+    //     "A quiet mist rolls in as the ground begins to shift…",
+    //     "Walls rise around you, forming a twisting maze.",
+    //     "Use your gaze — only focus will lead you out."
+    //   ],
+    //    `₪`
+    // );
+    // await runWithPause(runGemGame);
 
-    finishGames();
+    await finishGames();
     startPostCalibrationGazeTracing();
     showGazeDots(); 
   }
