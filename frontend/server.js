@@ -11,7 +11,7 @@ app.use(cors());
 app.post('/save-gaze', (req, res) => {
   try {
     // Append the JSON data as a new line
-    fs.appendFileSync("received_data.json", JSON.stringify(req.body) + "\n");  
+    fs.appendFileSync("frontend/received_data.json", JSON.stringify(req.body) + "\n");  
     console.log("✅ Received data:", req.body);
     res.sendStatus(200);
   } catch (err) {
