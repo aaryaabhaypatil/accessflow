@@ -139,44 +139,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Add this function to map raw gaze to screen coordinates using calibration:
 function mapGazeWithCalibration(rawGaze) {
-    if (gazeCalibration.points.length < 2) {
-      // Not calibrated yet, return raw gaze
-      return rawGaze;
-    }
-
-    // Simple linear mapping using least squares regression
-    // This maps video coordinates to screen coordinates
-    let sumXY = 0, sumX = 0, sumY = 0, sumX2 = 0, sumY2 = 0;
-    const n = gazeCalibration.points.length;
-
-    gazeCalibration.points.forEach(p => {
-      sumX += p.gazeX;
-      sumY += p.gazeY;
-      sumXY += p.gazeX * p.screenX;
-      sumX2 += p.gazeX * p.gazeX;
-      sumY2 += p.gazeY * p.gazeY;
-    });
-
-    // Linear regression for X
-    const avgGazeX = sumX / n;
-    const avgScreenX = gazeCalibration.points.reduce((sum, p) => sum + p.screenX, 0) / n;
-    const slopeX = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) * (p.screenX - avgScreenX), 0) /
-                  gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) ** 2, 0);
-    const interceptX = avgScreenX - slopeX * avgGazeX;
-
-    // Linear regression for Y
-    const avgGazeY = sumY / n;
-    const avgScreenY = gazeCalibration.points.reduce((sum, p) => sum + p.screenY, 0) / n;
-    const slopeY = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) * (p.screenY - avgScreenY), 0) /
-                  gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) ** 2, 0);
-    const interceptY = avgScreenY - slopeY * avgGazeY;
-
-    // Map coordinates
-    const mappedX = Math.max(0, Math.min(window.innerWidth, slopeX * rawGaze.x + interceptX));
-    const mappedY = Math.max(0, Math.min(window.innerHeight, slopeY * rawGaze.y + interceptY));
-
-    return { x: mappedX, y: mappedY };
+  if (gazeCalibration.points.length < 2) {
+    return rawGaze; // Not calibrated yet
   }
+
+  // Simple linear regression mapping
+  const n = gazeCalibration.points.length;
+
+  // Linear regression for X
+  const avgGazeX = gazeCalibration.points.reduce((sum, p) => sum + p.gazeX, 0) / n;
+  const avgScreenX = gazeCalibration.points.reduce((sum, p) => sum + p.screenX, 0) / n;
+  const slopeX = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) * (p.screenX - avgScreenX), 0) /
+                 gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) ** 2, 0);
+  const interceptX = avgScreenX - slopeX * avgGazeX;
+
+  // Linear regression for Y
+  const avgGazeY = gazeCalibration.points.reduce((sum, p) => sum + p.gazeY, 0) / n;
+  const avgScreenY = gazeCalibration.points.reduce((sum, p) => sum + p.screenY, 0) / n;
+  const slopeY = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) * (p.screenY - avgScreenY), 0) /
+                 gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) ** 2, 0);
+  const interceptY = avgScreenY - slopeY * avgGazeY;
+
+  // Map coordinates
+  const mappedX = Math.max(0, Math.min(window.innerWidth, slopeX * rawGaze.x + interceptX));
+  const mappedY = Math.max(0, Math.min(window.innerHeight, slopeY * rawGaze.y + interceptY));
+
+  return { x: mappedX, y: mappedY };
+}
 
   function showGameIntro(gameName, storyLines, gameIconEmoji) {
     return new Promise((resolve) => {
@@ -1368,7 +1357,7 @@ async function startGazeTracker() {
         .setRegression("ridge")
         .setTracker("clmtrackr")
         .showPredictionPoints(false)
-        .showVideo(false)  // Hide WebGazer's video display
+        .showVideo(false)
         .showFaceOverlay(false)
         .showFaceFeedbackBox(false)
         .setGazeListener((data) => {
@@ -1378,25 +1367,29 @@ async function startGazeTracker() {
             return;
           }
 
-          // WebGazer returns screen coordinates directly
+          // Get smoothed raw gaze
           const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
           
-          window.currentGaze = smoothed;
+          // APPLY CALIBRATION MAPPING if calibration is complete
+          let gazeToUse = smoothed;
+          if (gazeCalibration.points.length > 0) {
+            gazeToUse = mapGazeWithCalibration(smoothed);
+          }
+          
+          window.currentGaze = gazeToUse;
 
           if (window.dotGaze) {
-            window.dotGaze.style.left = `${smoothed.x - 10}px`;
-            window.dotGaze.style.top = `${smoothed.y - 10}px`;
-            window.dotGaze.style.display = "none";  // Keep it hidden during calibration
+            window.dotGaze.style.left = `${gazeToUse.x - 10}px`;
+            window.dotGaze.style.top = `${gazeToUse.y - 10}px`;
+            window.dotGaze.style.display = "none";
           }
         })
         .begin();
 
       console.log("✅ WebGazer initialized successfully");
 
-      // Wait a moment for WebGazer to start tracking
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Hide any WebGazer UI elements
       function hideAllWebgazerElements() {
         const elements = document.querySelectorAll("[id*='webgazer'], [class*='webgazer']");
         elements.forEach(el => {
@@ -1421,6 +1414,7 @@ async function startGazeTracker() {
     alert("Camera access failed. Please allow camera permissions and try again.");
   }
 }
+
 
 console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element =", window.videoElement);
 
