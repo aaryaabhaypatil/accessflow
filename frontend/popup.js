@@ -40,9 +40,143 @@ document.addEventListener("DOMContentLoaded", function () {
   let calibrationInProgress = false;
   let currentCalibrationPoint = null;
 
+  let gazeCalibration = {
+    points: [],
+    isCalibrating: false
+  };
+
   // UNIFIED: Single array to store ALL gaze data from all games
   let allGamesGazeLog = [];
   window.currentGaze = { x: 0, y: 0 };
+
+  async function runGazeCalibration() {
+  return new Promise((resolve) => {
+    gazeCalibration.points = [];
+    gazeCalibration.isCalibrating = true;
+    
+    const calibrationPoints = [
+      { x: 0.1, y: 0.1, name: "Top-Left" },
+      { x: 0.9, y: 0.1, name: "Top-Right" },
+      { x: 0.5, y: 0.5, name: "Center" },
+      { x: 0.1, y: 0.9, name: "Bottom-Left" },
+      { x: 0.9, y: 0.9, name: "Bottom-Right" }
+    ];
+
+    let pointIndex = 0;
+
+    function showNextPoint() {
+      if (pointIndex >= calibrationPoints.length) {
+        gazeCalibration.isCalibrating = false;
+        console.log("✅ Calibration complete. Points:", gazeCalibration.points);
+        resolve();
+        return;
+      }
+
+      const point = calibrationPoints[pointIndex];
+      const screenX = window.innerWidth * point.x;
+      const screenY = window.innerHeight * point.y;
+
+      // Create calibration marker
+      const marker = document.createElement("div");
+      marker.style.position = "fixed";
+      marker.style.left = (screenX - 15) + "px";
+      marker.style.top = (screenY - 15) + "px";
+      marker.style.width = "30px";
+      marker.style.height = "30px";
+      marker.style.borderRadius = "50%";
+      marker.style.background = "yellow";
+      marker.style.border = "3px solid red";
+      marker.style.zIndex = "99999";
+      marker.style.display = "flex";
+      marker.style.alignItems = "center";
+      marker.style.justifyContent = "center";
+      marker.style.fontSize = "12px";
+      marker.style.color = "black";
+      marker.style.fontWeight = "bold";
+      marker.textContent = pointIndex + 1;
+      document.body.appendChild(marker);
+
+      // Collect gaze samples for 2 seconds
+      let samples = [];
+      const startTime = Date.now();
+      
+      const sampleInterval = setInterval(() => {
+        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+          samples.push({
+            gazeX: window.currentGaze.x,
+            gazeY: window.currentGaze.y
+          });
+        }
+
+        if (Date.now() - startTime > 2000) {
+          clearInterval(sampleInterval);
+          
+          // Average the samples
+          const avgGaze = {
+            x: samples.reduce((sum, s) => sum + s.gazeX, 0) / samples.length,
+            y: samples.reduce((sum, s) => sum + s.gazeY, 0) / samples.length
+          };
+
+          gazeCalibration.points.push({
+            screenX: screenX,
+            screenY: screenY,
+            gazeX: avgGaze.x,
+            gazeY: avgGaze.y
+          });
+
+          console.log(`Point ${pointIndex + 1}: Screen(${screenX},${screenY}) -> Gaze(${avgGaze.x.toFixed(0)},${avgGaze.y.toFixed(0)})`);
+
+          marker.remove();
+          pointIndex++;
+          showNextPoint();
+        }
+      }, 50);
+    }
+
+    showNextPoint();
+  });
+}
+
+// Add this function to map raw gaze to screen coordinates using calibration:
+function mapGazeWithCalibration(rawGaze) {
+    if (gazeCalibration.points.length < 2) {
+      // Not calibrated yet, return raw gaze
+      return rawGaze;
+    }
+
+    // Simple linear mapping using least squares regression
+    // This maps video coordinates to screen coordinates
+    let sumXY = 0, sumX = 0, sumY = 0, sumX2 = 0, sumY2 = 0;
+    const n = gazeCalibration.points.length;
+
+    gazeCalibration.points.forEach(p => {
+      sumX += p.gazeX;
+      sumY += p.gazeY;
+      sumXY += p.gazeX * p.screenX;
+      sumX2 += p.gazeX * p.gazeX;
+      sumY2 += p.gazeY * p.gazeY;
+    });
+
+    // Linear regression for X
+    const avgGazeX = sumX / n;
+    const avgScreenX = gazeCalibration.points.reduce((sum, p) => sum + p.screenX, 0) / n;
+    const slopeX = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) * (p.screenX - avgScreenX), 0) /
+                  gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) ** 2, 0);
+    const interceptX = avgScreenX - slopeX * avgGazeX;
+
+    // Linear regression for Y
+    const avgGazeY = sumY / n;
+    const avgScreenY = gazeCalibration.points.reduce((sum, p) => sum + p.screenY, 0) / n;
+    const slopeY = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) * (p.screenY - avgScreenY), 0) /
+                  gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) ** 2, 0);
+    const interceptY = avgScreenY - slopeY * avgGazeY;
+
+    // Map coordinates
+    const mappedX = Math.max(0, Math.min(window.innerWidth, slopeX * rawGaze.x + interceptX));
+    const mappedY = Math.max(0, Math.min(window.innerHeight, slopeY * rawGaze.y + interceptY));
+
+    return { x: mappedX, y: mappedY };
+  }
 
   function showGameIntro(gameName, storyLines, gameIconEmoji) {
     return new Promise((resolve) => {
@@ -1345,8 +1479,23 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
       calibrationInProgress = false;
       return;
     }
+    
 
     if (blurOverlay) blurOverlay.classList.add("active");
+
+    await showGameIntro(
+      "Gaze Calibration",
+      [
+        "Before we start, let's calibrate your gaze tracking.",
+        "You'll see 5 yellow circles appear on screen.",
+        "Look at each circle for 2 seconds and stay focused.",
+        "This helps us map where you're actually looking."
+      ],
+      "🎯"
+    );
+
+    // Run calibration
+    await runGazeCalibration();
 
     await showGameIntro(
       "Bird Game",
