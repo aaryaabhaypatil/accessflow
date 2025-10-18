@@ -399,7 +399,28 @@ function mapGazeWithCalibration(rawGaze) {
     });
   }
 
-  // initGazeTracking();
+  function isGazeNearTarget(gazeX, gazeY, targetX, targetY, threshold = 150) {
+    // Calculate distance from gaze point to target center
+    const distance = Math.sqrt(
+      Math.pow(gazeX - targetX, 2) + Math.pow(gazeY - targetY, 2)
+    );
+    
+    // If gaze is within threshold distance, consider it "looking at target"
+    // threshold of 150px accounts for ±100px gaze accuracy + buffer
+    return distance < threshold;
+  }
+
+  // Alternative: Detect which quadrant user is looking at
+  function getGazeQuadrant(gazeX, gazeY) {
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    if (gazeX < centerX && gazeY < centerY) return "top-left";
+    if (gazeX >= centerX && gazeY < centerY) return "top-right";
+    if (gazeX < centerX && gazeY >= centerY) return "bottom-left";
+    if (gazeX >= centerX && gazeY >= centerY) return "bottom-right";
+  }
+
 
   function createDot(id, emoji) {
     let dot = document.getElementById(id);
@@ -662,19 +683,33 @@ function mapGazeWithCalibration(rawGaze) {
           birdDot.style.transform = `translate(-50%, -50%) scale(${scaleMoving})`;
 
           if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-              const gazeEntry = {
-                time: Date.now(),
-                gazeX: window.currentGaze.x,
-                gazeY: window.currentGaze.y,
-                targetX: currentX,
-                targetY: currentY,
-                game: "bird",
-                pointIndex: index,
-              };
-              allGamesGazeLog.push(gazeEntry);
-              // Uncomment for debugging:
-              console.log("Bird - Gaze:", gazeEntry.gazeX, gazeEntry.gazeY, "Target:", currentX, currentY);
-            }
+            // Check if user is looking at the bird target
+            const isLookingAtBird = isGazeNearTarget(
+              window.currentGaze.x,
+              window.currentGaze.y,
+              currentX,  // bird position
+              currentY,
+              150        // 150px threshold
+            );
+            
+            const gazeEntry = {
+              time: Date.now(),
+              gazeX: window.currentGaze.x,
+              gazeY: window.currentGaze.y,
+              targetX: currentX,
+              targetY: currentY,
+              game: "bird",
+              pointIndex: index,
+              isLookingAtTarget: isLookingAtBird,  // NEW: Boolean indicating if looking at target
+              gazeQuadrant: getGazeQuadrant(window.currentGaze.x, window.currentGaze.y),  // NEW: Which area looking
+              distanceToTarget: Math.sqrt(
+                Math.pow(window.currentGaze.x - currentX, 2) + 
+                Math.pow(window.currentGaze.y - currentY, 2)
+              )  // NEW: Exact distance for analysis
+            };
+            allGamesGazeLog.push(gazeEntry);
+            console.log("Bird - Looking at target:", isLookingAtBird, "Distance:", gazeEntry.distanceToTarget);
+          }
 
           if (t < 1) {
             requestAnimationFrame(animate);
@@ -865,6 +900,14 @@ function mapGazeWithCalibration(rawGaze) {
         targetDot.style.transition = "transform 0.3s ease-out";
 
         if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+          const isLookingAtTarget = isGazeNearTarget(
+            window.currentGaze.x,
+            window.currentGaze.y,
+            x,
+            y,
+            150
+          );
+          
           const gazeEntry = {
             time: Date.now(),
             gazeX: window.currentGaze.x,
@@ -872,12 +915,18 @@ function mapGazeWithCalibration(rawGaze) {
             targetX: x,
             targetY: y,
             game: "target",
-            moveIndex: moves
+            moveIndex: moves,
+            isLookingAtTarget: isLookingAtTarget,
+            gazeQuadrant: getGazeQuadrant(window.currentGaze.x, window.currentGaze.y),
+            distanceToTarget: Math.sqrt(
+              Math.pow(window.currentGaze.x - x, 2) + 
+              Math.pow(window.currentGaze.y - y, 2)
+            )
           };
           allGamesGazeLog.push(gazeEntry);
-          console.log(`🎯 TARGET GAME - Gaze: (${Math.round(gazeEntry.gazeX)}, ${Math.round(gazeEntry.gazeY)}) | Target: (${Math.round(x)}, ${Math.round(y)})`);
-
+          console.log(`🎯 TARGET - Looking at target:`, isLookingAtTarget);
         }
+
 
         setTimeout(() => {
           targetDot.style.transform = `scale(${baseScale * 0.6})`; 
@@ -1164,6 +1213,14 @@ function runGemGame() {
           gemDot.style.filter = `drop-shadow(0 0 ${glowStrength}px gold)`;
 
           if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+            const isLookingAtGem = isGazeNearTarget(
+              window.currentGaze.x,
+              window.currentGaze.y,
+              screenX,
+              screenY,
+              150
+            );
+  
             const gazeEntry = {
               time: Date.now(),
               gazeX: window.currentGaze.x,
@@ -1172,11 +1229,16 @@ function runGemGame() {
               targetY: screenY,
               game: "gem",
               moveIndex: i,
-              mazeProgress: progress
+              mazeProgress: progress,
+              isLookingAtTarget: isLookingAtGem,
+              gazeQuadrant: getGazeQuadrant(window.currentGaze.x, window.currentGaze.y),
+              distanceToTarget: Math.sqrt(
+                Math.pow(window.currentGaze.x - screenX, 2) + 
+                Math.pow(window.currentGaze.y - screenY, 2)
+              )
             };
             allGamesGazeLog.push(gazeEntry);
-            console.log(`💎 GEM GAME - Gaze: (${Math.round(gazeEntry.gazeX)}, ${Math.round(gazeEntry.gazeY)}) | Target: (${Math.round(screenX)}, ${Math.round(screenY)}) | Progress: ${(progress * 100).toFixed(0)}%`);
-
+            console.log(`💎 GEM - Looking at gem:`, isLookingAtGem);
           }
 
           score++;
