@@ -162,7 +162,6 @@ async function runOnboardingAndCalibration() {
         title: "Proper Head Positioning 📐",
         content: [
           "Sit comfortably 50-70cm (arm's length) from your screen.",
-          "Keep your head relatively still and upright.",
           "Your face should be well-lit and clearly visible to the camera.",
           "Avoid backlighting (don't sit in front of a window)."
         ],
@@ -171,15 +170,25 @@ async function runOnboardingAndCalibration() {
         showPositioningGuide: true
       },
       {
-        title: "Tips for Better Tracking",
+        title: "Gaze & Behavior Tips",
         content: [
           "Try not to move too much while playing — keep your head steady and face the screen.",
           "Blink naturally, but avoid long eye closures or excessive blinking.",
           "Make sure your face is clearly visible — avoid covering it with your hands, hair, or clothing.",
           "Look naturally - don't strain your eyes.",
-          "You can pause anytime by clicking the pause icon if you need a break."
+          "You can pause anytime by clicking the pause icon if you need a break.",
+
         ],
         icon: "😌",
+        duration: 6000
+      },
+      {
+        title: "Target & Focus Tips",
+        content: [
+          "If you blink, that's okay - just keep looking at the target.",
+          "Focus on the CENTER of each game icon."
+        ],
+        icon: "👀",
         duration: 6000
       },
       {
@@ -194,6 +203,7 @@ async function runOnboardingAndCalibration() {
         duration: 6000,
         showBadExamples: true
       },
+                
       {
         title: "Post Calibration",
         content: [
@@ -204,17 +214,6 @@ async function runOnboardingAndCalibration() {
         ],
         icon: "〰️",
         duration: 6000
-      },
-      {
-        title: "Calibration Tips 💡",
-        content: [
-          "Focus on the CENTER of each circle.",
-          "Keep your head still - only move your eyes.",
-          "Take a deep breath and relax your shoulders.",
-          "If you blink, that's okay - just keep looking at the target."
-        ],
-        icon: "✨",
-        duration: 5000
       },
       {
         title: "Ready to Calibrate?",
