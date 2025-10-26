@@ -194,7 +194,6 @@ async function runOnboardingAndCalibration() {
       {
         title: "What to Avoid ⚠️",
         content: [
-          "Don't move your head drastically during tracking.",
           "Avoid covering your face with hands or objects.",
           "Don't squint or close one eye.",
           "Try to maintain consistent lighting (no flickering lights)."
