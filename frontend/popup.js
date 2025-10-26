@@ -2413,7 +2413,13 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
           target: gazeData.filter(d => d.game === "target").length,
           gem: gazeData.filter(d => d.game === "gem").length
         },
-        gazePoints: gazeData
+        gazePoints: gazeData,
+        glassesReflection: glassesReflectionData ? {
+          hasGlasses: glassesReflectionData.hasGlasses,
+          reflectionIntensity: glassesReflectionData.reflectionIntensity,
+          samplesCollected: glassesReflectionData.samplesCollected,
+          detections: glassesReflectionData.detections
+        } : null
       };
 
       const response = await fetch('http://localhost:3000/save-gaze', {
@@ -2426,6 +2432,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
 
       if (response.ok) {
         console.log("✅ Gaze data successfully sent to backend");
+        console.log("✅ Glasses reflection data included:", glassesReflectionData ? "Yes" : "No");
         return true;
       } else {
         console.error("❌ Failed to send gaze data. Status:", response.status);
