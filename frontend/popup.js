@@ -137,6 +137,425 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 }
 
+async function runOnboardingAndCalibration() {
+  return new Promise(async (resolve) => {
+    
+    
+    const tutorialSteps = [
+      {
+        title: "Welcome to Eye-Tracking",
+        content: [
+          "You're about to experience hands-free navigation!",
+          "This tutorial will guide you through how eye-tracking works.",
+          "Let's start by understanding the basics."
+        ],
+        icon: "🎯",
+      },
+      {
+        title: "How Eye-Tracking Works",
+        content: [
+          "Your camera tracks the position of your eyes in real-time.",
+          "We use this to predict where you're looking on the screen.",
+          "Think of it like using an invisible mouse controlled by your gaze."
+        ],
+        icon: "👀",
+        duration: 5000
+      },
+      {
+        title: "Proper Head Positioning 📐",
+        content: [
+          "Sit comfortably 50-70cm (arm's length) from your screen.",
+          "Keep your head relatively still and upright.",
+          "Your face should be well-lit and clearly visible to the camera.",
+          "Avoid backlighting (don't sit in front of a window)."
+        ],
+        icon: "🪑",
+        duration: 6000,
+        showPositioningGuide: true
+      },
+      {
+        title: "Natural Behaviors ✅",
+        content: [
+          "Blinking is perfectly fine - the system expects it!",
+          "Small head movements are okay, just avoid large shifts.",
+          "Glasses and contacts work great with this technology.",
+          "Look naturally - don't strain your eyes."
+        ],
+        icon: "😌",
+        duration: 6000
+      },
+      {
+        title: "What to Avoid ⚠️",
+        content: [
+          "Don't move your head drastically during tracking.",
+          "Avoid covering your face with hands or objects.",
+          "Don't squint or close one eye.",
+          "Try to maintain consistent lighting (no flickering lights)."
+        ],
+        icon: "🚫",
+        duration: 6000,
+        showBadExamples: true
+      },
+      {
+        title: "About Calibration 🎯",
+        content: [
+          "Calibration teaches the system where YOU look.",
+          "You'll see 5 yellow circles appear one at a time.",
+          "Look directly at each circle and keep your gaze steady for 2 seconds.",
+          "This creates a personalized map of your unique eye patterns."
+        ],
+        icon: "🔧",
+        duration: 6000
+      },
+      {
+        title: "Calibration Tips 💡",
+        content: [
+          "Focus on the CENTER of each circle.",
+          "Keep your head still - only move your eyes.",
+          "Take a deep breath and relax your shoulders.",
+          "If you blink, that's okay - just keep looking at the target."
+        ],
+        icon: "✨",
+        duration: 5000
+      },
+      {
+        title: "Ready to Calibrate? 🚀",
+        content: [
+          "You'll now calibrate your eye-tracking system.",
+          "Remember: steady gaze, relaxed posture, natural blinking.",
+          "The whole process takes about 15 seconds.",
+          "Let's begin!"
+        ],
+        icon: "🎮",
+        duration: 4000,
+        isLast: true
+      }
+    ];
+
+    // Create tutorial overlay
+    let tutorialOverlay = document.createElement("div");
+    Object.assign(tutorialOverlay.style, {
+      position: "fixed",
+      top: "0",
+      left: "0",
+      width: "100%",
+      height: "100%",
+      background: "#F1F0E4",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: "99999",
+      opacity: "0",
+      transition: "opacity 0.5s ease",
+      fontFamily: "'Inter', sans-serif"
+    });
+    document.body.appendChild(tutorialOverlay);
+    setTimeout(() => tutorialOverlay.style.opacity = "1", 10);
+
+    // Progress indicator
+    let progressBar = document.createElement("div");
+    Object.assign(progressBar.style, {
+      position: "absolute",
+      top: "30px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: "80%",
+      maxWidth: "600px",
+      height: "6px",
+      background: "#BCA88D",
+      borderRadius: "10px",
+      overflow: "hidden"
+    });
+    tutorialOverlay.appendChild(progressBar);
+
+    let progressFill = document.createElement("div");
+    Object.assign(progressFill.style, {
+      height: "100%",
+      width: "0%",
+      background: "#3E3F29",
+      borderRadius: "10px",
+      transition: "width 0.5s ease"
+    });
+    progressBar.appendChild(progressFill);
+
+    // Content container
+    let contentContainer = document.createElement("div");
+    Object.assign(contentContainer.style, {
+      maxWidth: "700px",
+      width: "90%",
+      padding: "50px",
+      background: "#3E3F29",
+      borderRadius: "20px",
+      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+      textAlign: "center"
+    });
+    tutorialOverlay.appendChild(contentContainer);
+
+    // Navigate through tutorial steps
+    for (let i = 0; i < tutorialSteps.length; i++) {
+      const step = tutorialSteps[i];
+      
+      // Update progress
+      progressFill.style.width = `${((i + 1) / tutorialSteps.length) * 100}%`;
+      
+      // Clear previous content
+      contentContainer.innerHTML = "";
+
+      // Icon
+      let icon = document.createElement("div");
+      icon.textContent = step.icon;
+      Object.assign(icon.style, {
+        fontSize: "80px",
+        marginBottom: "20px",
+        animation: "bounce 1s ease-in-out"
+      });
+      contentContainer.appendChild(icon);
+
+      // Add bounce animation if not exists
+      if (!document.getElementById("tutorialAnimations")) {
+        const style = document.createElement("style");
+        style.id = "tutorialAnimations";
+        style.textContent = `
+          @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+          }
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-2deg); }
+            75% { transform: translateX(5px) rotate(2deg); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Title
+      let title = document.createElement("h2");
+      title.textContent = step.title;
+      Object.assign(title.style, {
+        fontSize: "32px",
+        fontWeight: "bold",
+        color: "#ffffffff",
+        marginBottom: "25px",
+        animation: "fadeInUp 0.6s ease"
+      });
+      contentContainer.appendChild(title);
+
+      // Content lines
+      step.content.forEach((line, idx) => {
+        let p = document.createElement("p");
+        p.textContent = line;
+        Object.assign(p.style, {
+          fontSize: "18px",
+          color: "#ffffffff",
+          lineHeight: "1.6",
+          marginBottom: "15px",
+          opacity: "0",
+          animation: `fadeInUp 0.6s ease ${idx * 0.2}s forwards`
+        });
+        contentContainer.appendChild(p);
+      });
+
+      // Special visual guides
+      if (step.showPositioningGuide) {
+        let guide = document.createElement("div");
+        Object.assign(guide.style, {
+          marginTop: "30px",
+          padding: "20px",
+          background: "#e8f5e9",
+          borderRadius: "10px",
+          border: "2px solid #4CAF50"
+        });
+        guide.innerHTML = `
+          <div style="font-size: 60px; margin-bottom: 10px;">
+            🧑‍💻 ← 50-70cm → 📱
+          </div>
+          <div style="font-size: 14px; color: #2e7d32; font-weight: 600;">
+            Perfect Distance Zone
+          </div>
+        `;
+        contentContainer.appendChild(guide);
+      }
+
+      if (step.showBadExamples) {
+        let examples = document.createElement("div");
+        Object.assign(examples.style, {
+          marginTop: "30px",
+          display: "flex",
+          justifyContent: "space-around",
+          gap: "20px"
+        });
+        
+        const bad = [
+          { emoji: "🙈", label: "Covering Face" },
+          { emoji: "😵‍💫", label: "Head Movement" },
+          { emoji: "😑", label: "Squinting" }
+        ];
+        
+        bad.forEach(item => {
+          let ex = document.createElement("div");
+          Object.assign(ex.style, {
+            padding: "15px",
+            background: "#ffebee",
+            borderRadius: "10px",
+            border: "2px solid #f44336",
+            animation: "shake 0.5s ease"
+          });
+          ex.innerHTML = `
+            <div style="font-size: 40px;">${item.emoji}</div>
+            <div style="font-size: 12px; color: #c62828; margin-top: 5px; font-weight: 600;">${item.label}</div>
+          `;
+          examples.appendChild(ex);
+        });
+        
+        contentContainer.appendChild(examples);
+      }
+
+      // Navigation
+      let navContainer = document.createElement("div");
+      Object.assign(navContainer.style, {
+        marginTop: "40px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "15px"
+      });
+      contentContainer.appendChild(navContainer);
+
+      // Back button (if not first step)
+      let backBtn = document.createElement("button");
+      if (i > 0) {
+        backBtn.textContent = "← Back";
+        Object.assign(backBtn.style, {
+          padding: "12px 30px",
+          fontSize: "16px",
+          fontWeight: "600",
+          background: "transparent",
+          color: "#F1F0E4",
+          border: "2px solid #ffffffff",
+          borderRadius: "25px",
+          cursor: "pointer",
+          transition: "all 0.3s ease"
+        });
+        
+        backBtn.onmouseover = () => {
+          backBtn.style.background = "#BCA88D";
+          backBtn.style.color = "white";
+        };
+        backBtn.onmouseout = () => {
+          backBtn.style.background = "transparent";
+          backBtn.style.color = "#F1F0E4";
+        };
+      } else {
+        // Invisible spacer for first step
+        backBtn.style.opacity = "0";
+        backBtn.style.pointerEvents = "none";
+      }
+      navContainer.appendChild(backBtn);
+
+      // Step indicator
+      let stepIndicator = document.createElement("div");
+      stepIndicator.textContent = `${i + 1} / ${tutorialSteps.length}`;
+      Object.assign(stepIndicator.style, {
+        fontSize: "14px",
+        color: "#757575",
+        fontWeight: "600"
+      });
+      navContainer.appendChild(stepIndicator);
+
+      if (step.isLast) {
+        // Start Calibration button
+        let startBtn = document.createElement("button");
+        startBtn.textContent = "Start Calibration →";
+        Object.assign(startBtn.style, {
+          padding: "15px 40px",
+          fontSize: "18px",
+          fontWeight: "700",
+          background: "linear-gradient(135deg, #4CAF50, #8BC34A)",
+          color: "white",
+          border: "none",
+          borderRadius: "30px",
+          cursor: "pointer",
+          boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
+          transition: "all 0.3s ease"
+        });
+        
+        startBtn.onmouseover = () => {
+          startBtn.style.transform = "scale(1.05)";
+          startBtn.style.boxShadow = "0 6px 20px rgba(76, 175, 80, 0.6)";
+        };
+        startBtn.onmouseout = () => {
+          startBtn.style.transform = "scale(1)";
+          startBtn.style.boxShadow = "0 4px 15px rgba(76, 175, 80, 0.4)";
+        };
+        
+        navContainer.appendChild(startBtn);
+        
+        // Wait for either button click
+        const action = await new Promise(r => {
+          startBtn.onclick = () => r('next');
+          backBtn.onclick = () => r('back');
+        });
+        
+        if (action === 'back') {
+          i -= 2; // Will increment by 1 in loop, so go back 2 to land on previous
+          continue;
+        }
+      } else {
+        // Next button
+        let nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next →";
+        Object.assign(nextBtn.style, {
+          padding: "12px 30px",
+          fontSize: "16px",
+          fontWeight: "600",
+          background: "#F1F0E4",
+          color: "black",
+          border: "none",
+          borderRadius: "25px",
+          cursor: "pointer",
+          transition: "all 0.3s ease"
+        });
+        
+        nextBtn.onmouseover = () => nextBtn.style.background = "#BCA88D";
+        nextBtn.onmouseout = () => nextBtn.style.background = "#F1F0E4";
+        
+        navContainer.appendChild(nextBtn);
+        
+        // Wait for either button click
+        const action = await new Promise(r => {
+          nextBtn.onclick = () => r('next');
+          backBtn.onclick = () => r('back');
+        });
+        
+        if (action === 'back') {
+          i -= 2; // Will increment by 1 in loop, so go back 2 to land on previous
+          continue;
+        }
+      }
+    }
+
+    // Fade out tutorial
+    tutorialOverlay.style.opacity = "0";
+    await new Promise(r => setTimeout(r, 500));
+    tutorialOverlay.remove();
+
+    console.log("✅ Onboarding tutorial complete");
+    resolve();
+  });
+}
+
 // Add this function to map raw gaze to screen coordinates using calibration:
 function mapGazeWithCalibration(rawGaze) {
   if (gazeCalibration.points.length < 2) {
@@ -1538,20 +1957,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     
 
     if (blurOverlay) blurOverlay.classList.add("active");
-
-    await showGameIntro(
-      "Gaze Calibration",
-      [
-        "Before we start, let's calibrate your gaze tracking.",
-        "You'll see 5 yellow circles appear on screen.",
-        "Look at each circle for 2 seconds and stay focused.",
-        "This helps us map where you're actually looking."
-      ],
-      "🎯"
-    );
-
-    // Run calibration
-    await runGazeCalibration();
+    await runOnboardingAndCalibration();
 
     await showGameIntro(
       "Level 1/3: Bird Game",
