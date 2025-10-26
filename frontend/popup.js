@@ -217,11 +217,11 @@ async function runOnboardingAndCalibration() {
         duration: 5000
       },
       {
-        title: "Ready to Calibrate? 🚀",
+        title: "Ready to Calibrate?",
         content: [
-          "You'll now calibrate your eye-tracking system.",
+          "Now that you know what to expect, you can begin the calibration games..",
           "Remember: steady gaze, relaxed posture, natural blinking.",
-          "The whole process takes about 15 seconds.",
+          "The whole process takes about 6-7 minutes.",
           "Let's begin!"
         ],
         icon: "🎮",
