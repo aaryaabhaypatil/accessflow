@@ -159,7 +159,7 @@ async function runOnboardingAndCalibration() {
         duration: 5000
       },
       {
-        title: "Proper Head Positioning 📐",
+        title: "Proper Head Positioning ",
         content: [
           "Sit comfortably 50-70cm (arm's length) from your screen.",
           "Your face should be well-lit and clearly visible to the camera.",
@@ -172,9 +172,7 @@ async function runOnboardingAndCalibration() {
       {
         title: "Gaze & Behavior Tips",
         content: [
-          "Try not to move too much while playing — keep your head steady and face the screen.",
           "Blink naturally, but avoid long eye closures or excessive blinking.",
-          "Make sure your face is clearly visible — avoid covering it with your hands, hair, or clothing.",
           "Look naturally - don't strain your eyes.",
           "You can pause anytime by clicking the pause icon if you need a break.",
 
@@ -374,8 +372,8 @@ async function runOnboardingAndCalibration() {
           border: "2px solid #4CAF50"
         });
         guide.innerHTML = `
-          <div style="font-size: 60px; margin-bottom: 10px;">
-            🧑‍💻 ← 50-70cm → 📱
+          <div style="font-size: 30px; margin-bottom: 10px;">
+            🧑 ← 50-70cm → 💻
           </div>
           <div style="font-size: 14px; color: #2e7d32; font-weight: 600;">
             Perfect Distance Zone
