@@ -150,13 +150,12 @@ async function runOnboardingAndCalibration() {
         icon: "🎯",
       },
       {
-        title: "How Eye-Tracking Works",
+        title: "Mini-Games for Calibration",
         content: [
-          "Your camera tracks the position of your eyes in real-time.",
-          "We use this to predict where you're looking on the screen.",
-          "Think of it like using an invisible mouse controlled by your gaze."
+          "The first part of the tutorial includes a series of three mini-games designed to help train the system. In each game, you’ll see different icons appear on the screen. Your task is to focus on each icon as it appears — this helps collect training data that tells the system where you’re looking.",
+          "Note: When you look at the icons during the games, there’s no guarantee that it’s tracking your eyes correctly — even if it says it’s done. The games just help the system learn from how you look at things."
         ],
-        icon: "👀",
+        icon: "🎮",
         duration: 5000
       },
       {
