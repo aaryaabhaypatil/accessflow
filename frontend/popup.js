@@ -1,6 +1,8 @@
 const removeWebgazerDebug = () => {
   const video = document.getElementById('webgazerVideoFeed');
-  if (video) video.remove();
+  if (video) {
+    video.remove();  // You already have this
+  }
 
   const overlay = document.getElementById('webgazerFaceOverlay');
   if (overlay) overlay.remove();
@@ -8,6 +10,20 @@ const removeWebgazerDebug = () => {
   const faceFeedback = document.getElementById('webgazerFaceFeedbackBox');
   if (faceFeedback) faceFeedback.remove();
 };
+
+
+function hideVideoStreamDuringCalibration() {
+  const interval = setInterval(() => {
+    const video = document.querySelector('video');
+    if (video) {
+      video.style.display = 'none';
+      video.style.opacity = '0';
+      video.style.visibility = 'hidden';
+    }
+  }, 100);
+  
+  return interval;
+}
 
 const interval = setInterval(removeWebgazerDebug, 100);
 setTimeout(() => clearInterval(interval), 5000);
@@ -812,6 +828,91 @@ function mapGazeWithCalibration(rawGaze) {
     });
   }
 
+  function detectGlassesReflection(video) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 160;
+  canvas.height = 120;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  
+  const reflectionData = {
+    detections: [],
+    hasGlasses: false,
+    reflectionIntensity: 0,
+    samplesCollected: 0
+  };
+
+  function analyzeFrame() {
+    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const pixels = imageData.data;
+      
+      // Focus on eye region (approximate upper-middle area)
+      const eyeRegionTop = Math.floor(canvas.height * 0.3);
+      const eyeRegionBottom = Math.floor(canvas.height * 0.5);
+      const eyeRegionLeft = Math.floor(canvas.width * 0.2);
+      const eyeRegionRight = Math.floor(canvas.width * 0.8);
+      
+      let brightPixels = 0;
+      let totalPixels = 0;
+      let maxBrightness = 0;
+      let brightClusters = 0;
+      
+      for (let y = eyeRegionTop; y < eyeRegionBottom; y++) {
+        for (let x = eyeRegionLeft; x < eyeRegionRight; x++) {
+          const idx = (y * canvas.width + x) * 4;
+          const r = pixels[idx];
+          const g = pixels[idx + 1];
+          const b = pixels[idx + 2];
+          
+          // Calculate luminance
+          const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+          
+          if (luminance > 200) {  // Very bright pixels (potential reflection)
+            brightPixels++;
+            if (luminance > maxBrightness) {
+              maxBrightness = luminance;
+            }
+          }
+          totalPixels++;
+        }
+      }
+      
+      const reflectionPercentage = (brightPixels / totalPixels) * 100;
+      
+      // Glasses typically create 2-5% bright spots in eye region
+      const hasReflection = reflectionPercentage > 1.5 && maxBrightness > 220;
+      
+      reflectionData.detections.push({
+        timestamp: Date.now(),
+        reflectionPercentage: reflectionPercentage.toFixed(2),
+        maxBrightness: Math.round(maxBrightness),
+        hasReflection: hasReflection
+      });
+      
+      reflectionData.samplesCollected++;
+      
+      // Calculate overall reflection intensity
+      if (reflectionData.detections.length > 10) {
+        const recentDetections = reflectionData.detections.slice(-10);
+        const avgReflection = recentDetections.reduce((sum, d) => 
+          sum + parseFloat(d.reflectionPercentage), 0) / recentDetections.length;
+        
+        reflectionData.reflectionIntensity = avgReflection;
+        reflectionData.hasGlasses = avgReflection > 2.0; // Threshold for glasses detection
+      }
+    }
+  }
+  
+  // Sample every 500ms
+  const detectionInterval = setInterval(analyzeFrame, 500);
+  
+  return {
+    data: reflectionData,
+    stop: () => clearInterval(detectionInterval)
+  };
+}
+
   function isGazeNearTarget(gazeX, gazeY, targetX, targetY, threshold = 150) {
     // Calculate distance from gaze point to target center
     const distance = Math.sqrt(
@@ -1121,7 +1222,7 @@ function mapGazeWithCalibration(rawGaze) {
               )  // NEW: Exact distance for analysis
             };
             allGamesGazeLog.push(gazeEntry);
-            console.log("Bird - Looking at target:", isLookingAtBird, "Distance:", gazeEntry.distanceToTarget);
+            // fconsole.log("Bird - Looking at target:", isLookingAtBird, "Distance:", gazeEntry.distanceToTarget);
           }
 
           if (t < 1) {
@@ -1755,9 +1856,9 @@ function startPostCalibrationGazeTracing() {
     frameCount++;
     
     // Debug every 30 frames (roughly every second at 60fps)
-    if (frameCount % 30 === 0) {
-      console.log("Frame", frameCount, "- window.currentGaze:", window.currentGaze);
-    }
+    // if (frameCount % 30 === 0) {
+    //   console.log("Frame", frameCount, "- window.currentGaze:", window.currentGaze);
+    // }
 
     if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
       dot.style.left = window.currentGaze.x - dot.offsetWidth / 2 + "px";
@@ -1936,6 +2037,8 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     if (webgazerDot) webgazerDot.style.display = "block";
   }
 
+
+  let glassesReflectionData = null;
   async function startGames() {
     if (calibrationInProgress) return;
     calibrationInProgress = true;
@@ -1944,14 +2047,62 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
 
     try {
       await startGazeTracker();
+
+      // ✅ WAIT for video to be ready BEFORE starting detection
+      console.log("⏳ Waiting for video to be ready...");
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Give WebGazer time to initialize
+
+      const videoHideInterval = hideVideoStreamDuringCalibration();
+      
+      // ✅ NOW try to get the video and start detection
+      const video = document.querySelector('video');
+      let reflectionDetector = null;
+      
+      if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+        console.log("✅ Video found:", video.videoWidth, "x", video.videoHeight);
+        reflectionDetector = detectGlassesReflection(video);
+        console.log("👓 Glasses reflection detection started");
+      } else {
+        console.warn("⚠️ Video element not ready yet");
+      }
+      
+      // Store cleanup function
+      window.cleanupCalibration = () => {
+        clearInterval(videoHideInterval);
+        if (reflectionDetector) {
+          reflectionDetector.stop();
+          glassesReflectionData = reflectionDetector.data;
+          console.log("📊 Glasses Detection Results:", glassesReflectionData);
+        } else {
+          console.warn("⚠️ No reflection detector to clean up");
+        }
+      };
     } catch (err) {
       calibrationInProgress = false;
       return;
     }
     
-
     if (blurOverlay) blurOverlay.classList.add("active");
     await runOnboardingAndCalibration();
+
+
+    const video = document.querySelector('video');
+    if (video && video.videoWidth > 0 && video.videoHeight > 0 && !window.reflectionDetectorStarted) {
+      console.log("🔄 Starting reflection detection after tutorial");
+      const reflectionDetector = detectGlassesReflection(video);
+      window.reflectionDetectorStarted = true;
+      
+      // Update cleanup to use this detector
+      const oldCleanup = window.cleanupCalibration;
+      window.cleanupCalibration = () => {
+        if (oldCleanup) oldCleanup();
+        if (reflectionDetector) {
+          reflectionDetector.stop();
+          glassesReflectionData = reflectionDetector.data;
+          console.log("📊 Glasses Detection Results (from tutorial):", glassesReflectionData);
+        }
+      };
+    }
 
     await showGameIntro(
       "Level 1/3: Bird Game",
@@ -1982,7 +2133,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
         "Walls rise around you, forming a twisting maze.",
         "Use your gaze — only focus will lead you out."
       ],
-       `₪`
+      `₪`
     );
     await runWithPause(runGemGame);
 
@@ -2017,8 +2168,20 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     }
     
     pathDrawingEnabled = true;
+     if (window.cleanupCalibration) {
+        window.cleanupCalibration();
+      }
 
     console.log("✅ ALL GAMES COMPLETED - Total gaze points collected:", allGamesGazeLog.length);
+    console.log("👓 GLASSES REFLECTION ANALYSIS:");
+    if (glassesReflectionData) {
+      console.log("  Has Glasses Detected:", glassesReflectionData.hasGlasses);
+      console.log("  Reflection Intensity:", glassesReflectionData.reflectionIntensity.toFixed(2) + "%");
+      console.log("  Total Samples:", glassesReflectionData.samplesCollected);
+      console.log("  Full Detection Data:", glassesReflectionData.detections);
+    } else {
+      console.log("  No reflection data collected");
+    }
     console.log("📊 Complete gaze data from all games:", allGamesGazeLog);
     
     const dataSent = await sendGazeDataToBackend(allGamesGazeLog);
@@ -2377,5 +2540,20 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
   };
 
   console.log("💡 Tip: Type 'window.getGazeData()' in console to view all collected gaze data");
+  window.getReflectionData = () => {
+  if (glassesReflectionData) {
+    console.log("👓 Glasses Reflection Data:");
+    console.log("  Has Glasses:", glassesReflectionData.hasGlasses);
+    console.log("  Reflection Intensity:", glassesReflectionData.reflectionIntensity.toFixed(2) + "%");
+    console.log("  Samples:", glassesReflectionData.samplesCollected);
+    console.log("  All Detections:", glassesReflectionData.detections);
+    return glassesReflectionData;
+  } else {
+    console.log("❌ No reflection data available yet - calibration may not have started");
+    return null;
+  }
+};
+
+console.log("💡 Tip: Type 'window.getReflectionData()' in console to view glasses reflection data");
 
 });
