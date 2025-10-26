@@ -171,12 +171,13 @@ async function runOnboardingAndCalibration() {
         showPositioningGuide: true
       },
       {
-        title: "Natural Behaviors ✅",
+        title: "Tips for Better Tracking",
         content: [
-          "Blinking is perfectly fine - the system expects it!",
-          "Small head movements are okay, just avoid large shifts.",
-          "Glasses and contacts work great with this technology.",
-          "Look naturally - don't strain your eyes."
+          "Try not to move too much while playing — keep your head steady and face the screen.",
+          "Blink naturally, but avoid long eye closures or excessive blinking.",
+          "Make sure your face is clearly visible — avoid covering it with your hands, hair, or clothing.",
+          "Look naturally - don't strain your eyes.",
+          "You can pause anytime by clicking the pause icon if you need a break."
         ],
         icon: "😌",
         duration: 6000
