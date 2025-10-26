@@ -1554,7 +1554,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     await runGazeCalibration();
 
     await showGameIntro(
-      "Bird Game",
+      "Level 1/3: Bird Game",
       [
         "A gentle breeze flows through the forest…",
         "A mysterious bird flutters into view.",
@@ -1565,7 +1565,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     await runWithPause(runBirdGame);
 
     await showGameIntro(
-      "Target Game",
+      "Level 2/3: Target Game",
       [
         "The bird vanishes into the shadows…",
         "Targets suddenly appear around you.",
@@ -1576,7 +1576,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     await runWithPause(runTargetGame);
 
     await showGameIntro(
-      "Maze Game",
+      "Level 3/3: Maze Game",
       [
         "A quiet mist rolls in as the ground begins to shift…",
         "Walls rise around you, forming a twisting maze.",
