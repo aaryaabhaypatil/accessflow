@@ -195,14 +195,14 @@ async function runOnboardingAndCalibration() {
         showBadExamples: true
       },
       {
-        title: "About Calibration 🎯",
+        title: "Post Calibration",
         content: [
-          "Calibration teaches the system where YOU look.",
-          "You'll see 5 yellow circles appear one at a time.",
-          "Look directly at each circle and keep your gaze steady for 2 seconds.",
-          "This creates a personalized map of your unique eye patterns."
+          "Once calibration is complete, a dot will move around the screen to show where the system thinks you’re looking.",
+          "Because this is the first prototype, the tracking might not be very accurate — or it might not work at all in some cases.",
+          "That’s completely fine! The goal is to collect feedback on your experience and understand how to improve accuracy and usability in the next version."
+
         ],
-        icon: "🔧",
+        icon: "〰️",
         duration: 6000
       },
       {
