@@ -161,7 +161,7 @@ async function runOnboardingAndCalibration() {
       {
         title: "Welcome to Eye-Tracking",
         content: [
-          "Welcome! This tutorial will guide you through how to use your eyes to interact with the interface.Eye-tracking allows the system to detect where you’re looking and respond accordingly — for example, by selecting, moving, or activating elements based on your gaze."
+          "Welcome! This tutorial will guide you through how to use your eyes to interact with the interface. Eye-tracking allows the system to detect where you’re looking and respond accordingly — for example, by selecting, moving, or activating elements based on your gaze."
         ],
         icon: "🎯",
       },
