@@ -771,35 +771,6 @@ document.addEventListener("DOMContentLoaded", function () {
   brightnessCanvas.height = 120;
   const brightnessCtx = brightnessCanvas.getContext('2d');
 
-  function hideGazeDot() {
-    if (window.dotGaze) {
-      window.dotGaze.style.display = "none";
-    }
-  }
-
-  function showGazeDot() {
-    if (window.dotGaze) {
-      window.dotGaze.style.display = "block";
-    }
-  }
-
-  function waitForVideoReady(timeout = 5000) {
-    return new Promise((resolve, reject) => {
-      const start = Date.now();
-      const check = setInterval(() => {
-        const video = document.querySelector('video');
-        if (video && video.videoWidth > 0 && video.videoHeight > 0) {
-          clearInterval(check);
-          console.log("Video ready:", video.videoWidth, video.videoHeight);
-          resolve(video);
-        } else if (Date.now() - start > timeout) {
-          clearInterval(check);
-          reject("Video never became ready");
-        }
-      }, 100);
-    });
-  }
-
   function detectGlassesReflection(video) {
     const canvas = document.createElement('canvas');
     canvas.width = 160;
@@ -958,21 +929,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }, 100);
     });
-  }
-
-  function mapGazeToScreen(gaze, video) {
-    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
-      return { x: 0, y: 0 };
-    }
-    const rawX = video.mirror ? video.videoWidth - gaze.x : gaze.x;
-    const rawY = gaze.y;
-    const scaleX = video.clientWidth / video.videoWidth;
-    const scaleY = video.clientHeight / video.videoHeight;
-    const rect = video.getBoundingClientRect();
-    return {
-      x: Math.min(Math.max(rawX * scaleX + rect.left, 0), window.innerWidth),
-      y: Math.min(Math.max(rawY * scaleY + rect.top, 0), window.innerHeight)
-    };
   }
 
   async function runBirdGame() {
@@ -1867,19 +1823,6 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  function hideWebGazerDot() {
-    const tryHide = () => {
-      const dot = document.getElementById("webgazerGazeDot");
-      if (dot) {
-        dot.style.display = "none";      
-        dot.style.opacity = "0";         
-        dot.style.pointerEvents = "none";
-      }
-    };
-
-    tryHide();
-    setInterval(tryHide, 100); 
-  }
 
   async function startGazeTracker() {
     try {
@@ -1947,37 +1890,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
   console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element =", window.videoElement);
-
-  function startBrightnessLoop(video) {
-    const brightnessDisplay = document.getElementById("brightness-display");
-    if (!brightnessDisplay) return;
-
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    console.log("inside brightness loop");
-
-    function calcBrightness() {
-      if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let sum = 0;
-        for (let i = 0; i < frame.data.length; i += 4) {
-          sum += 0.2126 * frame.data[i] + 0.7152 * frame.data[i + 1] + 0.0722 * frame.data[i + 2];
-        }
-        const avgBrightness = Math.round(sum / (frame.data.length / 4));
-        brightnessDisplay.textContent = `Brightness: ${avgBrightness}`;
-      } else {
-        console.log("Video not ready yet", video.readyState, video.videoWidth, video.videoHeight);
-      }
-
-      requestAnimationFrame(calcBrightness);
-    }
-
-    calcBrightness();
-  }
 
   function hideGazeDots() {
     if (window.dotGaze) window.dotGaze.style.display = "none";
@@ -2276,60 +2188,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
     return gameFn();
-  }
-
-  async function initGazeTracking() {
-    if (!window.webgazer) {
-      alert("WebGazer is not loaded!");
-      throw new Error("WebGazer not found");
-    }
-
-    let correctionModel = null;
-    const storedModel = localStorage.getItem("calibrationModel");
-    if (storedModel) {
-      correctionModel = JSON.parse(storedModel);
-    }
-
-    if (!window.dotGaze) {
-      const dotGaze = document.createElement("div");
-      dotGaze.style.position = "fixed";
-      dotGaze.style.width = "20px";
-      dotGaze.style.height = "20px";
-      dotGaze.style.background = "red";
-      dotGaze.style.borderRadius = "50%";
-      dotGaze.style.zIndex = "10002";
-      dotGaze.style.pointerEvents = "none";
-      document.body.appendChild(dotGaze);
-      window.dotGaze = dotGaze;
-    }
-    await webgazer
-      .setRegression("ridge")
-      .setTracker("clmtrackr")
-      .setGazeListener((data) => {
-        if (!data || !isFinite(data.x) || !isFinite(data.y)) {
-          window.currentGaze = { x: 0, y: 0 };
-          return;
-        }
-
-        window.currentGaze = { x: data.x, y: data.y };
-        if (window.dotGaze) {
-          window.dotGaze.style.left = `${window.currentGaze.x - 10}px`;
-          window.dotGaze.style.top = `${window.currentGaze.y - 10}px`;
-          window.dotGaze.style.zIndex = "100000";
-        }
-      })
-      .begin();
-    
-    const webgazerDot = document.getElementById("webgazerGazeDot");
-    if (webgazerDot) {
-      webgazerDot.style.display = "none";
-      webgazerDot.style.opacity = "0";
-      webgazerDot.style.width = "0px";
-      webgazerDot.style.height = "0px";
-    }
-    
-    webgazer.showVideo(true).showFaceOverlay(false).showFaceFeedbackBox(false);
-    console.log("Gaze tracking started, custom dot visible.");
   }
 
   if (openPopupBtn && popupOverlay) {
