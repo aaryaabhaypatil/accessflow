@@ -1,4 +1,4 @@
-// import { initGazeDot, updateGazeDot, currentGaze } from "./gazeDot.js";
+
 window.onload = async function () {
     window.initGazeDot();
     const dataset = [];
@@ -75,12 +75,12 @@ window.onload = async function () {
 
   const dotGaze = document.createElement("div");
   dotGaze.style.position = "fixed";
-  dotGaze.style.width = "20px"; // smaller than calibration dot
+  dotGaze.style.width = "20px"; 
   dotGaze.style.height = "20px";
   dotGaze.style.background = "red";
   dotGaze.style.borderRadius = "50%";
-  dotGaze.style.zIndex = "10002"; // above everything
-  dotGaze.style.pointerEvents = "none"; // so it doesn’t block clicks
+  dotGaze.style.zIndex = "10002"; 
+  dotGaze.style.pointerEvents = "none"; 
   document.body.appendChild(dotGaze);
 
   const canvas = document.createElement("canvas");
@@ -249,7 +249,7 @@ window.onload = async function () {
         });
         if (!res.ok) throw new Error('Failed to save');
       } catch (err) {
-        console.error('❌ Failed to save chunk:', err);
+        console.error('Failed to save chunk:', err);
       }
     }
     console.log('All chunks sent successfully!');

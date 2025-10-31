@@ -1,5 +1,3 @@
-// landing.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById('openFullPopup');
     if (openBtn) {

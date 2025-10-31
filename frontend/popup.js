@@ -1,9 +1,8 @@
 const removeWebgazerDebug = () => {
   const video = document.getElementById('webgazerVideoFeed');
   if (video) {
-    video.remove();  // You already have this
+    video.remove(); 
   }
-
   const overlay = document.getElementById('webgazerFaceOverlay');
   if (overlay) overlay.remove();
 
@@ -21,7 +20,6 @@ function hideVideoStreamDuringCalibration() {
       video.style.visibility = 'hidden';
     }
   }, 100);
-  
   return interval;
 }
 
@@ -61,540 +59,518 @@ document.addEventListener("DOMContentLoaded", function () {
     isCalibrating: false
   };
 
-  // UNIFIED: Single array to store ALL gaze data from all games
+  // Single array to store all gaze data from all games
   let allGamesGazeLog = [];
   window.currentGaze = { x: 0, y: 0 };
 
   async function runGazeCalibration() {
-  return new Promise((resolve) => {
-    gazeCalibration.points = [];
-    gazeCalibration.isCalibrating = true;
-    
-    const calibrationPoints = [
-      { x: 0.1, y: 0.1, name: "Top-Left" },
-      { x: 0.9, y: 0.1, name: "Top-Right" },
-      { x: 0.5, y: 0.5, name: "Center" },
-      { x: 0.1, y: 0.9, name: "Bottom-Left" },
-      { x: 0.9, y: 0.9, name: "Bottom-Right" }
-    ];
-
-    let pointIndex = 0;
-
-    function showNextPoint() {
-      if (pointIndex >= calibrationPoints.length) {
-        gazeCalibration.isCalibrating = false;
-        console.log("✅ Calibration complete. Points:", gazeCalibration.points);
-        resolve();
-        return;
-      }
-
-      const point = calibrationPoints[pointIndex];
-      const screenX = window.innerWidth * point.x;
-      const screenY = window.innerHeight * point.y;
-
-      // Create calibration marker
-      const marker = document.createElement("div");
-      marker.style.position = "fixed";
-      marker.style.left = (screenX - 15) + "px";
-      marker.style.top = (screenY - 15) + "px";
-      marker.style.width = "30px";
-      marker.style.height = "30px";
-      marker.style.borderRadius = "50%";
-      marker.style.background = "yellow";
-      marker.style.border = "3px solid red";
-      marker.style.zIndex = "99999";
-      marker.style.display = "flex";
-      marker.style.alignItems = "center";
-      marker.style.justifyContent = "center";
-      marker.style.fontSize = "12px";
-      marker.style.color = "black";
-      marker.style.fontWeight = "bold";
-      marker.textContent = pointIndex + 1;
-      document.body.appendChild(marker);
-
-      // Collect gaze samples for 2 seconds
-      let samples = [];
-      const startTime = Date.now();
+    return new Promise((resolve) => {
+      gazeCalibration.points = [];
+      gazeCalibration.isCalibrating = true;
       
-      const sampleInterval = setInterval(() => {
-        if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-          samples.push({
-            gazeX: window.currentGaze.x,
-            gazeY: window.currentGaze.y
-          });
+      const calibrationPoints = [
+        { x: 0.1, y: 0.1, name: "Top-Left" },
+        { x: 0.9, y: 0.1, name: "Top-Right" },
+        { x: 0.5, y: 0.5, name: "Center" },
+        { x: 0.1, y: 0.9, name: "Bottom-Left" },
+        { x: 0.9, y: 0.9, name: "Bottom-Right" }
+      ];
+
+      let pointIndex = 0;
+
+      function showNextPoint() {
+        if (pointIndex >= calibrationPoints.length) {
+          gazeCalibration.isCalibrating = false;
+          console.log("Calibration complete. Points:", gazeCalibration.points);
+          resolve();
+          return;
         }
 
-        if (Date.now() - startTime > 2000) {
-          clearInterval(sampleInterval);
-          
-          // Average the samples
-          const avgGaze = {
-            x: samples.reduce((sum, s) => sum + s.gazeX, 0) / samples.length,
-            y: samples.reduce((sum, s) => sum + s.gazeY, 0) / samples.length
-          };
+        const point = calibrationPoints[pointIndex];
+        const screenX = window.innerWidth * point.x;
+        const screenY = window.innerHeight * point.y;
 
-          gazeCalibration.points.push({
-            screenX: screenX,
-            screenY: screenY,
-            gazeX: avgGaze.x,
-            gazeY: avgGaze.y
-          });
+        // Create calibration marker
+        const marker = document.createElement("div");
+        marker.style.position = "fixed";
+        marker.style.left = (screenX - 15) + "px";
+        marker.style.top = (screenY - 15) + "px";
+        marker.style.width = "30px";
+        marker.style.height = "30px";
+        marker.style.borderRadius = "50%";
+        marker.style.background = "yellow";
+        marker.style.border = "3px solid red";
+        marker.style.zIndex = "99999";
+        marker.style.display = "flex";
+        marker.style.alignItems = "center";
+        marker.style.justifyContent = "center";
+        marker.style.fontSize = "12px";
+        marker.style.color = "black";
+        marker.style.fontWeight = "bold";
+        marker.textContent = pointIndex + 1;
+        document.body.appendChild(marker);
 
-          console.log(`Point ${pointIndex + 1}: Screen(${screenX},${screenY}) -> Gaze(${avgGaze.x.toFixed(0)},${avgGaze.y.toFixed(0)})`);
+        // Collect gaze samples for 2 seconds
+        let samples = [];
+        const startTime = Date.now();
+        
+        const sampleInterval = setInterval(() => {
+          if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+            samples.push({
+              gazeX: window.currentGaze.x,
+              gazeY: window.currentGaze.y
+            });
+          }
 
-          marker.remove();
-          pointIndex++;
-          showNextPoint();
-        }
-      }, 50);
-    }
+          if (Date.now() - startTime > 2000) {
+            clearInterval(sampleInterval);
+            // Average the samples
+            const avgGaze = {
+              x: samples.reduce((sum, s) => sum + s.gazeX, 0) / samples.length,
+              y: samples.reduce((sum, s) => sum + s.gazeY, 0) / samples.length
+            };
+            gazeCalibration.points.push({
+              screenX: screenX,
+              screenY: screenY,
+              gazeX: avgGaze.x,
+              gazeY: avgGaze.y
+            });
+
+            console.log(`Point ${pointIndex + 1}: Screen(${screenX},${screenY}) -> Gaze(${avgGaze.x.toFixed(0)},${avgGaze.y.toFixed(0)})`);
+
+            marker.remove();
+            pointIndex++;
+            showNextPoint();
+          }
+        }, 50);
+      }
 
     showNextPoint();
   });
-}
-
-async function runOnboardingAndCalibration() {
-  return new Promise(async (resolve) => {
-    
-    
-    const tutorialSteps = [
-      {
-        title: "Welcome to Eye-Tracking",
-        content: [
-          "Welcome! This tutorial will guide you through how to use your eyes to interact with the interface. Eye-tracking allows the system to detect where you’re looking and respond accordingly — for example, by selecting, moving, or activating elements based on your gaze."
-        ],
-        icon: "🎯",
-      },
-      {
-        title: "Mini-Games for Calibration",
-        content: [
-          "The first part of the tutorial includes a series of three mini-games designed to help train the system. In each game, you’ll see different icons appear on the screen. Your task is to focus on each icon as it appears — this helps collect training data that tells the system where you’re looking.",
-          "Note: When you look at the icons during the games, there’s no guarantee that it’s tracking your eyes correctly — even if it says it’s done. The games just help the system learn from how you look at things."
-        ],
-        icon: "🎮",
-        duration: 5000
-      },
-      {
-        title: "Proper Head Positioning ",
-        content: [
-          "Sit comfortably 50-70cm (arm's length) from your screen.",
-          "Your face should be well-lit and clearly visible to the camera.",
-          "Avoid backlighting (don't sit in front of a window)."
-        ],
-        icon: "🪑",
-        duration: 6000,
-        showPositioningGuide: true
-      },
-      {
-        title: "Gaze & Behavior Tips",
-        content: [
-          "Blink naturally, but avoid long eye closures or excessive blinking.",
-          "Look naturally - don't strain your eyes.",
-          "You can pause anytime by clicking the pause icon if you need a break.",
-
-        ],
-        icon: "😌",
-        duration: 6000
-      },
-      {
-        title: "Target & Focus Tips",
-        content: [
-          "If you blink, that's okay - just keep looking at the target.",
-          "Focus on the CENTER of each game icon."
-        ],
-        icon: "👀",
-        duration: 6000
-      },
-      {
-        title: "What to Avoid ⚠️",
-        content: [
-          "Avoid covering your face with hands or objects.",
-          "Don't squint or close one eye.",
-          "Try to maintain consistent lighting (no flickering lights)."
-        ],
-        icon: "🚫",
-        duration: 6000,
-        showBadExamples: true
-      },
-                
-      {
-        title: "Post Calibration",
-        content: [
-          "Once calibration is complete, a dot will move around the screen to show where the system thinks you’re looking.",
-          "Because this is the first prototype, the tracking might not be very accurate — or it might not work at all in some cases.",
-          "That’s completely fine! The goal is to collect feedback on your experience and understand how to improve accuracy and usability in the next version."
-
-        ],
-        icon: "〰️",
-        duration: 6000
-      },
-      {
-        title: "Ready to Calibrate?",
-        content: [
-          "Now that you know what to expect, you can begin the calibration games..",
-          "Remember: steady gaze, relaxed posture, natural blinking.",
-          "The whole process takes about 6-7 minutes.",
-          "Let's begin!"
-        ],
-        icon: "🎮",
-        duration: 4000,
-        isLast: true
-      }
-    ];
-
-    // Create tutorial overlay
-    let tutorialOverlay = document.createElement("div");
-    Object.assign(tutorialOverlay.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      background: "#F1F0E4",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: "99999",
-      opacity: "0",
-      transition: "opacity 0.5s ease",
-      fontFamily: "'Inter', sans-serif"
-    });
-    document.body.appendChild(tutorialOverlay);
-    setTimeout(() => tutorialOverlay.style.opacity = "1", 10);
-
-    // Progress indicator
-    let progressBar = document.createElement("div");
-    Object.assign(progressBar.style, {
-      position: "absolute",
-      top: "30px",
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: "80%",
-      maxWidth: "600px",
-      height: "6px",
-      background: "#BCA88D",
-      borderRadius: "10px",
-      overflow: "hidden"
-    });
-    tutorialOverlay.appendChild(progressBar);
-
-    let progressFill = document.createElement("div");
-    Object.assign(progressFill.style, {
-      height: "100%",
-      width: "0%",
-      background: "#3E3F29",
-      borderRadius: "10px",
-      transition: "width 0.5s ease"
-    });
-    progressBar.appendChild(progressFill);
-
-    // Content container
-    let contentContainer = document.createElement("div");
-    Object.assign(contentContainer.style, {
-      maxWidth: "700px",
-      width: "90%",
-      padding: "50px",
-      background: "#3E3F29",
-      borderRadius: "20px",
-      boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-      textAlign: "center"
-    });
-    tutorialOverlay.appendChild(contentContainer);
-
-    // Navigate through tutorial steps
-    for (let i = 0; i < tutorialSteps.length; i++) {
-      const step = tutorialSteps[i];
-      
-      // Update progress
-      progressFill.style.width = `${((i + 1) / tutorialSteps.length) * 100}%`;
-      
-      // Clear previous content
-      contentContainer.innerHTML = "";
-
-      // Icon
-      let icon = document.createElement("div");
-      icon.textContent = step.icon;
-      Object.assign(icon.style, {
-        fontSize: "80px",
-        marginBottom: "20px",
-        animation: "bounce 1s ease-in-out"
-      });
-      contentContainer.appendChild(icon);
-
-      // Add bounce animation if not exists
-      if (!document.getElementById("tutorialAnimations")) {
-        const style = document.createElement("style");
-        style.id = "tutorialAnimations";
-        style.textContent = `
-          @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-          }
-          @keyframes fadeInUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px) rotate(-2deg); }
-            75% { transform: translateX(5px) rotate(2deg); }
-          }
-        `;
-        document.head.appendChild(style);
-      }
-
-      // Title
-      let title = document.createElement("h2");
-      title.textContent = step.title;
-      Object.assign(title.style, {
-        fontSize: "32px",
-        fontWeight: "bold",
-        color: "#ffffffff",
-        marginBottom: "25px",
-        animation: "fadeInUp 0.6s ease"
-      });
-      contentContainer.appendChild(title);
-
-      // Content lines
-      step.content.forEach((line, idx) => {
-        let p = document.createElement("p");
-        p.textContent = line;
-        Object.assign(p.style, {
-          fontSize: "18px",
-          color: "#ffffffff",
-          lineHeight: "1.6",
-          marginBottom: "15px",
-          opacity: "0",
-          animation: `fadeInUp 0.6s ease ${idx * 0.2}s forwards`
-        });
-        contentContainer.appendChild(p);
-      });
-
-      // Special visual guides
-      if (step.showPositioningGuide) {
-        let guide = document.createElement("div");
-        Object.assign(guide.style, {
-          marginTop: "30px",
-          padding: "20px",
-          background: "#e8f5e9",
-          borderRadius: "10px",
-          border: "2px solid #4CAF50"
-        });
-        guide.innerHTML = `
-          <div style="font-size: 30px; margin-bottom: 10px;">
-            🧑 ← 50-70cm → 💻
-          </div>
-          <div style="font-size: 14px; color: #2e7d32; font-weight: 600;">
-            Perfect Distance Zone
-          </div>
-        `;
-        contentContainer.appendChild(guide);
-      }
-
-      if (step.showBadExamples) {
-        let examples = document.createElement("div");
-        Object.assign(examples.style, {
-          marginTop: "30px",
-          display: "flex",
-          justifyContent: "space-around",
-          gap: "20px"
-        });
-        
-        const bad = [
-          { emoji: "🙈", label: "Covering Face" },
-          { emoji: "😵‍💫", label: "Head Movement" },
-          { emoji: "😑", label: "Squinting" }
-        ];
-        
-        bad.forEach(item => {
-          let ex = document.createElement("div");
-          Object.assign(ex.style, {
-            padding: "15px",
-            background: "#ffebee",
-            borderRadius: "10px",
-            border: "2px solid #f44336",
-            animation: "shake 0.5s ease"
-          });
-          ex.innerHTML = `
-            <div style="font-size: 40px;">${item.emoji}</div>
-            <div style="font-size: 12px; color: #c62828; margin-top: 5px; font-weight: 600;">${item.label}</div>
-          `;
-          examples.appendChild(ex);
-        });
-        
-        contentContainer.appendChild(examples);
-      }
-
-      // Navigation
-      let navContainer = document.createElement("div");
-      Object.assign(navContainer.style, {
-        marginTop: "40px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "15px"
-      });
-      contentContainer.appendChild(navContainer);
-
-      // Back button (if not first step)
-      let backBtn = document.createElement("button");
-      if (i > 0) {
-        backBtn.textContent = "← Back";
-        Object.assign(backBtn.style, {
-          padding: "12px 30px",
-          fontSize: "16px",
-          fontWeight: "600",
-          background: "transparent",
-          color: "#F1F0E4",
-          border: "2px solid #ffffffff",
-          borderRadius: "25px",
-          cursor: "pointer",
-          transition: "all 0.3s ease"
-        });
-        
-        backBtn.onmouseover = () => {
-          backBtn.style.background = "#BCA88D";
-          backBtn.style.color = "white";
-        };
-        backBtn.onmouseout = () => {
-          backBtn.style.background = "transparent";
-          backBtn.style.color = "#F1F0E4";
-        };
-      } else {
-        // Invisible spacer for first step
-        backBtn.style.opacity = "0";
-        backBtn.style.pointerEvents = "none";
-      }
-      navContainer.appendChild(backBtn);
-
-      // Step indicator
-      let stepIndicator = document.createElement("div");
-      stepIndicator.textContent = `${i + 1} / ${tutorialSteps.length}`;
-      Object.assign(stepIndicator.style, {
-        fontSize: "14px",
-        color: "#757575",
-        fontWeight: "600"
-      });
-      navContainer.appendChild(stepIndicator);
-
-      if (step.isLast) {
-        // Start Calibration button
-        let startBtn = document.createElement("button");
-        startBtn.textContent = "Start Calibration →";
-        Object.assign(startBtn.style, {
-          padding: "15px 40px",
-          fontSize: "18px",
-          fontWeight: "700",
-          background: "linear-gradient(135deg, #4CAF50, #8BC34A)",
-          color: "white",
-          border: "none",
-          borderRadius: "30px",
-          cursor: "pointer",
-          boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
-          transition: "all 0.3s ease"
-        });
-        
-        startBtn.onmouseover = () => {
-          startBtn.style.transform = "scale(1.05)";
-          startBtn.style.boxShadow = "0 6px 20px rgba(76, 175, 80, 0.6)";
-        };
-        startBtn.onmouseout = () => {
-          startBtn.style.transform = "scale(1)";
-          startBtn.style.boxShadow = "0 4px 15px rgba(76, 175, 80, 0.4)";
-        };
-        
-        navContainer.appendChild(startBtn);
-        
-        // Wait for either button click
-        const action = await new Promise(r => {
-          startBtn.onclick = () => r('next');
-          backBtn.onclick = () => r('back');
-        });
-        
-        if (action === 'back') {
-          i -= 2; // Will increment by 1 in loop, so go back 2 to land on previous
-          continue;
-        }
-      } else {
-        // Next button
-        let nextBtn = document.createElement("button");
-        nextBtn.textContent = "Next →";
-        Object.assign(nextBtn.style, {
-          padding: "12px 30px",
-          fontSize: "16px",
-          fontWeight: "600",
-          background: "#F1F0E4",
-          color: "black",
-          border: "none",
-          borderRadius: "25px",
-          cursor: "pointer",
-          transition: "all 0.3s ease"
-        });
-        
-        nextBtn.onmouseover = () => nextBtn.style.background = "#BCA88D";
-        nextBtn.onmouseout = () => nextBtn.style.background = "#F1F0E4";
-        
-        navContainer.appendChild(nextBtn);
-        
-        // Wait for either button click
-        const action = await new Promise(r => {
-          nextBtn.onclick = () => r('next');
-          backBtn.onclick = () => r('back');
-        });
-        
-        if (action === 'back') {
-          i -= 2; // Will increment by 1 in loop, so go back 2 to land on previous
-          continue;
-        }
-      }
-    }
-
-    // Fade out tutorial
-    tutorialOverlay.style.opacity = "0";
-    await new Promise(r => setTimeout(r, 500));
-    tutorialOverlay.remove();
-
-    console.log("✅ Onboarding tutorial complete");
-    resolve();
-  });
-}
-
-// Add this function to map raw gaze to screen coordinates using calibration:
-function mapGazeWithCalibration(rawGaze) {
-  if (gazeCalibration.points.length < 2) {
-    return rawGaze; // Not calibrated yet
   }
 
-  // Simple linear regression mapping
-  const n = gazeCalibration.points.length;
+  async function runOnboardingAndCalibration() {
+    return new Promise(async (resolve) => {
+      const tutorialSteps = [
+        {
+          title: "Welcome to Eye-Tracking",
+          content: [
+            "Welcome! This tutorial will guide you through how to use your eyes to interact with the interface. Eye-tracking allows the system to detect where you’re looking and respond accordingly — for example, by selecting, moving, or activating elements based on your gaze."
+          ],
+          icon: "🎯",
+        },
+        {
+          title: "Mini-Games for Calibration",
+          content: [
+            "The first part of the tutorial includes a series of three mini-games designed to help train the system. In each game, you’ll see different icons appear on the screen. Your task is to focus on each icon as it appears — this helps collect training data that tells the system where you’re looking.",
+            "Note: When you look at the icons during the games, there’s no guarantee that it’s tracking your eyes correctly — even if it says it’s done. The games just help the system learn from how you look at things."
+          ],
+          icon: "🎮",
+          duration: 5000
+        },
+        {
+          title: "Proper Head Positioning ",
+          content: [
+            "Sit comfortably 50-70cm (arm's length) from your screen.",
+            "Your face should be well-lit and clearly visible to the camera.",
+            "Avoid backlighting (don't sit in front of a window)."
+          ],
+          icon: "🪑",
+          duration: 6000,
+          showPositioningGuide: true
+        },
+        {
+          title: "Gaze & Behavior Tips",
+          content: [
+            "Blink naturally, but avoid long eye closures (you can pause the game in the meantime).",
+            "Look naturally - don't strain your eyes.",
+            "You can pause anytime by clicking the pause icon if you need a break.",
+            "Focus on the CENTER of each game icon."
 
-  // Linear regression for X
-  const avgGazeX = gazeCalibration.points.reduce((sum, p) => sum + p.gazeX, 0) / n;
-  const avgScreenX = gazeCalibration.points.reduce((sum, p) => sum + p.screenX, 0) / n;
-  const slopeX = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) * (p.screenX - avgScreenX), 0) /
-                 gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) ** 2, 0);
-  const interceptX = avgScreenX - slopeX * avgGazeX;
+          ],
+          icon: "😌",
+          duration: 6000
+        },
 
-  // Linear regression for Y
-  const avgGazeY = gazeCalibration.points.reduce((sum, p) => sum + p.gazeY, 0) / n;
-  const avgScreenY = gazeCalibration.points.reduce((sum, p) => sum + p.screenY, 0) / n;
-  const slopeY = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) * (p.screenY - avgScreenY), 0) /
-                 gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) ** 2, 0);
-  const interceptY = avgScreenY - slopeY * avgGazeY;
+        {
+          title: "What to Avoid ⚠️",
+          content: [
+            "Avoid covering your face with hands or objects.",
+            "Don't squint or close one eye.",
+            "Try to maintain consistent lighting (no flickering lights)."
+          ],
+          icon: "🚫",
+          duration: 6000,
+          showBadExamples: true
+        },
+                  
+        {
+          title: "Post Calibration",
+          content: [
+            "Once calibration is complete, a dot will move around the screen to show where the system thinks you’re looking.",
+            "Because this is the first prototype, the tracking might not be very accurate — or it might not work at all in some cases.",
+            "That’s completely fine! The goal is to collect feedback on your experience and understand how to improve accuracy and usability in the next version."
 
-  // Map coordinates
-  const mappedX = Math.max(0, Math.min(window.innerWidth, slopeX * rawGaze.x + interceptX));
-  const mappedY = Math.max(0, Math.min(window.innerHeight, slopeY * rawGaze.y + interceptY));
+          ],
+          icon: "〰️",
+          duration: 6000
+        },
+        {
+          title: "Ready to Calibrate?",
+          content: [
+            "Now that you know what to expect, you can begin the calibration games..",
+            "Remember: steady gaze, relaxed posture, natural blinking.",
+            "The whole process takes about 6-7 minutes.",
+            "Let's begin!"
+          ],
+          icon: "🎮",
+          duration: 4000,
+          isLast: true
+        }
+      ];
 
-  return { x: mappedX, y: mappedY };
-}
+      // Create tutorial overlay
+      let tutorialOverlay = document.createElement("div");
+      Object.assign(tutorialOverlay.style, {
+        position: "fixed",
+        top: "0",
+        left: "0",
+        width: "100%",
+        height: "100%",
+        background: "#F1F0E4",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: "99999",
+        opacity: "0",
+        transition: "opacity 0.5s ease",
+        fontFamily: "'Inter', sans-serif"
+      });
+      document.body.appendChild(tutorialOverlay);
+      setTimeout(() => tutorialOverlay.style.opacity = "1", 10);
+
+      // Progress indicator
+      let progressBar = document.createElement("div");
+      Object.assign(progressBar.style, {
+        position: "absolute",
+        top: "30px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        width: "80%",
+        maxWidth: "600px",
+        height: "6px",
+        background: "#BCA88D",
+        borderRadius: "10px",
+        overflow: "hidden"
+      });
+      tutorialOverlay.appendChild(progressBar);
+
+      let progressFill = document.createElement("div");
+      Object.assign(progressFill.style, {
+        height: "100%",
+        width: "0%",
+        background: "#3E3F29",
+        borderRadius: "10px",
+        transition: "width 0.5s ease"
+      });
+      progressBar.appendChild(progressFill);
+
+      // Content container
+      let contentContainer = document.createElement("div");
+      Object.assign(contentContainer.style, {
+        maxWidth: "700px",
+        width: "90%",
+        padding: "50px",
+        background: "#3E3F29",
+        borderRadius: "20px",
+        boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
+        textAlign: "center"
+      });
+      tutorialOverlay.appendChild(contentContainer);
+
+      // Navigate through tutorial steps
+      for (let i = 0; i < tutorialSteps.length; i++) {
+        const step = tutorialSteps[i];
+        // Update progress
+        progressFill.style.width = `${((i + 1) / tutorialSteps.length) * 100}%`;
+        // Clear previous content
+        contentContainer.innerHTML = "";
+        // Icon
+        let icon = document.createElement("div");
+        icon.textContent = step.icon;
+        Object.assign(icon.style, {
+          fontSize: "80px",
+          marginBottom: "20px",
+          animation: "bounce 1s ease-in-out"
+        });
+        contentContainer.appendChild(icon);
+        // Add bounce animation if doesn't exists
+        if (!document.getElementById("tutorialAnimations")) {
+          const style = document.createElement("style");
+          style.id = "tutorialAnimations";
+          style.textContent = `
+            @keyframes bounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-10px); }
+            }
+            @keyframes fadeInUp {
+              from {
+                opacity: 0;
+                transform: translateY(20px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+            @keyframes shake {
+              0%, 100% { transform: translateX(0); }
+              25% { transform: translateX(-5px) rotate(-2deg); }
+              75% { transform: translateX(5px) rotate(2deg); }
+            }
+          `;
+          document.head.appendChild(style);
+        }
+        // Title
+        let title = document.createElement("h2");
+        title.textContent = step.title;
+        Object.assign(title.style, {
+          fontSize: "32px",
+          fontWeight: "bold",
+          color: "#ffffffff",
+          marginBottom: "25px",
+          animation: "fadeInUp 0.6s ease"
+        });
+        contentContainer.appendChild(title);
+
+        // Content lines
+        step.content.forEach((line, idx) => {
+          let p = document.createElement("p");
+          p.textContent = line;
+          Object.assign(p.style, {
+            fontSize: "18px",
+            color: "#ffffffff",
+            lineHeight: "1.6",
+            marginBottom: "15px",
+            opacity: "0",
+            animation: `fadeInUp 0.6s ease ${idx * 0.2}s forwards`
+          });
+          contentContainer.appendChild(p);
+        });
+
+        // Special visual guides
+        if (step.showPositioningGuide) {
+          let guide = document.createElement("div");
+          Object.assign(guide.style, {
+            marginTop: "30px",
+            padding: "20px",
+            background: "#e8f5e9",
+            borderRadius: "10px",
+            border: "2px solid #4CAF50"
+          });
+          guide.innerHTML = `
+            <div style="font-size: 30px; margin-bottom: 10px;">
+              🧑 ← 50-70cm → 💻
+            </div>
+            <div style="font-size: 14px; color: #2e7d32; font-weight: 600;">
+              Perfect Distance Zone
+            </div>
+          `;
+          contentContainer.appendChild(guide);
+        }
+
+        if (step.showBadExamples) {
+          let examples = document.createElement("div");
+          Object.assign(examples.style, {
+            marginTop: "30px",
+            display: "flex",
+            justifyContent: "space-around",
+            gap: "20px"
+          });
+          
+          const bad = [
+            { emoji: "🙈", label: "Covering Face" },
+            { emoji: "😵‍💫", label: "Head Movement" },
+            { emoji: "😑", label: "Squinting" }
+          ];
+          
+          bad.forEach(item => {
+            let ex = document.createElement("div");
+            Object.assign(ex.style, {
+              padding: "15px",
+              background: "#ffebee",
+              borderRadius: "10px",
+              border: "2px solid #f44336",
+              animation: "shake 0.5s ease"
+            });
+            ex.innerHTML = `
+              <div style="font-size: 40px;">${item.emoji}</div>
+              <div style="font-size: 12px; color: #c62828; margin-top: 5px; font-weight: 600;">${item.label}</div>
+            `;
+            examples.appendChild(ex);
+          });
+          
+          contentContainer.appendChild(examples);
+        }
+
+        // Navigation
+        let navContainer = document.createElement("div");
+        Object.assign(navContainer.style, {
+          marginTop: "40px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: "15px"
+        });
+        contentContainer.appendChild(navContainer);
+
+        // Back button (if not first step)
+        let backBtn = document.createElement("button");
+        if (i > 0) {
+          backBtn.textContent = "← Back";
+          Object.assign(backBtn.style, {
+            padding: "12px 30px",
+            fontSize: "16px",
+            fontWeight: "600",
+            background: "transparent",
+            color: "#F1F0E4",
+            border: "2px solid #ffffffff",
+            borderRadius: "25px",
+            cursor: "pointer",
+            transition: "all 0.3s ease"
+          });
+          
+          backBtn.onmouseover = () => {
+            backBtn.style.background = "#BCA88D";
+            backBtn.style.color = "white";
+          };
+          backBtn.onmouseout = () => {
+            backBtn.style.background = "transparent";
+            backBtn.style.color = "#F1F0E4";
+          };
+        } else {
+          // Invisible spacer for first step
+          backBtn.style.opacity = "0";
+          backBtn.style.pointerEvents = "none";
+        }
+        navContainer.appendChild(backBtn);
+
+        // Step indicator
+        let stepIndicator = document.createElement("div");
+        stepIndicator.textContent = `${i + 1} / ${tutorialSteps.length}`;
+        Object.assign(stepIndicator.style, {
+          fontSize: "14px",
+          color: "#757575",
+          fontWeight: "600"
+        });
+        navContainer.appendChild(stepIndicator);
+
+        if (step.isLast) {
+          // Start Calibration button
+          let startBtn = document.createElement("button");
+          startBtn.textContent = "Start Calibration →";
+          Object.assign(startBtn.style, {
+            padding: "15px 40px",
+            fontSize: "18px",
+            fontWeight: "700",
+            background: "linear-gradient(135deg, #4CAF50, #8BC34A)",
+            color: "white",
+            border: "none",
+            borderRadius: "30px",
+            cursor: "pointer",
+            boxShadow: "0 4px 15px rgba(76, 175, 80, 0.4)",
+            transition: "all 0.3s ease"
+          });
+          
+          startBtn.onmouseover = () => {
+            startBtn.style.transform = "scale(1.05)";
+            startBtn.style.boxShadow = "0 6px 20px rgba(76, 175, 80, 0.6)";
+          };
+          startBtn.onmouseout = () => {
+            startBtn.style.transform = "scale(1)";
+            startBtn.style.boxShadow = "0 4px 15px rgba(76, 175, 80, 0.4)";
+          };
+          
+          navContainer.appendChild(startBtn);
+          
+          // Wait for either button click
+          const action = await new Promise(r => {
+            startBtn.onclick = () => r('next');
+            backBtn.onclick = () => r('back');
+          });
+          
+          if (action === 'back') {
+            i -= 2; 
+            continue;
+          }
+        } else {
+          // Next button
+          let nextBtn = document.createElement("button");
+          nextBtn.textContent = "Next →";
+          Object.assign(nextBtn.style, {
+            padding: "12px 30px",
+            fontSize: "16px",
+            fontWeight: "600",
+            background: "#F1F0E4",
+            color: "black",
+            border: "none",
+            borderRadius: "25px",
+            cursor: "pointer",
+            transition: "all 0.3s ease"
+          });
+          
+          nextBtn.onmouseover = () => nextBtn.style.background = "#BCA88D";
+          nextBtn.onmouseout = () => nextBtn.style.background = "#F1F0E4";
+          
+          navContainer.appendChild(nextBtn);
+          
+          // Wait for either button click
+          const action = await new Promise(r => {
+            nextBtn.onclick = () => r('next');
+            backBtn.onclick = () => r('back');
+          });
+          
+          if (action === 'back') {
+            i -= 2; 
+            continue;
+          }
+        }
+      }
+      // Fade out tutorial
+      tutorialOverlay.style.opacity = "0";
+      await new Promise(r => setTimeout(r, 500));
+      tutorialOverlay.remove();
+      console.log("Onboarding tutorial complete");
+      resolve();
+    });
+  }
+
+  // map raw gaze to screen coordinates
+  function mapGazeWithCalibration(rawGaze) {
+    if (gazeCalibration.points.length < 2) {
+      return rawGaze; 
+    }
+    // Simple linear regression mapping
+    const n = gazeCalibration.points.length;
+    // Linear regression for X
+    const avgGazeX = gazeCalibration.points.reduce((sum, p) => sum + p.gazeX, 0) / n;
+    const avgScreenX = gazeCalibration.points.reduce((sum, p) => sum + p.screenX, 0) / n;
+    const slopeX = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) * (p.screenX - avgScreenX), 0) /
+                  gazeCalibration.points.reduce((sum, p) => sum + (p.gazeX - avgGazeX) ** 2, 0);
+    const interceptX = avgScreenX - slopeX * avgGazeX;
+    // Linear regression for Y
+    const avgGazeY = gazeCalibration.points.reduce((sum, p) => sum + p.gazeY, 0) / n;
+    const avgScreenY = gazeCalibration.points.reduce((sum, p) => sum + p.screenY, 0) / n;
+    const slopeY = gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) * (p.screenY - avgScreenY), 0) /
+                  gazeCalibration.points.reduce((sum, p) => sum + (p.gazeY - avgGazeY) ** 2, 0);
+    const interceptY = avgScreenY - slopeY * avgGazeY;
+    // Map coordinates
+    const mappedX = Math.max(0, Math.min(window.innerWidth, slopeX * rawGaze.x + interceptX));
+    const mappedY = Math.max(0, Math.min(window.innerHeight, slopeY * rawGaze.y + interceptY));
+
+    return { x: mappedX, y: mappedY };
+  }
 
   function showGameIntro(gameName, storyLines, gameIconEmoji) {
     return new Promise((resolve) => {
@@ -665,7 +641,6 @@ function mapGazeWithCalibration(rawGaze) {
       Object.assign(storyContainer.style, {
         maxWidth: "900px",
         width: "90%",
-        // padding: "60px 80px",
         textAlign: "center",
         marginBottom: "50px",
         display: "flex",
@@ -690,9 +665,6 @@ function mapGazeWithCalibration(rawGaze) {
         position: "relative"
       });
       introOverlay.appendChild(storyContainer);
-
-
-
       const arcadeFont = document.createElement("link");
       arcadeFont.href = "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap";
       arcadeFont.rel = "stylesheet";
@@ -736,12 +708,12 @@ function mapGazeWithCalibration(rawGaze) {
             fontWeight: "bold",
             color: "#000000ff",
             lineHeight: "1", 
-            whiteSpace: "normal",      // ✅ allows text to wrap
-            wordWrap: "break-word",    // ✅ breaks long words if needed
-            overflowWrap: "break-word",// ✅ ensures wrapping in all browsers
-            textAlign: "center",       // optional — keeps it nicely aligned
-            maxWidth: "100%",           // ensures it fits within container
-            display: "block",             // ✅ ensures it's treated like a paragraph
+            whiteSpace: "normal",    
+            wordWrap: "break-word",    
+            overflowWrap: "break-word",
+            textAlign: "center",      
+            maxWidth: "100%",      
+            display: "block",        
             width: "100%",      
             opacity: "0",
             animation: "fadeInUp 0.8s ease forwards"
@@ -818,100 +790,100 @@ function mapGazeWithCalibration(rawGaze) {
         const video = document.querySelector('video');
         if (video && video.videoWidth > 0 && video.videoHeight > 0) {
           clearInterval(check);
-          console.log("✅ Video ready:", video.videoWidth, video.videoHeight);
+          console.log("Video ready:", video.videoWidth, video.videoHeight);
           resolve(video);
         } else if (Date.now() - start > timeout) {
           clearInterval(check);
-          reject("❌ Video never became ready");
+          reject("Video never became ready");
         }
       }, 100);
     });
   }
 
   function detectGlassesReflection(video) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 160;
-  canvas.height = 120;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  
-  const reflectionData = {
-    detections: [],
-    hasGlasses: false,
-    reflectionIntensity: 0,
-    samplesCollected: 0
-  };
+    const canvas = document.createElement('canvas');
+    canvas.width = 160;
+    canvas.height = 120;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    
+    const reflectionData = {
+      detections: [],
+      hasGlasses: false,
+      reflectionIntensity: 0,
+      samplesCollected: 0
+    };
 
-  function analyzeFrame() {
-    if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const pixels = imageData.data;
-      
-      // Focus on eye region (approximate upper-middle area)
-      const eyeRegionTop = Math.floor(canvas.height * 0.3);
-      const eyeRegionBottom = Math.floor(canvas.height * 0.5);
-      const eyeRegionLeft = Math.floor(canvas.width * 0.2);
-      const eyeRegionRight = Math.floor(canvas.width * 0.8);
-      
-      let brightPixels = 0;
-      let totalPixels = 0;
-      let maxBrightness = 0;
-      let brightClusters = 0;
-      
-      for (let y = eyeRegionTop; y < eyeRegionBottom; y++) {
-        for (let x = eyeRegionLeft; x < eyeRegionRight; x++) {
-          const idx = (y * canvas.width + x) * 4;
-          const r = pixels[idx];
-          const g = pixels[idx + 1];
-          const b = pixels[idx + 2];
-          
-          // Calculate luminance
-          const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-          
-          if (luminance > 200) {  // Very bright pixels (potential reflection)
-            brightPixels++;
-            if (luminance > maxBrightness) {
-              maxBrightness = luminance;
+    function analyseFrame() {
+      if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const pixels = imageData.data;
+        
+        // Focus on eye region (approximate upper-middle area)
+        const eyeRegionTop = Math.floor(canvas.height * 0.3);
+        const eyeRegionBottom = Math.floor(canvas.height * 0.5);
+        const eyeRegionLeft = Math.floor(canvas.width * 0.2);
+        const eyeRegionRight = Math.floor(canvas.width * 0.8);
+        
+        let brightPixels = 0;
+        let totalPixels = 0;
+        let maxBrightness = 0;
+        let brightClusters = 0;
+        
+        for (let y = eyeRegionTop; y < eyeRegionBottom; y++) {
+          for (let x = eyeRegionLeft; x < eyeRegionRight; x++) {
+            const idx = (y * canvas.width + x) * 4;
+            const r = pixels[idx];
+            const g = pixels[idx + 1];
+            const b = pixels[idx + 2];
+            
+            // Calculate luminance
+            const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            
+            if (luminance > 200) { 
+              brightPixels++;
+              if (luminance > maxBrightness) {
+                maxBrightness = luminance;
+              }
             }
+            totalPixels++;
           }
-          totalPixels++;
+        }
+        
+        const reflectionPercentage = (brightPixels / totalPixels) * 100;
+        
+        // Glasses typically create 2-5% bright spots in eye region
+        const hasReflection = reflectionPercentage > 1.5 && maxBrightness > 220;
+        
+        reflectionData.detections.push({
+          timestamp: Date.now(),
+          reflectionPercentage: reflectionPercentage.toFixed(2),
+          maxBrightness: Math.round(maxBrightness),
+          hasReflection: hasReflection
+        });
+        
+        reflectionData.samplesCollected++;
+        
+        // Calculate overall reflection intensity
+        if (reflectionData.detections.length > 10) {
+          const recentDetections = reflectionData.detections.slice(-10);
+          const avgReflection = recentDetections.reduce((sum, d) => 
+            sum + parseFloat(d.reflectionPercentage), 0) / recentDetections.length;
+          
+          reflectionData.reflectionIntensity = avgReflection;
+          reflectionData.hasGlasses = avgReflection > 2.0;
         }
       }
-      
-      const reflectionPercentage = (brightPixels / totalPixels) * 100;
-      
-      // Glasses typically create 2-5% bright spots in eye region
-      const hasReflection = reflectionPercentage > 1.5 && maxBrightness > 220;
-      
-      reflectionData.detections.push({
-        timestamp: Date.now(),
-        reflectionPercentage: reflectionPercentage.toFixed(2),
-        maxBrightness: Math.round(maxBrightness),
-        hasReflection: hasReflection
-      });
-      
-      reflectionData.samplesCollected++;
-      
-      // Calculate overall reflection intensity
-      if (reflectionData.detections.length > 10) {
-        const recentDetections = reflectionData.detections.slice(-10);
-        const avgReflection = recentDetections.reduce((sum, d) => 
-          sum + parseFloat(d.reflectionPercentage), 0) / recentDetections.length;
-        
-        reflectionData.reflectionIntensity = avgReflection;
-        reflectionData.hasGlasses = avgReflection > 2.0; // Threshold for glasses detection
-      }
     }
+  
+    // Sample every 500ms
+    const detectionInterval = setInterval(analyseFrame, 500);
+    
+    return {
+      data: reflectionData,
+      stop: () => clearInterval(detectionInterval)
+    };
   }
-  
-  // Sample every 500ms
-  const detectionInterval = setInterval(analyzeFrame, 500);
-  
-  return {
-    data: reflectionData,
-    stop: () => clearInterval(detectionInterval)
-  };
-}
 
   function isGazeNearTarget(gazeX, gazeY, targetX, targetY, threshold = 150) {
     // Calculate distance from gaze point to target center
@@ -924,7 +896,7 @@ function mapGazeWithCalibration(rawGaze) {
     return distance < threshold;
   }
 
-  // Alternative: Detect which quadrant user is looking at
+  // Detect which quadrant user is looking at
   function getGazeQuadrant(gazeX, gazeY) {
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
@@ -934,7 +906,6 @@ function mapGazeWithCalibration(rawGaze) {
     if (gazeX < centerX && gazeY >= centerY) return "bottom-left";
     if (gazeX >= centerX && gazeY >= centerY) return "bottom-right";
   }
-
 
   function createDot(id, emoji) {
     let dot = document.getElementById(id);
@@ -993,13 +964,11 @@ function mapGazeWithCalibration(rawGaze) {
     if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
       return { x: 0, y: 0 };
     }
-
     const rawX = video.mirror ? video.videoWidth - gaze.x : gaze.x;
     const rawY = gaze.y;
     const scaleX = video.clientWidth / video.videoWidth;
     const scaleY = video.clientHeight / video.videoHeight;
     const rect = video.getBoundingClientRect();
-
     return {
       x: Math.min(Math.max(rawX * scaleX + rect.left, 0), window.innerWidth),
       y: Math.min(Math.max(rawY * scaleY + rect.top, 0), window.innerHeight)
@@ -1214,15 +1183,14 @@ function mapGazeWithCalibration(rawGaze) {
               targetY: currentY,
               game: "bird",
               pointIndex: index,
-              isLookingAtTarget: isLookingAtBird,  // NEW: Boolean indicating if looking at target
-              gazeQuadrant: getGazeQuadrant(window.currentGaze.x, window.currentGaze.y),  // NEW: Which area looking
+              isLookingAtTarget: isLookingAtBird,  // Boolean indicating if looking at target
+              gazeQuadrant: getGazeQuadrant(window.currentGaze.x, window.currentGaze.y), 
               distanceToTarget: Math.sqrt(
                 Math.pow(window.currentGaze.x - currentX, 2) + 
                 Math.pow(window.currentGaze.y - currentY, 2)
-              )  // NEW: Exact distance for analysis
+              )  // Exact distance for analysis
             };
             allGamesGazeLog.push(gazeEntry);
-            // fconsole.log("Bird - Looking at target:", isLookingAtBird, "Distance:", gazeEntry.distanceToTarget);
           }
 
           if (t < 1) {
@@ -1463,7 +1431,7 @@ function mapGazeWithCalibration(rawGaze) {
     });
   }
 
-function runGemGame() {
+  function runGemGame() {
     return new Promise((resolve) => {
       let scoreDisplay = document.getElementById("gemScoreDisplay");
       if (!scoreDisplay) {
@@ -1511,7 +1479,7 @@ function runGemGame() {
       const ctx = mazeCanvas.getContext("2d");
       const cellSize = mazeSize / 15; // 15x15 maze
 
-      // Generate maze using recursive backtracking
+      // Generating maze using recursive backtracking
       function generateMaze(cols, rows) {
         const maze = Array(rows).fill().map(() => Array(cols).fill({
           top: true,
@@ -1521,13 +1489,12 @@ function runGemGame() {
           visited: false
         }));
         
-        // Create copies for each cell
+        // copies for each cell
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
             maze[r][c] = { top: true, right: true, bottom: true, left: true, visited: false };
           }
         }
-
         const stack = [];
         let current = { row: 0, col: 0 };
         maze[0][0].visited = true;
@@ -1578,7 +1545,7 @@ function runGemGame() {
         ctx.fillStyle = "#1a1a1a";
         ctx.fillRect(0, 0, mazeSize, mazeSize);
 
-        // Draw the solution path first (if provided)
+        // drawing the solution path first
         if (highlightPath && highlightPath.length > 0) {
           ctx.strokeStyle = "#bca88d8a";
           ctx.lineWidth = cellSize * 0.5;
@@ -1600,7 +1567,7 @@ function runGemGame() {
           ctx.stroke();
         }
 
-        // Draw maze walls
+        // drawing maze walls
         ctx.strokeStyle = "#fdfdfdff";
         ctx.lineWidth = 3;
         ctx.shadowColor = "#654321";
@@ -1683,7 +1650,7 @@ function runGemGame() {
 
       const pathPoints = findPath();
       
-      // Redraw maze with the path highlighted
+      // Redrawing maze with the highlighted path
       drawMaze(pathPoints);
       
       gemDot.style.display = "block";
@@ -1784,116 +1751,108 @@ function runGemGame() {
 
   const postCalibrationGazePath = []; 
 
-function startPostCalibrationGazeTracing() {
-  console.log("🔍 POST-CALIBRATION GAZE TRACING STARTING");
-  console.log("Current gaze value:", window.currentGaze);
-  
-  const canvas = document.createElement("canvas");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  canvas.style.position = "fixed";
-  canvas.style.left = "0";
-  canvas.style.top = "0";
-  canvas.style.zIndex = "99998";
-  canvas.style.pointerEvents = "none";
-  document.body.appendChild(canvas);
+  function startPostCalibrationGazeTracing() {
+    console.log("POST-CALIBRATION GAZE TRACING STARTING");
+    console.log("Current gaze value:", window.currentGaze);
+    
+    const canvas = document.createElement("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.position = "fixed";
+    canvas.style.left = "0";
+    canvas.style.top = "0";
+    canvas.style.zIndex = "99998";
+    canvas.style.pointerEvents = "none";
+    document.body.appendChild(canvas);
 
-  const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
 
-  let dot = document.getElementById("webgazerGazeDot");
-  if (!dot) {
-    dot = document.createElement("div");
-    dot.id = "webgazerGazeDot";
-    dot.style.position = "fixed";
-    dot.style.width = "12px";
-    dot.style.height = "12px";
-    dot.style.background = "blue";
-    dot.style.borderRadius = "50%";
-    dot.style.zIndex = "99999";
-    dot.style.pointerEvents = "none";
-    dot.style.left = "50%";
-    dot.style.top = "50%";
-    document.body.appendChild(dot);
-    console.log("✅ Blue gaze dot created");
-  }
+    let dot = document.getElementById("webgazerGazeDot");
+    if (!dot) {
+      dot = document.createElement("div");
+      dot.id = "webgazerGazeDot";
+      dot.style.position = "fixed";
+      dot.style.width = "12px";
+      dot.style.height = "12px";
+      dot.style.background = "blue";
+      dot.style.borderRadius = "50%";
+      dot.style.zIndex = "99999";
+      dot.style.pointerEvents = "none";
+      dot.style.left = "50%";
+      dot.style.top = "50%";
+      document.body.appendChild(dot);
+      console.log("✅ Blue gaze dot created");
+    }
 
-  const trail = [];
-  const TRAIL_LIFETIME = 5000;
-  let frameCount = 0;
+    const trail = [];
+    const TRAIL_LIFETIME = 5000;
+    let frameCount = 0;
 
-  function drawTrail() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function drawTrail() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const now = Date.now();
-    const alivePoints = trail.filter(p => now - p.time < TRAIL_LIFETIME);
+      const now = Date.now();
+      const alivePoints = trail.filter(p => now - p.time < TRAIL_LIFETIME);
 
-    if (alivePoints.length > 1) {
-      ctx.beginPath();
-      ctx.moveTo(alivePoints[0].x, alivePoints[0].y);
-      for (let i = 1; i < alivePoints.length; i++) {
-        ctx.lineTo(alivePoints[i].x, alivePoints[i].y);
+      if (alivePoints.length > 1) {
+        ctx.beginPath();
+        ctx.moveTo(alivePoints[0].x, alivePoints[0].y);
+        for (let i = 1; i < alivePoints.length; i++) {
+          ctx.lineTo(alivePoints[i].x, alivePoints[i].y);
+        }
+        ctx.strokeStyle = "rgba(0, 0, 255, 0.5)"; 
+        ctx.lineWidth = 3;
+        ctx.stroke();
       }
-      ctx.strokeStyle = "rgba(0, 0, 255, 0.5)"; 
-      ctx.lineWidth = 3;
-      ctx.stroke();
+
+      if (alivePoints.length > 0) {
+        const last = alivePoints[alivePoints.length - 1];
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = "blue"; 
+        ctx.fill();
+      }
+
+      trail.length = 0;
+      trail.push(...alivePoints);
+
+      requestAnimationFrame(drawTrail);
     }
 
-    if (alivePoints.length > 0) {
-      const last = alivePoints[alivePoints.length - 1];
-      ctx.beginPath();
-      ctx.arc(last.x, last.y, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = "blue"; 
-      ctx.fill();
+    function updateGazeDot() {
+      frameCount++;
+      if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
+        dot.style.left = window.currentGaze.x - dot.offsetWidth / 2 + "px";
+        dot.style.top = window.currentGaze.y - dot.offsetHeight / 2 + "px";
+        dot.style.opacity = "1";
+        dot.style.display = "block";
+
+        trail.push({ 
+          x: window.currentGaze.x, 
+          y: window.currentGaze.y, 
+          time: Date.now() 
+        });
+      } else {
+        dot.style.opacity = "0.3"; // Make it semi-visible if gaze is 0,0
+      }
+      
+      requestAnimationFrame(updateGazeDot);
     }
 
-    trail.length = 0;
-    trail.push(...alivePoints);
-
-    requestAnimationFrame(drawTrail);
-  }
-
-  function updateGazeDot() {
-    frameCount++;
+    drawTrail();
+    updateGazeDot();
     
-    // Debug every 30 frames (roughly every second at 60fps)
-    // if (frameCount % 30 === 0) {
-    //   console.log("Frame", frameCount, "- window.currentGaze:", window.currentGaze);
-    // }
-
-    if (window.currentGaze && isFinite(window.currentGaze.x) && isFinite(window.currentGaze.y)) {
-      dot.style.left = window.currentGaze.x - dot.offsetWidth / 2 + "px";
-      dot.style.top = window.currentGaze.y - dot.offsetHeight / 2 + "px";
-      dot.style.opacity = "1";
-      dot.style.display = "block";
-
-      trail.push({ 
-        x: window.currentGaze.x, 
-        y: window.currentGaze.y, 
-        time: Date.now() 
-      });
-    } else {
-      dot.style.opacity = "0.3"; // Make it semi-visible if gaze is 0,0
-    }
-    
-    requestAnimationFrame(updateGazeDot);
+    console.log("Post-calibration gaze tracing started");
   }
-
-  drawTrail();
-  updateGazeDot();
-  
-  console.log("✅ Post-calibration gaze tracing started");
-}
 
   const gazeHistory = [];
   const SMOOTHING_WINDOW = 5; 
 
   function getSmoothedGaze(newPoint) {
     gazeHistory.push(newPoint);
-
     if (gazeHistory.length > SMOOTHING_WINDOW) {
       gazeHistory.shift();
     }
-
     const avg = gazeHistory.reduce(
       (acc, point) => {
         acc.x += point.x;
@@ -1902,7 +1861,6 @@ function startPostCalibrationGazeTracing() {
       },
       { x: 0, y: 0 }
     );
-
     return {
       x: avg.x / gazeHistory.length,
       y: avg.y / gazeHistory.length,
@@ -1923,76 +1881,72 @@ function startPostCalibrationGazeTracing() {
     setInterval(tryHide, 100); 
   }
 
-async function startGazeTracker() {
-  try {
-    console.log("Starting gaze tracker...");
-
+  async function startGazeTracker() {
     try {
-      // Let WebGazer handle getting the video stream itself
-      await webgazer
-        .setRegression("ridge")
-        .setTracker("clmtrackr")
-        .showPredictionPoints(false)
-        .showVideo(false)
-        .showFaceOverlay(false)
-        .showFaceFeedbackBox(false)
-        .setGazeListener((data) => {
-          if (!data) return;
+      console.log("Starting gaze tracker...");
 
-          if (!isFinite(data.x) || !isFinite(data.y)) {
-            return;
-          }
+      try {
+        await webgazer
+          .setRegression("ridge")
+          .setTracker("clmtrackr")
+          .showPredictionPoints(false)
+          .showVideo(false)
+          .showFaceOverlay(false)
+          .showFaceFeedbackBox(false)
+          .setGazeListener((data) => {
+            if (!data) return;
 
-          // Get smoothed raw gaze
-          const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
-          
-          // APPLY CALIBRATION MAPPING if calibration is complete
-          let gazeToUse = smoothed;
-          if (gazeCalibration.points.length > 0) {
-            gazeToUse = mapGazeWithCalibration(smoothed);
-          }
-          
-          window.currentGaze = gazeToUse;
+            if (!isFinite(data.x) || !isFinite(data.y)) {
+              return;
+            }
+            // smoothed raw gaze
+            const smoothed = getSmoothedGaze({ x: data.x, y: data.y });
+            
+            // calibration mapping if calibration is complete
+            let gazeToUse = smoothed;
+            if (gazeCalibration.points.length > 0) {
+              gazeToUse = mapGazeWithCalibration(smoothed);
+            }
+            window.currentGaze = gazeToUse;
+            if (window.dotGaze) {
+              window.dotGaze.style.left = `${gazeToUse.x - 10}px`;
+              window.dotGaze.style.top = `${gazeToUse.y - 10}px`;
+              window.dotGaze.style.display = "none";
+            }
+          })
+          .begin();
 
-          if (window.dotGaze) {
-            window.dotGaze.style.left = `${gazeToUse.x - 10}px`;
-            window.dotGaze.style.top = `${gazeToUse.y - 10}px`;
-            window.dotGaze.style.display = "none";
-          }
-        })
-        .begin();
+        console.log("WebGazer initialised successfully");
 
-      console.log("✅ WebGazer initialized successfully");
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        function hideAllWebgazerElements() {
+          const elements = document.querySelectorAll("[id*='webgazer'], [class*='webgazer']");
+          elements.forEach(el => {
+            el.style.display = "none";
+            el.style.opacity = "0";
+            el.style.visibility = "hidden";
+            el.style.pointerEvents = "none";
+          });
+        }
 
-      function hideAllWebgazerElements() {
-        const elements = document.querySelectorAll("[id*='webgazer'], [class*='webgazer']");
-        elements.forEach(el => {
-          el.style.display = "none";
-          el.style.opacity = "0";
-          el.style.visibility = "hidden";
-          el.style.pointerEvents = "none";
-        });
+        hideAllWebgazerElements();
+        setInterval(hideAllWebgazerElements, 100);
+
+        console.log("WebGazer started successfully");
+
+      } catch (err) {
+        console.error("WebGazer failed to start:", err);
       }
 
-      hideAllWebgazerElements();
-      setInterval(hideAllWebgazerElements, 100);
-
-      console.log("✅ WebGazer started successfully");
-
     } catch (err) {
-      console.error("❌ WebGazer failed to start:", err);
+      console.error("Failed to start gaze tracker:", err);
+      alert("Camera access failed. Please allow camera permissions and try again.");
     }
-
-  } catch (err) {
-    console.error("❌ Failed to start gaze tracker:", err);
-    alert("Camera access failed. Please allow camera permissions and try again.");
   }
-}
 
 
-console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element =", window.videoElement);
+  console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element =", window.videoElement);
 
   function startBrightnessLoop(video) {
     const brightnessDisplay = document.getElementById("brightness-display");
@@ -2048,22 +2002,22 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     try {
       await startGazeTracker();
 
-      // ✅ WAIT for video to be ready BEFORE starting detection
-      console.log("⏳ Waiting for video to be ready...");
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Give WebGazer time to initialize
+      // Waiting for video to be ready BEFORE starting detection
+      console.log("Waiting for video to be ready...");
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Giving WebGazer time to initialise
 
       const videoHideInterval = hideVideoStreamDuringCalibration();
       
-      // ✅ NOW try to get the video and start detection
+      // start detection
       const video = document.querySelector('video');
       let reflectionDetector = null;
       
       if (video && video.videoWidth > 0 && video.videoHeight > 0) {
-        console.log("✅ Video found:", video.videoWidth, "x", video.videoHeight);
+        console.log("Video found:", video.videoWidth, "x", video.videoHeight);
         reflectionDetector = detectGlassesReflection(video);
         console.log("👓 Glasses reflection detection started");
       } else {
-        console.warn("⚠️ Video element not ready yet");
+        console.warn("Video element not ready yet");
       }
       
       // Store cleanup function
@@ -2072,9 +2026,9 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
         if (reflectionDetector) {
           reflectionDetector.stop();
           glassesReflectionData = reflectionDetector.data;
-          console.log("📊 Glasses Detection Results:", glassesReflectionData);
+          console.log("Glasses Detection Results:", glassesReflectionData);
         } else {
-          console.warn("⚠️ No reflection detector to clean up");
+          console.warn("No reflection detector to clean up");
         }
       };
     } catch (err) {
@@ -2138,9 +2092,9 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     await runWithPause(runGemGame);
 
     await finishGames();
-    console.log("📍 About to start post-calibration tracing. Current gaze:", window.currentGaze);
+    console.log("About to start post-calibration tracing. Current gaze:", window.currentGaze);
     startPostCalibrationGazeTracing();
-    console.log("📍 Post-calibration tracing should now be running. Current gaze:", window.currentGaze);
+    console.log("Post-calibration tracing should now be running. Current gaze:", window.currentGaze);
     showGazeDots(); 
   }
 
@@ -2152,7 +2106,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     blurOverlay.classList.remove("active");
     if (blurOverlay) blurOverlay.style.display = "none";
     
-    // Hide the pause button when calibration is complete
+    // hide the pause button when calibration is complete
     const togglePauseBtn = document.getElementById("togglePauseBtn");
     if (togglePauseBtn) {
       togglePauseBtn.style.display = "none";
@@ -2164,7 +2118,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
       togglePauseBtn.parentNode.replaceChild(newBtn, togglePauseBtn);
       newBtn.addEventListener("click", togglePause);
       
-      console.log("✅ Pause button initialized");
+      console.log("Pause button initialised");
     }
     
     pathDrawingEnabled = true;
@@ -2172,30 +2126,30 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
         window.cleanupCalibration();
       }
 
-    console.log("✅ ALL GAMES COMPLETED - Total gaze points collected:", allGamesGazeLog.length);
-    console.log("👓 GLASSES REFLECTION ANALYSIS:");
+    console.log("ALL GAMES COMPLETED - Total gaze points collected:", allGamesGazeLog.length);
+    console.log("GLASSES REFLECTION ANALYSIS:");
     if (glassesReflectionData) {
-      console.log("  Has Glasses Detected:", glassesReflectionData.hasGlasses);
-      console.log("  Reflection Intensity:", glassesReflectionData.reflectionIntensity.toFixed(2) + "%");
-      console.log("  Total Samples:", glassesReflectionData.samplesCollected);
-      console.log("  Full Detection Data:", glassesReflectionData.detections);
+      console.log("Has Glasses Detected:", glassesReflectionData.hasGlasses);
+      console.log("Reflection Intensity:", glassesReflectionData.reflectionIntensity.toFixed(2) + "%");
+      console.log("Total Samples:", glassesReflectionData.samplesCollected);
+      console.log("Full Detection Data:", glassesReflectionData.detections);
     } else {
-      console.log("  No reflection data collected");
+      console.log("No reflection data collected");
     }
-    console.log("📊 Complete gaze data from all games:", allGamesGazeLog);
+    console.log("Complete gaze data from all games:", allGamesGazeLog);
     
     const dataSent = await sendGazeDataToBackend(allGamesGazeLog);
     
     if (dataSent) {
-      console.log("✅ Gaze data sent to backend successfully");
+      console.log("Gaze data sent to backend successfully");
     } else {
-      console.warn("⚠️ Could not send gaze data to backend, but calibration is complete");
+      console.warn("Could not send gaze data to backend, but calibration is complete");
     }
 
-    // Also save locally as backup
+    // save data locally as backup
     try {
       localStorage.setItem('allGamesGazeData', JSON.stringify(allGamesGazeLog));
-      console.log("💾 Gaze data backed up to localStorage");
+      console.log("Gaze data backed up to localStorage");
     } catch (e) {
       console.warn("Could not save to localStorage:", e);
     }
@@ -2288,7 +2242,7 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     const togglePauseBtn = document.getElementById("togglePauseBtn");
 
     if (!togglePauseBtn) {
-      console.error("❌ Pause button not found!");
+      console.error("Pause button not found!");
       return;
     }
     if (gamesPaused) {
@@ -2310,10 +2264,9 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
   const togglePauseBtn = document.getElementById("togglePauseBtn");
   if (togglePauseBtn) {
     togglePauseBtn.style.display = "none"; // Hide initially
-    togglePauseBtn.innerHTML = "⏸"; // Set initial icon
-    togglePauseBtn.title = "Pause"; // Set initial tooltip
-    togglePauseBtn.addEventListener("click", togglePause); // Add event listener
-
+    togglePauseBtn.innerHTML = "⏸"; // initial icon
+    togglePauseBtn.title = "Pause"; // initial tooltip
+    togglePauseBtn.addEventListener("click", togglePause); // event listener
   }
 
   async function runWithPause(gameFn) {
@@ -2349,9 +2302,6 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
       document.body.appendChild(dotGaze);
       window.dotGaze = dotGaze;
     }
-
-    
-
     await webgazer
       .setRegression("ridge")
       .setTracker("clmtrackr")
@@ -2388,7 +2338,6 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
     });
 
     let dwellTimer = null;
-
     openPopupBtn.addEventListener("mouseenter", () => {
       dwellTimer = setTimeout(() => {
         popupOverlay.style.display = "flex";
@@ -2431,15 +2380,15 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
       });
 
       if (response.ok) {
-        console.log("✅ Gaze data successfully sent to backend");
-        console.log("✅ Glasses reflection data included:", glassesReflectionData ? "Yes" : "No");
+        console.log("Gaze data successfully sent to backend");
+        console.log("Glasses reflection data included:", glassesReflectionData ? "Yes" : "No");
         return true;
       } else {
-        console.error("❌ Failed to send gaze data. Status:", response.status);
+        console.error("Failed to send gaze data. Status:", response.status);
         return false;
       }
     } catch (err) {
-      console.error("❌ Error sending gaze data to backend:", err);
+      console.error("Error sending gaze data to backend:", err);
       return false;
     }
   }
@@ -2540,27 +2489,24 @@ console.log("DEBUG: window.currentGaze =", window.currentGaze, "video element ="
   window.getGazeData = () => {
     console.log("📊 Total gaze points:", allGamesGazeLog.length);
     console.log("🎮 Breakdown by game:");
-    console.log("  🦅 Bird:", allGamesGazeLog.filter(d => d.game === "bird").length);
-    console.log("  🎯 Target:", allGamesGazeLog.filter(d => d.game === "target").length);
-    console.log("  💎 Gem:", allGamesGazeLog.filter(d => d.game === "gem").length);
+    console.log("🦅 Bird:", allGamesGazeLog.filter(d => d.game === "bird").length);
+    console.log("🎯 Target:", allGamesGazeLog.filter(d => d.game === "target").length);
+    console.log("💎 Gem:", allGamesGazeLog.filter(d => d.game === "gem").length);
     return allGamesGazeLog;
   };
 
-  console.log("💡 Tip: Type 'window.getGazeData()' in console to view all collected gaze data");
   window.getReflectionData = () => {
-  if (glassesReflectionData) {
-    console.log("👓 Glasses Reflection Data:");
-    console.log("  Has Glasses:", glassesReflectionData.hasGlasses);
-    console.log("  Reflection Intensity:", glassesReflectionData.reflectionIntensity.toFixed(2) + "%");
-    console.log("  Samples:", glassesReflectionData.samplesCollected);
-    console.log("  All Detections:", glassesReflectionData.detections);
-    return glassesReflectionData;
-  } else {
-    console.log("❌ No reflection data available yet - calibration may not have started");
-    return null;
-  }
-};
-
-console.log("💡 Tip: Type 'window.getReflectionData()' in console to view glasses reflection data");
+    if (glassesReflectionData) {
+      console.log("Glasses Reflection Data:");
+      console.log("Has Glasses:", glassesReflectionData.hasGlasses);
+      console.log("Reflection Intensity:", glassesReflectionData.reflectionIntensity.toFixed(2) + "%");
+      console.log("Samples:", glassesReflectionData.samplesCollected);
+      console.log("All Detections:", glassesReflectionData.detections);
+      return glassesReflectionData;
+    } else {
+      console.log("No reflection data available yet - calibration may not have started");
+      return null;
+    }
+  };
 
 });

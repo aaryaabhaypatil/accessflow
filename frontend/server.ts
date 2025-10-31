@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 
 const app = express();
+
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
