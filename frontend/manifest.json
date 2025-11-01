@@ -22,7 +22,7 @@
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://localhost/*"],
-      "js": ["webgazer.js", "content.js"],
+      "js": ["webgazer.js"],
       "run_at": "document_idle"
     }
   ],
