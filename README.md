@@ -1,27 +1,44 @@
 # AccessFlow: Eye-Tracking Browser Extension for Accessibility
-AccessFlow is a browser extension that enables hands-free web navigation using eye movements. By tracking the user’s gaze, it allows individuals with mobility impairments to interact with websites more easily. The extension converts eye gestures into actions such as scrolling and clicking, enhancing accessibility and providing an alternative navigation method.
+AccessFlow is a low-cost, webcam-based eye-tracking system designed to enable hands-free navigation of web interfaces for users with mobility impairments. It provides accessible interaction through eye gestures, combining real-time gaze tracking, calibration, and smoothing techniques to enhance accuracy and usability.
 
-This project explores the use of eye-tracking technology to enhance accessibility and social inclusion. The system leverages low-cost innovations to assist individuals with disabilities in interacting with digital interfaces more effectively.
 # Features
-- Eye Gesture Recognition: Navigate websites using eye movements.
+- Real-time eye tracking using WebGazer.js.
+- Interactive calibration with visual feedback.
+- Smoothened gaze data for reliable pointing and navigation.
+- Low-cost solution using standard webcams, no specialised hardware required.
+- Designed for accessibility, especially for users with limited hand mobility.
 
-- Hands-Free Web Navigation: Perform common actions like scrolling, clicking, and interacting without a mouse or keyboard.
 
-- Cross-Browser Support: Works seamlessly on Chrome, Firefox, Edge, Opera, and Safari.
+# Demo
+You can explore AccessFlow in two ways:  
+- **Watch the Demo Video**  
+See how AccessFlow works in action: [here](https://drive.google.com/file/d/1-4W6niUxVcLp4TOFMl7BBy_Zwuf3HhP0/view?usp=sharing).
 
-- Customisable Controls: Enable/disable eye tracking and adjust settings for gaze duration and gestures.
+- **Try It Yourself**  
+Follow these steps to run AccessFlow locally:
+    1. Open Chrome, click the Extensions icon in the toolbar, and select ‘Manage Extensions’
 
-# How It Works
-AccessFlow detects eye gestures through the webcam and translates them into actions on the webpage. Below are the main gestures it recognises:
+    ![Alt text](instruction1.png)
 
-- Look Left → Scroll Left
+    2. Ensure Developer Mode is enabled (toggle in the top-right corner). Once it’s on, click on Load unpacked
 
-- Look Right → Scroll Right
+    ![Alt text](instruction2.png)
 
-- Look Up → Scroll Up
+    3. Navigate to and select the AccessFlow folder
 
-- Look Down → Scroll Down
+    ![Alt text](instruction3.png)
 
-- Fix Gaze → Click on buttons, links, or other clickable elements
+    4. Open the frontend folder inside AccessFlow, then click Select
 
-This allows users to interact with websites by simply looking at different parts of the screen, making web navigation more accessible.
+    ![Alt text](instruction4.png)
+
+    5. Once loaded, the extension should appear in the Extensions popup in Chrome
+
+    ![Alt text](instruction5.png)
+
+
+# Acknowledgements
+
+- [WebGazer.js](https://webgazer.cs.brown.edu/) for webcam-based eye tracking
+- Inspiration from research in low-cost accessibility and gaze-based interaction
+
