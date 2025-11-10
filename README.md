@@ -16,23 +16,28 @@ See how AccessFlow works in action: [here](https://drive.google.com/file/d/1-4W6
 
 - **Try It Yourself**  
 Follow these steps to run AccessFlow locally:
-    1. Open Chrome, click the Extensions icon in the toolbar, and select ‘Manage Extensions’
+
+    1. Click the green Code button (near the top right of the file list). From the dropdown menu, select Download ZIP. Once downloaded, unzip the file to a convenient location on your computer (e.g., Documents/AccessFlow). 
+    
+    ⚠️ Note: After loading AccessFlow as a browser extension, don’t move the folder — doing so may stop the extension from working.
+
+    2. Open Chrome, click the Extensions icon in the toolbar, and select ‘Manage Extensions’
 
     ![Alt text](instruction1.png)
 
-    2. Ensure Developer Mode is enabled (toggle in the top-right corner). Once it’s on, click on Load unpacked
+    3. Ensure Developer Mode is enabled (toggle in the top-right corner). Once it’s on, click on Load unpacked
 
     ![Alt text](instruction2.png)
 
-    3. Navigate to and select the AccessFlow folder
+    4. Navigate to and select the AccessFlow folder
 
     ![Alt text](instruction3.png)
 
-    4. Open the frontend folder inside AccessFlow, then click Select
+    5. Open the frontend folder inside AccessFlow, then click Select
 
     ![Alt text](instruction4.png)
 
-    5. Once loaded, the extension should appear in the Extensions popup in Chrome
+    6. Once loaded, the extension should appear in the Extensions popup in Chrome
 
     ![Alt text](instruction5.png)
 
